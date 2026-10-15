@@ -19,7 +19,7 @@ In: projection math, picking, ellipses, sorting, occlusion, facings, light. Out:
 - **cell_of(g) -> Vector2i** = `floor(g)`; **cell_center(c) -> Vector2** = `c + (0.5, 0.5)`. Cell (cx,cy) diamond center on screen = ground_to_screen(c + 0.5).
 - **Circle→ellipse**: ground circle radius `r` → screen ellipse centered at ground_to_screen(center), semi-axes `a = r·TW/√2`, `b = r·TH/√2` (axis-aligned, 2:1). Helper `ellipse_radii(r) -> Vector2`.
 - Distances/ranges/blasts/arcs are computed in ground space only.
-- TileMapLayer: tile shape Isometric, tile size 64x32. **To verify in spike:** which `tile_layout` (Diamond Right/Down) makes Godot's `map_to_local` agree with `ground_to_screen(cell_center)`; the spike test asserts agreement and the answer is recorded here.
+- TileMapLayer: tile shape Isometric, tile size 64x32, **`tile_layout = DIAMOND_DOWN`** (verified 2026-10-15 on Godot 4.7.2: the other layouts do not map +X down-right / +Y down-left). Godot centers cell (0,0) at layer-local (32,16) whereas our cell (0,0) is centered at (0,16), so every ground TileMapLayer must be positioned at `IsoProjection.TILEMAP_LAYER_OFFSET` = (−32, 0). Then `layer.map_to_local(c) + layer.position == ground_to_screen(cell_center(c))` and `layer.local_to_map(s − layer.position) == cell_of(screen_to_ground(s))`.
 
 ## Draw order
 Layers bottom→top: ground TileMapLayer → decals/shadows → ground entities node with `y_sort_enabled` → air layer (own y-sort, above ground) → FX layer → HUD (CanvasLayer). Sort anchor = footprint base point (center of the footprint on the ground, which is the node's origin). Sprites are offset up from the origin so the origin is the foot.
@@ -45,10 +45,10 @@ Mouse outside map → no cell valid; NaN/inf inputs rejected by callers (not pro
 5. Altitude: z shifts screen y by `−z·Z_PX_PER_UNIT` and leaves x unchanged; ground coords unaffected.
 6. Facing quantization for the 8 axis/diagonal ground directions returns expected facings.
 7. Sort comparison: entity with greater ground (x+y) sorts in front.
-8. TileMapLayer `map_to_local(cell)` equals `ground_to_screen(cell_center)` for sample cells (once layout chosen).
+8. TileMapLayer `map_to_local(cell) + position` equals `ground_to_screen(cell_center)` and `local_to_map` agrees with `cell_of` for sample cells incl. negatives (DIAMOND_DOWN + offset). **Done — `tests/test_iso_tilemap.gd`.**
 
 ## Manual checklist (spike)
 Unit behind tall object visible after fade · shadows present on ground & air · AoE ellipse matches cells it covers · hover highlight lands on the cell under the cursor at zoom 0.5/1/2 and with panned camera · 8 facings readable.
 
 ## Test plan
-`tests/test_iso_projection.gd` (1–7), `tests/test_iso_tilemap.gd` (8, needs a TileMapLayer instance headless), manual checklist in the spike scene.
+`tests/test_iso_projection.gd` (1–7), `tests/test_iso_tilemap.gd` (8; runs headless with a TileMapLayer not in the tree), manual checklist in the spike scene `scenes/dev/iso_spike.tscn`.

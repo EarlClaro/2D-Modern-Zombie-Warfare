@@ -12,6 +12,11 @@ Purpose: prove the isometric foundation before any combat. Non-goals: combat, ca
 7. **AoE ellipse indicator**: draws ground circle radius r at hovered position using `ellipse_radii`; key to change r.
 8. Update isometric-view spec with decisions, TESTING.md with real commands, ROADMAP, CHANGELOG.
 
+## Progress
+- ☑ 1 test runner · ☑ 2 IsoProjection + tests · ☑ 3 spike scene (`scenes/dev/iso_spike.tscn`, 16x16 placeholder TileMapLayer, `IsoCamera` pan/zoom) · ☑ 4 picking + hover highlight + tilemap agreement test (layout = DIAMOND_DOWN, layer offset (−32,0)).
+- ☐ 5 placeholder unit + tall structure · ☐ 6 flyer · ☐ 7 AoE ellipse · ☐ 8 final doc pass.
+- Run the scene: `"$GODOT" --path . scenes/dev/iso_spike.tscn` (or open it in the editor and press F6). Controls: WASD/arrows pan, mouse wheel zoom toward cursor (0.5–3.0), middle-mouse drag pan.
+
 ## Decisions to record at exit
 Tile size confirmed · sprite directions (8) · occlusion approach (fade vs silhouette) · light direction · TileMapLayer layout enum · Z_PX_PER_UNIT.
 

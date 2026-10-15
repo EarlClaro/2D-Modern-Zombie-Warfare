@@ -4,8 +4,10 @@
 - Custom headless runner (ADR-006) implemented. GUT not used.
 - Verified commands (2026-10-15):
   - `"$GODOT" --headless --path . --import --quit` — import/parse check; run it after adding new `class_name` scripts.
-  - `"$GODOT" --headless --path . --script tests/run_tests.gd` — 9 tests, 0 failed, exit 0. Confirmed it reports `FAIL` and exits 1 when a test fails (temporary failing test, since removed).
+  - `"$GODOT" --headless --path . --script tests/run_tests.gd` — 12 tests (9 projection, 3 tilemap), 0 failed, exit 0. Confirmed it reports `FAIL` and exits 1 when a test fails (temporary failing test, since removed).
 - Writing tests: file `tests/test_*.gd`, `extends TestCase`, methods `test_*`; helpers `assert_true/eq/near/vec_near`. Prefer `preload` of the script under test.
+
+- Scene smoke check (one-off, 2026-10-15): spike scene loaded in a real window (`--path . --script <driver>`), camera set to 4 zoom/pan configs, 93 sample points mapped viewport→canvas→`IsoPicking`→cell with 0 mismatches; no engine errors. This drove the camera transform directly; **synthetic mouse events could not be injected**, so real mouse handling is manual-only. The driver lived outside the repo.
 
 ## Strategy
 1. **Pure-logic unit tests (headless)** — IsoProjection, DamageService, DeckState, CommandPoints, targeting filters, objective evaluation, save migration. These are `RefCounted` classes with injected RNG/config.

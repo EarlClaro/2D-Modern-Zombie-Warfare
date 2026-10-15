@@ -5,7 +5,7 @@ Legend: ☐ not started · ◐ in progress · ☑ done (acceptance criteria chec
 | Milestone | Status | Notes |
 |---|---|---|
 | 0 Specification foundation | ☑ | Docs written; user approved plan + ADR-005..008 (2026-10-15) |
-| 0.5 Isometric spike | ◐ | [spec](specs/milestone-0.5-iso-spike.md). Steps 1–2 done (test runner, IsoProjection + 9 passing tests). Steps 3–8 (scene, picking, unit, flyer, AoE) pending |
+| 0.5 Isometric spike | ◐ | [spec](specs/milestone-0.5-iso-spike.md). Steps 1–4 done (runner, IsoProjection, spike scene + camera, picking/highlight, tilemap agreement; 12 passing tests). Steps 5–8 (unit, flyer, AoE, doc pass) pending |
 | 1 Combat vertical slice | ☐ | [spec](specs/combat-vertical-slice.md) |
 | 2 First card loop | ☐ | [spec](specs/deck-and-economy.md) |
 | 3 Horde + mission objectives | ☐ | decide flow field (A6) with measurements |
@@ -19,10 +19,11 @@ Legend: ☐ not started · ◐ in progress · ☑ done (acceptance criteria chec
 0 → 0.5 → 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 (6 content may interleave after 3). Milestone 0.5 exit requires user approval of look/feel.
 
 ## Next tasks
-1. Milestone 0.5 steps 3–4: spike scene (TileMapLayer + camera), picking + hover highlight, TileMapLayer layout test.
-2. Steps 5–7: placeholder unit, flyer, AoE ellipse.
-3. User runs the manual checklist and approves look/feel.
+1. User runs the spike scene and checks mouse hover/zoom/pan feel (manual checklist items for steps 3–4).
+2. Milestone 0.5 steps 5–7: placeholder unit + tall structure (sorting, occlusion fade), flyer, AoE ellipse.
+3. User completes the full manual checklist and approves look/feel.
 
 ## Evidence log
 - 2026-10-15: Godot `4.7.2.stable.official.ed1daf0bf` found via WinGet; `--headless --import --quit` exited 0 on the empty project. No tests exist yet.
 - 2026-10-15: `tests/run_tests.gd` run: 9 tests, 0 failed, exit 0; failing-test sanity check exits 1.
+- 2026-10-15: tests 12/12 pass (added 3 tilemap tests). Spike scene screenshot reviewed: axes, tiles and projection-drawn highlight align. Real mouse input not yet manually verified.

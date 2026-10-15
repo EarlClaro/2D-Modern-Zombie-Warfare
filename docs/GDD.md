@@ -74,7 +74,7 @@ Pixel or hybrid pixel art, 2:1 iso, modern lighting/particles, placeholders (col
 | A4 | Test framework | custom headless GDScript runner | proposed (ADR-006), user to approve vs GUT |
 | A5 | Mouse + keyboard only for MVP | yes | assumed |
 | A6 | Flow field vs per-agent nav for hordes | decide in M3 after measurement | open |
-| A7 | Occlusion approach | fade occluders | validate in spike |
+| A7 | Occlusion approach | fade occluders (ADR-005) | validate in spike steps 5+ |
 | A8 | Sprite directions | 8 | assumed; 5-mirrored is fallback |
 | A9 | Real title | Last Defense is placeholder | open |
 | A10 | Starting deck contents | 4× Rifle Squad, 3× Gatling, 2× Tank, 3× Artillery Strike, 2× Helicopter, 2× Ammo Resupply = 16 (tune later) | proposed |

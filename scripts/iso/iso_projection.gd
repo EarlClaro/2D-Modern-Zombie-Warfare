@@ -9,6 +9,11 @@ const TILE_H: float = 32.0
 ## Screen pixels of upward offset per 1.0 altitude unit.
 const Z_PX_PER_UNIT: float = 32.0
 
+## Position to give a TileMapLayer (TileSet layout DIAMOND_DOWN, 64x32) so that
+## layer.map_to_local(c) + layer.position == ground_to_screen(cell_center(c)).
+## Godot centers cell (0,0) at (TILE_W/2, TILE_H/2); our cell (0,0) is centered at (0, TILE_H/2).
+const TILEMAP_LAYER_OFFSET: Vector2 = Vector2(-TILE_W * 0.5, 0.0)
+
 ## Sprite facings in screen terms. Each corresponds to one of the 8 principal ground directions.
 enum Facing { E, SE, S, SW, W, NW, N, NE }
 
