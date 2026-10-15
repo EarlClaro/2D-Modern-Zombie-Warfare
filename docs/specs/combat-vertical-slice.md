@@ -1,6 +1,6 @@
 # Spec: Milestone 1 — Combat Vertical Slice
 
-Status: **v0.2 approved 2026-10-15 (D1–D5 accepted as recommended).** Increment 1.1 done; 1.2 next. Builds on the approved isometric foundation ([isometric-view.md](isometric-view.md), M0.5).
+Status: **v0.2 approved 2026-10-15 (D1–D5 accepted as recommended).** Increments 1.1 and 1.2 done; 1.3 next. Builds on the approved isometric foundation ([isometric-view.md](isometric-view.md), M0.5).
 
 ## Purpose
 Prove that core combat is **satisfying and readable** on the isometric view with the fewest systems. Pillars tested: (1) combat feel, (4) isometric readability. Cards/deck (pillar 2) and mission variety (3) are out of scope.
@@ -46,6 +46,8 @@ Presentation (flashes, sounds, shake) is driven by signals emitted during the ti
 Every definition has `validate() -> PackedStringArray` (empty = valid): positive health/rates, non-empty ids, map rectangular, cells in bounds and walkable, waves reference existing enemy ids, etc. `ContentDb` loads `data/**` by id, reports duplicates and unknown ids as errors (no crash, no silent fallback).
 
 **As built in 1.1:** all definitions extend `ContentDefinition` (`scripts/core/content_definition.gd`: `id` + `validate()` + id format `^[a-z][a-z0-9_]*$`). `ContentDb.load_from(root)` registers valid definitions only, collects `errors` (invalid fields, bad ids, duplicates per kind, missing dirs, wrong resource type, unknown `weapon_id`). `WeaponDefinition.PROJECTILE` is rejected by validation until M2.
+
+**As built in 1.2:** `TargetCandidate` (id, ground pos, alive) is the snapshot type. `TargetingService.pick` is nearest-first, range inclusive, exact ties → lowest id, stateless (no sticky targets). `WeaponState` starts ready, carries fractional overshoot so the long-run rate equals `shots_per_second`, never banks a burst while idle, and after a frame hitch of one interval or more drops the backlog and waits a full interval (found by a failing test, fixed).
 
 ## Interfaces (pure logic = `RefCounted`/static, testable headless)
 - `DamageService.compute(base: float, armor: float, falloff: float = 1.0) -> float`: `max(base − armor, base × MIN_DAMAGE_FRACTION) × falloff`, `MIN_DAMAGE_FRACTION = 0.1`. `DamageService.blast_falloff(distance, radius) -> float` (1.0 at centre → `MIN_FALLOFF` at edge, 0 outside).
@@ -95,7 +97,7 @@ Manual / measured (reported honestly as pending until done):
 | # | Increment | Output |
 |---|---|---|
 | 1.1 ☑ | Definitions + `ContentDb` + validation + `Health` + `DamageService` | tests 1, 2, 6 (done: 34 tests; map/mission/wave definitions arrive in 1.3) |
-| 1.2 | `TargetingService` + `WeaponState` | tests 3, 4 |
+| 1.2 ☑ | `TargetingService` + `WeaponState` | tests 3, 4 (done: 23 tests) |
 | 1.3 | `MissionRules` + `MissionDefinition`/map/waves data (`crossing` mission) | test 5 |
 | 1.4 | Battle scene: map build, core, shambler movement/attack, unit/nest firing (hitscan, no polish), `BattleController.step`, result panel + restart | test 7 + first playable (manual) |
 | 1.5 | Feedback pass (flash, recoil, tracer, spark, hit flash, death, shake, generated audio + caps, health bars) | manual criterion 9 |

@@ -12,8 +12,10 @@ func _init() -> void:
 	var files: Array[String] = _discover()
 	for path in files:
 		var script: GDScript = load(path)
-		if script == null:
-			printerr("FAIL load: %s" % path)
+		if script == null or not script.can_instantiate():
+			# e.g. a parse error: report it as a failure instead of crashing the runner (which would hang).
+			printerr("FAIL %s: script failed to load/compile (see errors above)" % path)
+			total += 1
 			failed += 1
 			continue
 		var instance: Variant = script.new()

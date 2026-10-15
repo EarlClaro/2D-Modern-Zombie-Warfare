@@ -6,7 +6,7 @@ Legend: ☐ not started · ◐ in progress · ☑ done (acceptance criteria chec
 |---|---|---|
 | 0 Specification foundation | ☑ | Docs written; user approved plan + ADR-005..008 (2026-10-15) |
 | 0.5 Isometric spike | ☑ | [spec](specs/milestone-0.5-iso-spike.md). All 8 steps implemented; 26 passing tests. User approved the spike look/feel and decisions on 2026-10-15 (exit gate passed) |
-| 1 Combat vertical slice | ◐ | [spec v0.2](specs/combat-vertical-slice.md) approved (D1–D5). Increment 1.1 done; 1.2 (targeting + weapon cadence) next |
+| 1 Combat vertical slice | ◐ | [spec v0.2](specs/combat-vertical-slice.md) approved (D1–D5). Increments 1.1–1.2 done; 1.3 (mission rules + mission data) next |
 | 2 First card loop | ☐ | [spec](specs/deck-and-economy.md) |
 | 3 Horde + mission objectives | ☐ | decide flow field (A6) with measurements |
 | 4 Mission variety | ☐ | |
@@ -19,8 +19,8 @@ Legend: ☐ not started · ◐ in progress · ☑ done (acceptance criteria chec
 0 → 0.5 → 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 (6 content may interleave after 3). Milestone 0.5 exit requires user approval of look/feel.
 
 ## Next tasks
-1. Increment 1.2: `TargetingService` + `WeaponState` with tests.
-2. Increment 1.3: `MissionRules` + map/mission/wave definitions and the `crossing` mission data.
+1. Increment 1.3: `MissionRules` + map/mission/wave definitions and the `crossing` mission data.
+2. Increment 1.4: first playable battle scene.
 
 ## Evidence log
 - 2026-10-15: Godot `4.7.2.stable.official.ed1daf0bf` found via WinGet; `--headless --import --quit` exited 0 on the empty project. No tests exist yet.
@@ -29,3 +29,4 @@ Legend: ☐ not started · ◐ in progress · ☑ done (acceptance criteria chec
 - 2026-10-15: tests 26/26 pass. Spike steps 5–7 run in-engine: fade/facing/layer checks passed, screenshots reviewed. Manual input checks pending.
 - 2026-10-15: Milestone 0.5 exit approved by the user. Manual input checks (click/keys/hover) were reported as done by approval; the agent could not exercise real input itself.
 - 2026-10-15: M1 plan approved. Increment 1.1 done: 60/60 tests pass; mutation check confirmed new tests fail on broken code.
+- 2026-10-15: Increment 1.2 done: 83/83 tests pass. Runner hang-on-compile-error fixed and verified. Mutation check passed.

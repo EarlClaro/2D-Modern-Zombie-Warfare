@@ -3,6 +3,9 @@
 ## Milestone 1 — Combat vertical slice (in progress)
 - 1.1: `ContentDefinition` base, `WeaponDefinition`, `UnitDefinition`, `EnemyDefinition`, `ContentDb` (validation, duplicate/unknown-id reporting), `Health`, `DamageService` (armor with min-damage floor, blast falloff). Data: weapons `rifle`, `mg`; units `rifle_soldier`, `mg_nest`; enemy `shambler`. 34 new tests (60 total, all pass).
 
+- 1.2: `TargetCandidate`, `TargetingService` (nearest, inclusive range, tie → lowest id, ground distance), `WeaponState` (fire cadence, carry-over, no idle burst, hitch guard). 23 new tests (83 total, all pass).
+- Test runner: scripts that fail to compile now count as failures instead of hanging the run.
+
 ## Milestone 0.5 — Isometric spike (complete, approved 2026-10-15)
 - Added headless test runner (`tests/run_tests.gd`, `tests/test_case.gd`).
 - Added `IsoProjection` (`scripts/iso/iso_projection.gd`) with 9 tests (known values, round-trip, cell edges, ellipse, altitude, facing, sort key). All pass.
