@@ -10,6 +10,7 @@ description = "A gunship strafes the area for a short time, then leaves."
 card_kind = 2
 cost = 5
 lockout_s = 25.0
+station_time_s = 12.0
 max_copies = 3
 unit_id = "helicopter"
 unit_count = 1

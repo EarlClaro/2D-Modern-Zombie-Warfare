@@ -106,6 +106,8 @@ func validate_references() -> void:
 		var u: UnitDefinition = units[id]
 		if not weapons.has(u.weapon_id):
 			errors.append("unit '%s': unknown weapon_id '%s'" % [id, u.weapon_id])
+		if not u.secondary_weapon_id.is_empty() and not weapons.has(u.secondary_weapon_id):
+			errors.append("unit '%s': unknown secondary_weapon_id '%s'" % [id, u.secondary_weapon_id])
 	for id in missions:
 		var m: MissionDefinition = missions[id]
 		for su in m.start_units:

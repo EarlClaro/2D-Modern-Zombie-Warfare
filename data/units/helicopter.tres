@@ -12,4 +12,5 @@ move_speed = 3.0
 footprint_radius = 0.5
 height_class = 1
 weapon_id = "heli_gun"
+secondary_weapon_id = "heli_missile"
 placeholder_color = Color(0.3, 0.35, 0.4, 1)

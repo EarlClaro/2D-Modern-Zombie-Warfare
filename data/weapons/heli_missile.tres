@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="WeaponDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/weapon_definition.gd" id="1_weapon"]
+
+[resource]
+script = ExtResource("1_weapon")
+id = "heli_missile"
+damage = 50.0
+shots_per_second = 1.5
+range_tiles = 14.0
+delivery = 1
+blast_radius = 1.8
+projectile_speed = 14.0
+projectile_arc = 0.0
+projectile_accel = 0.85
+projectile_drop = 0.35
+ammo = 4
+can_fire_moving = true
+sfx_id = "missile"

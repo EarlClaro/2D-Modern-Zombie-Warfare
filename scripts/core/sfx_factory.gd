@@ -5,13 +5,14 @@ extends RefCounted
 
 const MIX_RATE: int = 22050
 const PEAK: float = 0.9
-const SHOT_SOUNDS: Array[String] = ["shot_rifle", "shot_mg"]
-const ALL_SOUNDS: Array[String] = ["shot_rifle", "shot_mg", "impact", "death", "alert", "blast"]
+const SHOT_SOUNDS: Array[String] = ["shot_rifle", "shot_mg", "missile"]
+const ALL_SOUNDS: Array[String] = ["shot_rifle", "shot_mg", "missile", "impact", "death", "alert", "blast"]
 
 ## Per sound: mixer category (see SfxVoicePool) and base volume in dB.
 const SETTINGS: Dictionary = {
 	"shot_rifle": {"category": "shot", "volume_db": -7.0},
 	"shot_mg": {"category": "shot", "volume_db": -9.0},
+	"missile": {"category": "shot", "volume_db": -8.0},
 	"impact": {"category": "impact", "volume_db": -14.0},
 	"death": {"category": "death", "volume_db": -8.0},
 	"alert": {"category": "alert", "volume_db": -5.0},
@@ -28,6 +29,7 @@ static func build_library() -> Dictionary:
 	return {
 		"shot_rifle": _noise_burst(0.16, 26.0, 110.0, 38.0, 0.45, 11),
 		"shot_mg": _noise_burst(0.075, 52.0, 170.0, 70.0, 0.6, 12),
+		"missile": _noise_burst(0.45, 5.5, 85.0, 4.5, 0.5, 16),
 		"impact": _noise_burst(0.06, 75.0, 0.0, 1.0, 0.35, 13),
 		"death": _thud(150.0, 55.0, 0.26, 9.0, 0.3, 14),
 		"alert": _beeps([880.0, 660.0], 0.14),

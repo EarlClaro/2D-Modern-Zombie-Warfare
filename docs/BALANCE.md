@@ -72,7 +72,7 @@ Open tuning questions for your playtest: is "50–70 % to hold by default" the r
 |---|---|
 | Gatling gun | HP 90, fixed, 5 dmg x 18 shots/s, range 7 |
 | Tank | HP 400, armor 5, speed 1.0, cannon 45 dmg x 0.5 shots/s, range 9, blast radius 1.6 (falloff 1.0 to 0.25) |
-| Helicopter | HP 200, speed 3, 6 dmg x 12 shots/s, range 8 (data only until 2.5) |
+| Helicopter (cost 5, lockout 25 s) | HP 200, speed 3, altitude 3; 12 s on station; machine gun 6 dmg x 12/s range 8 (hover only); **4 missiles**: 50 dmg, blast 1.8 (falloff 1.0 to 0.25), range 14, 1.5/s, fired while flying in. Unmeasured |
 | Rifle squad | 3 x rifle soldier |
 | Artillery strike (`data/operations/artillery_strike.tres`) | 5 shells, scatter radius 3, warning 2.0 s, one shell per 0.35 s, flight 0.9 s (first impact 2.9 s after the card), 90 dmg, blast 1.8 (falloff 1.0 to 0.25), card cost 4, lockout 15 s. Walking zombies leave the circle during the delay: tune warning/flight in 2.6 |
 | Mission `m2_card_defense` | 120 s, core 500 HP, deploy radius 10; waves 6 @ 4 s (0.9 s), 14 @ 25 s (0.7), 24 @ 55 s (0.5), 36 @ 85 s (0.4) = 80 Shamblers. **Not yet tuned.** A screenshot run with a 5-zombie probe says nothing about the real waves |

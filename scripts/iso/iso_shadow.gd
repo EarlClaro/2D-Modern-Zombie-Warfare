@@ -19,7 +19,7 @@ func _process(_delta: float) -> void:
 	if target == null or not is_instance_valid(target):
 		queue_free()
 		return
-	position = target.position
+	position = IsoProjection.ground_to_screen(target.ground_pos)  # the shadow stays on the ground even if the node is lifted
 	# The polygon only depends on altitude and radius, so ground shadows are built once, not every frame.
 	if not is_equal_approx(target.altitude, _drawn_altitude):
 		_drawn_altitude = target.altitude

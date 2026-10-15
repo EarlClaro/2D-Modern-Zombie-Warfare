@@ -163,3 +163,113 @@ func test_a_full_cap_ticks_fast_enough_for_a_frame() -> void:
 			sys.altitude_of(k)
 	var per_tick_ms := (Time.get_ticks_usec() - t0) / 1000.0 / 60.0
 	assert_true(per_tick_ms < 4.0, "256 shells tick + query in %.2f ms (budget 4 ms)" % per_tick_ms)
+
+
+func test_launch_altitude_descends_linearly_to_the_ground() -> void:
+	var sys := ProjectileSystem.new()
+	sys.spawn(Vector2.ZERO, Vector2(10, 0), 1.0, 0.0, 10.0, 1.0, 0.0, 3.0, ProjectileSystem.KIND_MISSILE)
+	assert_near(sys.altitude_of(0), 3.0, 1e-9, "starts at the launch altitude")
+	sys.tick(0.5)
+	assert_near(sys.altitude_of(0), 1.5, 1e-9, "halfway down")
+	assert_vec_near(sys.ground_pos_of(0), Vector2(5, 0), 1e-6, "the ground line is unaffected by altitude")
+	sys.tick(0.49)
+	assert_true(sys.altitude_of(0) < 0.1)
+	assert_eq(sys.tick(0.02).size(), 1, "and it explodes on arrival")
+
+
+func test_launch_altitude_adds_to_the_arc_without_changing_ground_motion() -> void:
+	var sys := ProjectileSystem.new()
+	sys.spawn(Vector2.ZERO, Vector2(10, 0), 1.0, 4.0, 10.0, 1.0, 0.0, 2.0)
+	sys.tick(0.5)
+	assert_near(sys.altitude_of(0), 4.0 + 1.0, 1e-9, "arc peak plus half the launch altitude")
+
+
+func test_kind_survives_removal_of_other_projectiles() -> void:
+	var sys := ProjectileSystem.new()
+	sys.spawn(Vector2.ZERO, Vector2(1, 0), 0.2, 0.0, 1.0, 1.0, 0.0, 0.0, ProjectileSystem.KIND_MISSILE)
+	sys.spawn(Vector2.ZERO, Vector2(2, 0), 2.0, 0.0, 1.0, 1.0, 0.0, 0.0, ProjectileSystem.KIND_SHELL)
+	sys.tick(0.3)
+	assert_eq(sys.count(), 1)
+	assert_eq(sys.kind_of(0), ProjectileSystem.KIND_SHELL, "the remaining projectile keeps its own kind")
+
+
+func test_eased_progress_endpoints_and_monotonic() -> void:
+	for a in [0.0, 0.5, 0.85, 1.0]:
+		assert_near(ProjectileSystem.eased(0.0, a), 0.0, 1e-12)
+		assert_near(ProjectileSystem.eased(1.0, a), 1.0, 1e-12)
+		var prev := -1.0
+		for k in 21:
+			var v := ProjectileSystem.eased(k / 20.0, a)
+			assert_true(v >= prev - 1e-12, "monotonic (accel %s)" % str(a))
+			prev = v
+	assert_near(ProjectileSystem.eased(0.5, 0.0), 0.5, 1e-12, "accel 0 is constant speed")
+	assert_true(ProjectileSystem.eased(0.5, 1.0) < 0.3, "accel 1 covers little distance early")
+
+
+func test_an_accelerating_projectile_starts_slow_and_ends_fast_on_the_same_ground_line() -> void:
+	var sys := ProjectileSystem.new()
+	sys.spawn(Vector2.ZERO, Vector2(10, 0), 1.0, 0.0, 10.0, 1.0, 0.0, 0.0, ProjectileSystem.KIND_MISSILE, 0.85, 0.0)
+	sys.tick(0.25)
+	var early := sys.ground_pos_of(0).x
+	sys.tick(0.25)
+	var mid := sys.ground_pos_of(0).x
+	sys.tick(0.25)
+	var late := sys.ground_pos_of(0).x
+	sys.tick(0.2)
+	var end := sys.ground_pos_of(0).x
+	assert_true(early < 2.5, "the first quarter second covers less than a constant-speed quarter (%.2f)" % early)
+	assert_true(late - mid > mid - early, "it covers more ground per step as the motor works")
+	assert_true(end > late)
+	assert_near(sys.ground_pos_of(0).y, 0.0, 1e-9, "never leaves the straight ground line")
+	assert_eq(sys.tick(0.1).size(), 1, "and still lands at the flight time")
+
+
+func test_the_average_speed_is_unchanged_by_acceleration() -> void:
+	for a in [0.0, 0.85]:
+		var sys := ProjectileSystem.new()
+		sys.spawn(Vector2.ZERO, Vector2(10, 0), 0.8, 0.0, 10.0, 1.0, 0.0, 0.0, ProjectileSystem.KIND_MISSILE, a, 0.0)
+		var impacts := _tick_n(sys, 47)
+		assert_eq(impacts.size(), 0)
+		assert_eq(_tick_n(sys, 1).size(), 1, "lands on the 48th tick (0.8 s) whatever the acceleration (%s)" % str(a))
+
+
+func test_the_launch_dip_drops_below_the_straight_line_then_rejoins_it() -> void:
+	var sys := ProjectileSystem.new()
+	sys.spawn(Vector2.ZERO, Vector2(10, 0), 1.0, 0.0, 10.0, 1.0, 0.0, 3.0, ProjectileSystem.KIND_MISSILE, 0.0, 0.4)
+	assert_near(sys.altitude_of(0), 3.0, 1e-9, "starts on the pylon")
+	sys.tick(0.15)
+	var line := 3.0 * (1.0 - 0.15)
+	assert_true(sys.altitude_of(0) < line - 0.2, "dipped under the straight line (%.2f vs %.2f)" % [sys.altitude_of(0), line])
+	sys.tick(0.15)
+	assert_near(sys.altitude_of(0), 3.0 * (1.0 - 0.3), 1e-6, "back on the line when the dip span ends")
+	sys.tick(0.4)
+	assert_near(sys.altitude_of(0), 3.0 * (1.0 - 0.7), 1e-6, "and stays on it")
+
+
+func test_the_dip_never_goes_below_the_ground() -> void:
+	var sys := ProjectileSystem.new()
+	sys.spawn(Vector2.ZERO, Vector2(10, 0), 1.0, 0.0, 10.0, 1.0, 0.0, 0.2, ProjectileSystem.KIND_MISSILE, 0.0, 5.0)
+	for i in 60:
+		assert_true(sys.altitude_of(0) >= 0.0)
+		sys.tick(0.016)
+
+
+func test_fraction_back_samples_earlier_in_the_flight() -> void:
+	var sys := ProjectileSystem.new()
+	sys.spawn(Vector2.ZERO, Vector2(10, 0), 2.0, 0.0, 1.0, 1.0)
+	sys.tick(1.0)
+	assert_near(sys.fraction_back(0, 0.0), 0.5, 1e-9)
+	assert_near(sys.fraction_back(0, 0.5), 0.25, 1e-9)
+	assert_near(sys.fraction_back(0, 5.0), 0.0, 1e-9, "clamped at launch")
+	assert_near(sys.age_of(0), 1.0, 1e-9)
+	assert_near(sys.flight_of(0), 2.0, 1e-9)
+
+
+func test_accel_and_drop_survive_removal_of_other_projectiles() -> void:
+	var sys := ProjectileSystem.new()
+	sys.spawn(Vector2.ZERO, Vector2(1, 0), 0.2, 0.0, 1.0, 1.0)
+	sys.spawn(Vector2.ZERO, Vector2(10, 0), 2.0, 0.0, 1.0, 1.0, 0.0, 0.0, ProjectileSystem.KIND_MISSILE, 1.0, 0.0)
+	sys.tick(0.3)
+	assert_eq(sys.count(), 1)
+	assert_true(sys.ground_pos_of(0).x < 0.5, "still accelerating from rest (not constant speed): %.3f" % sys.ground_pos_of(0).x)
+

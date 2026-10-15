@@ -42,6 +42,7 @@ func bind(battle: BattleController) -> void:
 	battle.enemy_died.connect(_on_enemy_died)
 	battle.unit_died.connect(_on_unit_died)
 	battle.blast_landed.connect(_on_blast)
+	battle.projectile_launched.connect(_on_projectile_launched)
 
 
 func _on_shot(shooter: BattleUnit, target: BattleEnemy) -> void:
@@ -86,10 +87,19 @@ func _on_unit_died(unit: BattleUnit) -> void:
 
 
 func _on_blast(center: Vector2, radius: float) -> void:
-	BlastRing.spawn(_fx, center, radius, Color(1.0, 0.7, 0.3))
+	Explosion.spawn(_fx, center, radius)
 	var pos := IsoProjection.ground_to_screen(center)
-	for k in 5:
-		ImpactSpark.spawn(_fx, pos, SPARK_BLAST)
-	DeathPuff.spawn(_fx, pos)
+	for k in 8:
+		ImpactSpark.spawn(_fx, pos, SPARK_BLAST)  # flying debris
 	sfx.play("blast")
 	shake.trigger(BLAST_SHAKE_PX, BLAST_SHAKE_S)
+
+
+func _on_projectile_launched(shooter: BattleUnit, weapon: WeaponDefinition, from_ground: Vector2, target_ground: Vector2) -> void:
+	var from := IsoProjection.ground_to_screen_z(from_ground, shooter.altitude) + Vector2(0, -6)  # the pylon, below the body
+	var to := IsoProjection.ground_to_screen(target_ground)
+	MuzzleFlash.spawn(_fx, from, to - from)
+	DeathPuff.spawn(_fx, from + Vector2(0, 4))  # launch smoke
+	shooter.kick(to - from)
+	sfx.play(weapon.sfx_id)
+

@@ -137,12 +137,13 @@ func test_unit_with_unknown_weapon_is_a_reference_error_naming_both() -> void:
 	assert_true(not db.is_valid())
 
 
-func test_reserved_projectile_delivery_is_rejected() -> void:
+func test_projectile_delivery_needs_speed_and_a_blast() -> void:
 	var db := Db.new()
 	var w := _weapon("shell")
 	w.delivery = WeaponDef.Delivery.PROJECTILE
 	assert_true(not db.add_weapon(w))
-	assert_true(_has_error(db, "PROJECTILE"))
+	assert_true(_has_error(db, "projectile_speed"))
+	assert_true(_has_error(db, "blast_radius"))
 
 
 func test_invalid_unit_and_enemy_fields() -> void:
@@ -180,3 +181,53 @@ func test_fire_interval() -> void:
 	var w := _weapon()
 	w.shots_per_second = 4.0
 	assert_near(w.fire_interval_s(), 0.25)
+
+
+func test_a_complete_projectile_weapon_is_valid() -> void:
+	var w := _weapon("rocket")
+	w.delivery = WeaponDef.Delivery.PROJECTILE
+	w.projectile_speed = 10.0
+	w.blast_radius = 1.0
+	assert_eq(w.validate().size(), 0)
+	w.projectile_arc = -1.0
+	assert_true(_has_error_in(w.validate(), "projectile_arc"))
+
+
+func _has_error_in(errs: PackedStringArray, needle: String) -> bool:
+	for e in errs:
+		if needle in e:
+			return true
+	return false
+
+
+func test_unit_with_an_unknown_secondary_weapon_is_a_reference_error() -> void:
+	var db := Db.new()
+	db.add_weapon(_weapon("main_gun"))
+	var u := _unit("two_guns", "main_gun")
+	u.secondary_weapon_id = "ghost_rocket"
+	db.add_unit(u)
+	db.validate_references()
+	assert_true(_has_error(db, "unknown secondary_weapon_id 'ghost_rocket'"))
+
+
+func test_projectile_accel_and_drop_are_validated() -> void:
+	var w := _weapon("rocket")
+	w.delivery = WeaponDef.Delivery.PROJECTILE
+	w.projectile_speed = 10.0
+	w.blast_radius = 1.0
+	w.projectile_accel = 1.5
+	w.projectile_drop = -1.0
+	var errs := w.validate()
+	assert_true(_has_error_in(errs, "projectile_accel"))
+	assert_true(_has_error_in(errs, "projectile_drop"))
+	w.projectile_accel = 0.8
+	w.projectile_drop = 0.3
+	assert_eq(w.validate().size(), 0)
+
+
+func test_the_shipped_missile_is_a_motor_driven_weapon() -> void:
+	var db := Db.load_from("res://data")
+	var m := db.weapon("heli_missile")
+	assert_true(m.projectile_accel > 0.5, "accelerates like a rocket, not a thrown shell")
+	assert_true(m.projectile_drop > 0.0, "drops off the pylon first")
+

@@ -21,6 +21,8 @@ signal blast_landed(center: Vector2, radius: float)
 signal card_played(card: CardDefinition, cell: Vector2i)
 ## A strike was called: `center` is the ground target, `reach` the outer edge of the danger zone (tiles).
 signal strike_called(center: Vector2, reach: float, duration: float)
+## A unit launched a projectile weapon (missile) at `target_ground`; the projectile flies and explodes later.
+signal projectile_launched(shooter: BattleUnit, weapon: WeaponDefinition, from_ground: Vector2, target_ground: Vector2)
 ## A play was refused (no CP, locked, bad cell...). `slot` is the hand slot; the result says why.
 signal card_rejected(slot: int, result: CardPlayService.Result)
 
@@ -28,6 +30,8 @@ const SPAWN_JITTER: float = 1.0  # tiles
 const LANE_JITTER: float = 0.9
 const CORE_ID: int = 0  # target id of the core; unit ids start at 1
 const DEATH_COLLAPSE_S: float = 0.3
+const MIN_PROJECTILE_FLIGHT_S: float = 0.1
+const SORTIE_MARGIN: float = 5.0  # tiles beyond the map edge where aircraft appear and disappear
 
 
 ## A called-in strike's telegraph (the danger circle on the ground) while its shells are still coming.
@@ -53,6 +57,19 @@ const TERRAIN_BY_CHAR: Dictionary = {
 	MapDefinition.ROAD: IsoTileSet.TERRAIN_ROAD,
 	MapDefinition.ROCK: IsoTileSet.TERRAIN_ROCK,
 }
+
+
+## One aircraft on a sortie: the flight state machine, where it leaves to, and the aircraft itself.
+class Sortie:
+	extends RefCounted
+	var unit: BattleAircraft
+	var flight: SortieFlight
+	var exit: Vector2
+
+	func _init(p_unit: BattleAircraft, p_flight: SortieFlight, p_exit: Vector2) -> void:
+		unit = p_unit
+		flight = p_flight
+		exit = p_exit
 
 
 class Hit:
@@ -86,6 +103,8 @@ var targeting: CardTargeting = CardTargeting.new()
 ## Arcing shells in flight (artillery) and the telegraphs of strikes that are still landing.
 var projectiles: ProjectileSystem = ProjectileSystem.new()
 var strikes: Array[Strike] = []
+## Aircraft currently flying a sortie (they are also in `units`).
+var sorties: Array[Sortie] = []
 ## Preview of the selected card over the cell under the mouse; null when nothing is selected. Updated every frame.
 var preview: CardTargeting.Preview
 
@@ -172,6 +191,7 @@ func setup(p_db: ContentDb, p_mission: MissionDefinition, p_seed: int) -> void:
 	_ops_rng.seed = p_seed * 104729 + 7
 	projectiles.clear()
 	strikes.clear()
+	sorties.clear()
 	elapsed = 0.0
 	stats = {"spawned": 0, "kills": 0, "shots": 0, "units_lost": 0}
 	_next_uid = 1
@@ -246,6 +266,7 @@ func step(delta: float) -> void:
 	# 2. enemies, 3. player units (both only *queue* damage)
 	_enemy_phase(delta)
 	_unit_phase(delta)
+	_sortie_phase(delta)
 	_projectile_phase(delta)
 	# 4. apply all damage, then remove the dead
 	_apply_damage()
@@ -273,7 +294,7 @@ func _enemy_phase(delta: float) -> void:
 		candidates.append(TargetCandidate.new(CORE_ID, core.ground_pos))
 		by_id[CORE_ID] = core
 	for u in units:
-		if u.is_alive():
+		if u.is_alive() and not u.def.is_air():  # ground enemies cannot hit aircraft
 			candidates.append(TargetCandidate.new(u.uid, u.ground_pos))
 			by_id[u.uid] = u
 	for e in enemies:
@@ -306,14 +327,45 @@ func _unit_phase(delta: float) -> void:
 		if not u.is_moving():  # units must stand still to fire
 			tid = TargetingService.pick(u.ground_pos, u.weapon.range_tiles, candidates)
 		if u.weapon_state.tick(delta, tid != TargetingService.NO_TARGET):
-			var target: BattleEnemy = by_id[tid]
-			u.face_toward(target.ground_pos)
-			if u.weapon.blast_radius > 0.0:
-				_queue_blast(target.ground_pos, u.weapon.damage, u.weapon.blast_radius)
-			else:
-				_pending.append(Hit.new(target, DamageService.compute(u.weapon.damage, target.def.armor)))
-			stats["shots"] += 1
-			shot_fired.emit(u, target)
+			_fire(u, u.weapon, by_id[tid])
+		if u is BattleAircraft:
+			_fire_secondary(u as BattleAircraft, delta, candidates, by_id)
+
+
+## The aircraft's second weapon (missiles): own range, cooldown and limited ammo. It may fire on the move, so the
+## gunship empties its missiles on the way in and then hovers to use its guns.
+func _fire_secondary(u: BattleAircraft, delta: float, candidates: Array[TargetCandidate], by_id: Dictionary) -> void:
+	if not u.secondary_ready_to_fire():
+		return
+	var tid := TargetingService.NO_TARGET
+	if not u.is_moving() or u.secondary.can_fire_moving:
+		tid = TargetingService.pick(u.ground_pos, u.secondary.range_tiles, candidates)
+	if u.secondary_state.tick(delta, tid != TargetingService.NO_TARGET):
+		if u.secondary_ammo > 0:
+			u.secondary_ammo -= 1
+		_fire(u, u.secondary, by_id[tid])
+
+
+## One shot: hitscan weapons queue their damage now (area damage if they have a blast radius); projectile
+## weapons launch a projectile that explodes where the target stood when it was fired.
+func _fire(u: BattleUnit, weapon: WeaponDefinition, target: BattleEnemy) -> void:
+	if not u.is_moving():
+		u.face_toward(target.ground_pos)  # a moving unit keeps facing its direction of travel
+	stats["shots"] += 1
+	if weapon.delivery == WeaponDefinition.Delivery.PROJECTILE:
+		var to := target.ground_pos
+		var from := u.ground_pos
+		if u is BattleAircraft:
+			from = (u as BattleAircraft).next_pylon_ground()  # missiles hang under the wings, not the fuselage
+		var flight := maxf(from.distance_to(to) / weapon.projectile_speed, MIN_PROJECTILE_FLIGHT_S)
+		projectiles.spawn(from, to, flight, weapon.projectile_arc, weapon.damage, weapon.blast_radius, 0.0, u.altitude, ProjectileSystem.KIND_MISSILE, weapon.projectile_accel, weapon.projectile_drop)
+		projectile_launched.emit(u, weapon, from, to)
+		return
+	if weapon.blast_radius > 0.0:
+		_queue_blast(target.ground_pos, weapon.damage, weapon.blast_radius)
+	else:
+		_pending.append(Hit.new(target, DamageService.compute(weapon.damage, target.def.armor)))
+	shot_fired.emit(u, target)
 
 
 ## Area damage on the ground plane: every living enemy within the radius takes the weapon's damage
@@ -326,6 +378,33 @@ func _queue_blast(center: Vector2, damage: float, radius: float) -> void:
 		if falloff > 0.0:
 			_pending.append(Hit.new(e, DamageService.compute(damage, e.def.armor, falloff)))
 	blast_landed.emit(center, radius)
+
+
+## Drives every sortie aircraft through enter -> hold station -> leave -> gone. Leaving the map is not a loss:
+## the aircraft is simply removed (no death signal, no units_lost).
+func _sortie_phase(delta: float) -> void:
+	for i in range(sorties.size() - 1, -1, -1):
+		var s := sorties[i]
+		var before := s.flight.phase
+		var after := s.flight.update(delta, s.unit.is_moving())
+		if after == before:
+			continue
+		if after == SortieFlight.Phase.LEAVING:
+			s.unit.order_move(s.exit)
+		elif after == SortieFlight.Phase.DONE:
+			sorties.remove_at(i)
+			_retire_aircraft(s.unit)
+
+
+func _retire_aircraft(u: BattleAircraft) -> void:
+	units.erase(u)
+	for item in [u.shadow, u]:
+		if item != null and is_instance_valid(item):
+			var n: Node = item
+			var p: Node = n.get_parent()
+			if p != null:
+				p.remove_child(n)
+			n.free()
 
 
 ## Moves the shells in flight; each one that lands queues an area hit like any other blast. Strike telegraphs
@@ -380,6 +459,8 @@ func order_move_all(cell: Vector2i) -> int:
 		return 0
 	var n := 0
 	for u in units:
+		if u.def.is_air():
+			continue  # sortie aircraft follow their own flight plan
 		if u.order_move(IsoProjection.cell_center(cell)):
 			n += 1
 	return n
@@ -444,7 +525,7 @@ func has_cards() -> bool:
 func occupied_cells() -> Array[Vector2i]:
 	var out: Array[Vector2i] = [mission.core_cell]
 	for u in units:
-		if u.is_alive():
+		if u.is_alive() and not u.def.is_air():
 			out.append(IsoProjection.cell_of(u.ground_pos))
 	return out
 
@@ -459,11 +540,8 @@ func check_card(hand_index: int, cell: Vector2i) -> CardPlayService.Result:
 		match def.card_kind:
 			CardDefinition.CardKind.DEPLOYMENT:
 				placement = PlacementRules.check_deploy(mission.map, cell, mission.core_cell, mission.deploy_radius, occupied_cells())
-			CardDefinition.CardKind.OPERATION:
+			CardDefinition.CardKind.OPERATION, CardDefinition.CardKind.SORTIE:
 				placement = PlacementRules.check_ground_target(mission.map, cell)
-			_:
-				# Sorties arrive in 2.5; until then they are refused before any CP is spent.
-				return CardPlayService.Result.new(CardPlayService.Reason.UNAVAILABLE, def)
 	var res := CardPlayService.check(deck, points, cards_by_id(), hand_index, placement == PlacementRules.Reason.OK)
 	res.placement = placement
 	return res
@@ -481,11 +559,24 @@ func play_card(hand_index: int, cell: Vector2i) -> CardPlayService.Result:
 	var centre := IsoProjection.cell_center(cell)
 	if card.card_kind == CardDefinition.CardKind.OPERATION:
 		_start_strike(db.operation(card.effect_id), centre)
+	elif card.card_kind == CardDefinition.CardKind.SORTIE:
+		_launch_sortie(card, centre)
 	else:
 		for off in PlacementRules.formation_offsets(card.unit_count):
 			_spawn_unit_at(card.unit_id, centre + off)
 	card_played.emit(card, cell)
 	return res
+
+
+## Sends the card's aircraft in from the nearest map edge to hold station over `center`, then out the other side.
+func _launch_sortie(card: CardDefinition, center: Vector2) -> void:
+	var plan := SortiePlan.plan(float(mission.map.width()), float(mission.map.height()), center, SORTIE_MARGIN)
+	for k in card.unit_count:
+		var lateral := (float(k) - float(card.unit_count - 1) * 0.5) * 1.5  # a flight of several fans out sideways
+		var side := Vector2(0.0, lateral) if plan.edge == SortiePlan.Edge.LEFT or plan.edge == SortiePlan.Edge.RIGHT else Vector2(lateral, 0.0)
+		var u := _spawn_unit_at(card.unit_id, plan.entry + side) as BattleAircraft
+		u.order_move(plan.station + side)
+		sorties.append(Sortie.new(u, SortieFlight.new(card.station_time_s), plan.exit + side))
 
 
 ## Calls in a barrage: picks the impact points now (seeded) and queues every shell with its launch delay.
@@ -594,6 +685,10 @@ func _clear_dynamic() -> void:
 		for child in layer.get_children():
 			layer.remove_child(child)
 			child.free()
+	for child in _air.get_children():  # the Air layer also holds the persistent shell view; only aircraft go
+		if child is BattleAircraft:
+			_air.remove_child(child)
+			child.free()
 	units.clear()
 	enemies.clear()
 	core = null
@@ -617,12 +712,16 @@ func _spawn_core() -> void:
 
 func _spawn_unit_at(unit_id: String, ground: Vector2) -> BattleUnit:
 	var def := db.unit(unit_id)
-	var u := BattleUnit.new()
+	var u: BattleUnit = BattleAircraft.new() if def.is_air() else BattleUnit.new()
+	if u is BattleAircraft and not def.secondary_weapon_id.is_empty():
+		(u as BattleAircraft).setup_secondary(db.weapon(def.secondary_weapon_id))
 	u.name = "Unit%d" % _next_uid
 	u.setup(_next_uid, def, db.weapon(def.weapon_id), IsoProjection.cell_of(ground))
 	u.ground_pos = ground
+	if u is BattleAircraft:
+		(u as BattleAircraft).lift()
 	_next_uid += 1
-	_entities.add_child(u)
+	(_air if u is BattleAircraft else _entities).add_child(u)  # aircraft are drawn above everything, unsorted
 	u.shadow = _add_shadow(u, def.footprint_radius + 0.1)
 	units.append(u)
 	return u

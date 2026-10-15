@@ -233,6 +233,7 @@ func _db_with_card(unit_id: String, kind: CardDefinition.CardKind) -> ContentDb:
 	var c := _card("test_card")
 	c.card_kind = kind
 	c.unit_id = unit_id
+	c.station_time_s = 5.0
 	db.add_card(c)
 	db.validate_references()
 	return db

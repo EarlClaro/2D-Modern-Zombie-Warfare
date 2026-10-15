@@ -23,6 +23,8 @@ class Preview:
 	var scatter_radius: float = 0.0
 	## Where the deployed units would stand (ground positions).
 	var ground_points: Array[Vector2] = []
+	## Sorties: the aircraft's route (entry, station, exit) on the ground.
+	var path_points: Array[Vector2] = []
 
 var selected_slot: int = -1
 var _selected_id: String = ""
@@ -76,6 +78,18 @@ func preview(battle: BattleController, cell: Vector2i) -> Preview:
 			p.area_radius = op.reach_radius()
 			p.scatter_radius = op.target_radius
 			p.blast_radius = op.blast_radius
+	if res.card != null and res.card.card_kind == CardDefinition.CardKind.SORTIE:
+		var air: UnitDefinition = battle.db.unit(res.card.unit_id)
+		var gun: WeaponDefinition = battle.db.weapon(air.weapon_id) if air != null else null
+		if gun != null:
+			p.range_tiles = gun.range_tiles
+		var rockets: WeaponDefinition = battle.db.weapon(air.secondary_weapon_id) if air != null and not air.secondary_weapon_id.is_empty() else null
+		if rockets != null:
+			p.range_tiles = maxf(p.range_tiles, rockets.range_tiles)
+		var centre := IsoProjection.cell_center(cell)
+		var route := SortiePlan.plan(float(battle.mission.map.width()), float(battle.mission.map.height()), centre, BattleController.SORTIE_MARGIN)
+		p.path_points = [route.entry, route.station, route.exit]
+		p.ground_points = [route.station]
 	if res.card != null and res.card.card_kind == CardDefinition.CardKind.DEPLOYMENT:
 		var unit: UnitDefinition = battle.db.unit(res.card.unit_id)
 		var weapon: WeaponDefinition = battle.db.weapon(unit.weapon_id) if unit != null else null

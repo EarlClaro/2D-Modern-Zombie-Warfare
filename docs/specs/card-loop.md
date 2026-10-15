@@ -1,6 +1,6 @@
 # Spec: Milestone 2 — First Card Loop
 
-Status: **v0.2 approved 2026-10-15 (D1–D7 as recommended).** Increments 2.1-2.4 done (354 tests in the tree); 2.5 next. D3 applied: starter deck is 15. Builds on [combat-vertical-slice.md](combat-vertical-slice.md) (M1) and refines [deck-and-economy.md](deck-and-economy.md) (rules stay as written there except where D3 says otherwise).
+Status: **v0.2 approved 2026-10-15 (D1–D7 as recommended).** Increments 2.1-2.5 done; 2.6 next. D3 applied: starter deck is 15. Builds on [combat-vertical-slice.md](combat-vertical-slice.md) (M1) and refines [deck-and-economy.md](deck-and-economy.md) (rules stay as written there except where D3 says otherwise).
 
 ## Purpose
 Prove pillar 2: **playing cards creates meaningful tactical choices.** The player no longer starts with pre-placed defenders; they build the defence in real time from a drawn hand, spending Command Points (CP), with every placement previewed on the ground plane.
@@ -85,4 +85,13 @@ Reward choice, deck editor, save, upgrades (M5); new enemy types and flow field 
 - Explosion feedback is shared by the tank cannon and the artillery: ring, sparks, dust, a new generated `blast` sound and a 2.5 px shake (the 4 px cap still holds).
 - **Observation to tune in 2.6:** the first shell lands 2.9 s after the card is played (2.0 s warning + 0.9 s flight). A horde walking at 1.2 tiles/s moves about 3.5 tiles in that time, so against moving zombies the player must lead the target; a stationary 14-zombie crowd lost 11 to one barrage, while a walking crowd left the circle and nothing died. Warning/flight/damage are first guesses in `data/operations/artillery_strike.tres`.
 - Not yet verified by anyone: how the strike feels and sounds with real input, and shell visibility at different zoom levels.
+
+## As built (M2.5)
+- Helicopter support (cost 5, lockout 25 s): choosing a target cell sends one helicopter in from the **nearest map edge**, to hover over that cell for 12 s, then out the opposite edge. Any in-bounds cell can be chosen. The preview shows the route (entry -> station -> exit with an arrowhead) and the longest weapon range as a ground circle.
+- Flight and sorting: the aircraft is drawn above everything (the `Air` layer) at altitude 3 (96 px), its shadow stays on the ground; it is not hurt by ground enemies, does not block building and never hides the core. Leaving the map is not a loss.
+- Attack pattern (user feedback during 2.5): on the way in it fires its **4 missiles** (at least 4 is a tested requirement) at enemies within 14 tiles, one every 0.67 s, from alternating wing pylons, without turning off its flight line. When it reaches the target it stops and hovers; only then do the **machine guns** (6 dmg x 12/s, range 8) fire. Once the missiles are gone they are not refilled in that sortie. With nothing in missile range they are held, not wasted.
+- Missile motion/look (user feedback): drops away from the pylon, then the motor accelerates it (average speed 14 tiles/s) on a descending line to where the target stood; drawn as a small finned rocket with a flame, a continuous white smoke trail and lingering puffs; launch smoke and flash at the pylon.
+- Missile impact (user feedback): an **area** explosion, 50 damage, blast radius 1.8 tiles, armor then distance falloff, enemies only, shown as a fireball with a ground shockwave ring at the true radius, scorch mark, smoke, debris sparks, blast sound and a small shake. The tank cannon and artillery use the same explosion.
+- Interim number: damage/ammo/rate values are first guesses for the 2.6 sweep. A single helicopter sortie lasts about 12 s on station plus about 6 s in and 6 s out.
+- Not verified by anyone: how it feels and sounds with real input; missile visibility at other zoom levels; whether 4 missiles are the right load once balance is swept.
 

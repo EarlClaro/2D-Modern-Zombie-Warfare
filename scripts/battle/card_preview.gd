@@ -60,6 +60,17 @@ func _draw() -> void:
 	draw_colored_polygon(pts, Color(col.r, col.g, col.b, 0.32))
 	pts.append(pts[0])
 	draw_polyline(pts, Color(col.r, col.g, col.b, 0.95), 2.5)
+	if _info.path_points.size() >= 2:
+		var route := PackedVector2Array()
+		for g in _info.path_points:
+			route.append(IsoProjection.ground_to_screen_z(g, UnitDefinition.LOW_AIR_ALTITUDE))
+		draw_polyline(route, Color(col.r, col.g, col.b, 0.55), 2.0)
+		var from := route[0]
+		var to := route[1]
+		var dir := (to - from).normalized()
+		var mid := route[1] - dir * 40.0
+		var side := Vector2(-dir.y, dir.x) * 8.0
+		draw_colored_polygon(PackedVector2Array([mid + dir * 14.0, mid - dir * 4.0 + side, mid - dir * 4.0 - side]), Color(col.r, col.g, col.b, 0.8))  # arrowhead: direction of arrival
 	for g in _info.ground_points:
 		var s := IsoProjection.ground_to_screen(g)
 		draw_circle(s, 4.0, Color(col.r, col.g, col.b, 0.9))
