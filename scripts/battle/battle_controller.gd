@@ -7,14 +7,19 @@ extends Node2D
 
 signal battle_started
 signal battle_ended(result: MissionRules.Result)
-signal shot_fired(from_world: Vector2, to_world: Vector2, weapon_id: String)
-signal enemy_died(ground_pos: Vector2)
-signal unit_died(ground_pos: Vector2)
+## Presentation hooks (see BattleFeedback). Emitted by the simulation; nothing listens for rules.
+signal shot_fired(shooter: BattleUnit, target: BattleEnemy)
+## An effective hit (the target was alive before it). `target` is a BattleUnit, BattleEnemy or BattleCore.
+signal hit_landed(target: Node, amount: float)
+## Emitted after the entity left the simulation, just before its death collapse starts.
+signal enemy_died(enemy: BattleEnemy)
+signal unit_died(unit: BattleUnit)
 signal core_damaged(amount: float)
 
 const SPAWN_JITTER: float = 0.35  # tiles
 const LANE_JITTER: float = 0.35
 const CORE_ID: int = 0  # target id of the core; unit ids start at 1
+const DEATH_COLLAPSE_S: float = 0.3
 
 const TERRAIN_BY_CHAR: Dictionary = {
 	MapDefinition.GRASS: IsoTileSet.TERRAIN_GRASS,
@@ -82,6 +87,10 @@ func _ready() -> void:
 	var panel := ResultPanel.new()
 	add_child(panel)
 	panel.bind(self)
+	var feedback := BattleFeedback.new()
+	feedback.name = "Feedback"
+	add_child(feedback)
+	feedback.bind(self)
 
 
 ## Builds (or rebuilds) the whole battle from validated data. Safe to call again to restart.
@@ -126,6 +135,15 @@ func is_ended() -> bool:
 
 func result() -> MissionRules.Result:
 	return _rules.result() if _rules != null else null
+
+
+## Layer for transient effects (tracers, flashes, sparks); cleared on restart.
+func fx_layer() -> Node2D:
+	return _fx
+
+
+func camera_node() -> IsoCamera:
+	return _camera
 
 
 func time_left() -> float:
@@ -215,16 +233,19 @@ func _unit_phase(delta: float) -> void:
 			u.face_toward(target.ground_pos)
 			_pending.append(Hit.new(target, DamageService.compute(u.weapon.damage, target.def.armor)))
 			stats["shots"] += 1
-			shot_fired.emit(u.muzzle_world(), target.chest_world(), u.weapon.id)
+			shot_fired.emit(u, target)
 
 
 func _apply_damage() -> void:
 	for h in _pending:
 		var target: Object = h.target
 		var health: Health = target.health
+		var was_alive := not health.is_dead()
 		health.take_damage(h.amount)
-		if target is BattleCore:
-			core_damaged.emit(h.amount)
+		if was_alive:
+			hit_landed.emit(target, h.amount)
+			if target is BattleCore:
+				core_damaged.emit(h.amount)
 	_pending.clear()
 	# Remove the dead only after every hit this tick has landed.
 	for i in range(enemies.size() - 1, -1, -1):
@@ -232,14 +253,14 @@ func _apply_damage() -> void:
 		if not e.is_alive():
 			enemies.remove_at(i)
 			stats["kills"] += 1
-			enemy_died.emit(e.ground_pos)
+			enemy_died.emit(e)
 			_dispose(e, e.shadow)
 	for i in range(units.size() - 1, -1, -1):
 		var u := units[i]
 		if not u.is_alive():
 			units.remove_at(i)
 			stats["units_lost"] += 1
-			unit_died.emit(u.ground_pos)
+			unit_died.emit(u)
 			_dispose(u, u.shadow)
 
 
@@ -316,7 +337,6 @@ func _ensure_layers() -> void:
 	add_child(_camera)
 	if is_inside_tree():
 		_camera.make_current()
-	connect("shot_fired", _on_shot_fired)
 
 
 func _add_layer(layer_name: String, y_sorted: bool) -> Node2D:
@@ -395,8 +415,12 @@ func _add_shadow(target: IsoEntity, radius_tiles: float) -> IsoShadow:
 	return s
 
 
-## Removes a dead entity (and its shadow) from the scene immediately.
-func _dispose(entity: Node, shadow: Node) -> void:
+## Retires an entity that already left the simulation. In the scene tree it plays its death collapse and
+## frees itself; without a tree (tests) it is removed and freed immediately.
+func _dispose(entity: IsoEntity, shadow: Node) -> void:
+	if is_inside_tree():
+		entity.play_death(DEATH_COLLAPSE_S, shadow)
+		return
 	for item in [entity, shadow]:
 		if item == null:
 			continue
@@ -404,15 +428,7 @@ func _dispose(entity: Node, shadow: Node) -> void:
 		var p: Node = n.get_parent()
 		if p != null:
 			p.remove_child(n)
-		if is_inside_tree():
-			n.queue_free()
-		else:
-			n.free()
-
-
-func _on_shot_fired(from_world: Vector2, to_world: Vector2, _weapon_id: String) -> void:
-	if is_inside_tree():
-		Tracer.spawn(_fx, from_world, to_world)
+		n.free()
 
 
 func _show_fatal(message: String) -> void:

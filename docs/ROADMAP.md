@@ -6,7 +6,7 @@ Legend: ☐ not started · ◐ in progress · ☑ done (acceptance criteria chec
 |---|---|---|
 | 0 Specification foundation | ☑ | Docs written; user approved plan + ADR-005..008 (2026-10-15) |
 | 0.5 Isometric spike | ☑ | [spec](specs/milestone-0.5-iso-spike.md). All 8 steps implemented; 26 passing tests. User approved the spike look/feel and decisions on 2026-10-15 (exit gate passed) |
-| 1 Combat vertical slice | ◐ | [spec v0.2](specs/combat-vertical-slice.md) approved (D1–D5). Increments 1.1–1.4 done (first playable battle exists, `battle.tscn` is the main scene); 1.5 (feedback pass) next |
+| 1 Combat vertical slice | ◐ | [spec v0.2](specs/combat-vertical-slice.md) approved (D1–D5). Increments 1.1–1.5 done (playable battle with feedback pass, `battle.tscn` is the main scene); 1.6 (stress test + FPS + tuning + hand-over) next |
 | 2 First card loop | ☐ | [spec](specs/deck-and-economy.md) |
 | 3 Horde + mission objectives | ☐ | decide flow field (A6) with measurements |
 | 4 Mission variety | ☐ | |
@@ -20,7 +20,7 @@ Legend: ☐ not started · ◐ in progress · ☑ done (acceptance criteria chec
 
 ## Next tasks
 1. User launches the game (`godot --path .`) and plays once: does it run, are the controls fine, anything unreadable? (manual items for 1.4)
-2. Increment 1.5: feedback pass (muzzle flash, recoil, tracer, impact spark, hit flash, death response, shake, generated audio with caps, polish health bars).
+2. User plays with sound on: does the feedback feel good, is anything too weak/strong/loud or hard to read? (manual criterion 9; input to 1.6 tuning)
 3. Increment 1.6: stress scenario + FPS measurement + difficulty tuning (default loadout currently wins trivially).
 
 ## Evidence log
@@ -33,3 +33,4 @@ Legend: ☐ not started · ◐ in progress · ☑ done (acceptance criteria chec
 - 2026-10-15: Increment 1.2 done: 83/83 tests pass. Runner hang-on-compile-error fixed and verified. Mutation check passed.
 - 2026-10-15: Increment 1.3 done: 124/124 tests pass; mutation check passed (7 mutations, all caught). Shipped mission validates, including the no-rock-crossing path rule.
 - 2026-10-15: Increment 1.4 done: 137/137 tests pass; mutation check (7 mutations) passed; real scene ran to victory and restart in a window, screenshots reviewed. Default mission is far too easy (5/5 seeds won with no core damage, no unit lost); tuning scheduled for 1.6.
+- 2026-10-15: Increment 1.5 done: 171/171 tests pass; runner now fails tests on any logged error (closed a false-pass hole); mutation check 8/8; real scene screenshots reviewed (muzzle/tracer/spark/hit flash/death collapse/core flash). Audio and feel are manual.

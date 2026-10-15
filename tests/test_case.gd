@@ -3,6 +3,8 @@ extends RefCounted
 ## Base class for test scripts. Subclasses define `test_*` methods and use the assert helpers.
 
 var failures: Array[String] = []
+## The running SceneTree (set by the runner). Needed by tests that put nodes in the tree: tree.root.
+var tree: SceneTree
 var _current: String = ""
 
 

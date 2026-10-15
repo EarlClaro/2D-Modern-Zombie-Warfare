@@ -16,7 +16,7 @@ Source of intent: [MasterPrompt.md](MasterPrompt.md). Where docs and the master 
 ## Commands that exist today
 - Import/parse check: `"$GODOT" --headless --path . --import --quit`
 - Run game: `"$GODOT" --path .` (main scene = `scenes/battle/battle.tscn`); spike scene: `"$GODOT" --path . scenes/dev/iso_spike.tscn`
-- Run tests: `"$GODOT" --headless --path . --script tests/run_tests.gd` (run `--import` first after adding `class_name` scripts).
+- Run tests: `"$GODOT" --headless --path . --script tests/run_tests.gd` (run `--import` first after adding `class_name` scripts). Always wrap in `timeout 120` when scripting. The runner fails any test during which an error-level message is logged, and runs tests in the first frame (`TestCase.tree` is a live SceneTree).
 
 ## Workflow rules
 - One bounded task at a time. Spec → plan → small increment → tests → headless check → docs/changelog → report.

@@ -1,6 +1,6 @@
 # Spec: Milestone 1 — Combat Vertical Slice
 
-Status: **v0.2 approved 2026-10-15 (D1–D5 accepted as recommended).** Increments 1.1–1.4 done; 1.5 (feedback pass) next. Builds on the approved isometric foundation ([isometric-view.md](isometric-view.md), M0.5).
+Status: **v0.2 approved 2026-10-15 (D1–D5 accepted as recommended).** Increments 1.1–1.5 done; 1.6 (stress test, FPS measurement, tuning, hand-over) next. Builds on the approved isometric foundation ([isometric-view.md](isometric-view.md), M0.5).
 
 ## Purpose
 Prove that core combat is **satisfying and readable** on the isometric view with the fewest systems. Pillars tested: (1) combat feel, (4) isometric readability. Cards/deck (pillar 2) and mission variety (3) are out of scope.
@@ -83,6 +83,8 @@ The `.tres` files are the source of truth and hand-editable (a one-off generator
 
 **Finding from 1.4 (balance, unmeasured guesses as warned):** with the shipped numbers the default loadout wins every seed (5/5 checked, 90 s) with the core untouched, 0 units lost, and zombies dying near the wall before they reach any defender. A mission with no defenders is lost (~32 s). So both outcomes are reachable, but the default is far too easy; tuning is part of 1.6 (and difficulty should be judged together with the feedback pass).
 
+**As built in 1.5:** all presentation lives in `BattleFeedback` (`scripts/battle/battle_feedback.gd`), which only listens to controller signals (`shot_fired(shooter, target)`, `hit_landed(target, amount)`, `enemy_died`, `unit_died`) and is covered by a test that the battle outcome is identical with and without it. Effects: `MuzzleFlash` (0.05 s), `Tracer` (0.07 s), `ImpactSpark` (0.14 s, colour by target), `DeathPuff` (0.45 s), unit recoil (`BattleUnit.kick`, 4 px draw-only offset recovering at 60 px/s, never moves the sort anchor), hit flash (`IsoEntity.flash`, white on units/enemies, red on the core), death collapse (`IsoEntity.play_death`: 0.3 s squash toward the feet + fade, body leaves the simulation immediately), `CameraShake` (via `Camera2D.offset`, hard cap 4 px, 3 px / 0.15 s on core hits). Audio: `SfxFactory` generates 5 sounds in code (22.05 kHz mono, fixed noise seeds), `SfxVoicePool` (pure) decides voices: pool of 12, caps shot 4 / impact 4 / death 3 / alert 1, alerts retrigger instead of being dropped and may steal lower-priority voices, `SfxService` plays them with ±8% pitch jitter (cosmetic, non-seeded). The core alert is throttled to once per second. A weapon picks its shot sound through the new `WeaponDefinition.sfx_id` (validated against `SfxFactory.SHOT_SOUNDS`; `mg` uses `shot_mg`).
+
 ## Interfaces (pure logic = `RefCounted`/static, testable headless)
 - `DamageService.compute(base: float, armor: float, falloff: float = 1.0) -> float`: `max(base − armor, base × MIN_DAMAGE_FRACTION) × falloff`, `MIN_DAMAGE_FRACTION = 0.1`. `DamageService.blast_falloff(distance, radius) -> float` (1.0 at centre → `MIN_FALLOFF` at edge, 0 outside).
 - `Health`: `hp`, `max_hp`, `take_damage(amount) -> bool` (true on the lethal hit), `is_dead()`; clamps; signals `changed`, `died` (emitted once).
@@ -134,7 +136,7 @@ Manual / measured (reported honestly as pending until done):
 | 1.2 ☑ | `TargetingService` + `WeaponState` | tests 3, 4 (done: 23 tests) |
 | 1.3 ☑ | `MissionRules` + `MissionDefinition`/map/waves data (`crossing` mission) | test 5 (done: 41 tests) |
 | 1.4 ☑ | Battle scene: map build, core, shambler movement/attack, unit/nest firing (hitscan, no polish), `BattleController.step`, result panel + restart | test 7 (done: 13 tests) + first playable (**manual play pending**) |
-| 1.5 | Feedback pass (flash, recoil, tracer, spark, hit flash, death, shake, generated audio + caps, health bars) | manual criterion 9 |
+| 1.5 ☑ | Feedback pass (flash, recoil, tracer, spark, hit flash, death, shake, generated audio + caps, health bars) | manual criterion 9 (**feel judged by you, pending**); pure parts + wiring tested (34 tests) |
 | 1.6 | Stress scenario + FPS measurement + tuning pass of `BALANCE.md` numbers; docs/changelog; hand over for the go/no-go | criteria 10, 11 |
 
 ## Files (planned)

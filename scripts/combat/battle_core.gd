@@ -12,11 +12,16 @@ var health: Health
 func setup_core(cell: Vector2i, max_hp: float) -> void:
 	health = Health.new(max_hp)
 	setup(cell, FOOTPRINT, HEIGHT_UNITS)
-	self_modulate = Color(0.7, 0.85, 1.0)
+	base_self_modulate = Color(0.7, 0.85, 1.0)
+	self_modulate = base_self_modulate
 
 
 func is_alive() -> bool:
 	return not health.is_dead()
+
+
+func chest_world() -> Vector2:
+	return position + IsoProjection.altitude_offset(height * 0.5)
 
 
 func _process(_delta: float) -> void:

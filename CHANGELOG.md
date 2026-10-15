@@ -10,6 +10,9 @@
 
 - 1.4: first playable battle. `BattleController` (tick order per spec, restart replays seed), `BattleUnit`, `BattleEnemy`, `BattleCore`, `BattleDraw`, minimal `Tracer`, `BattleHud`, `ResultPanel`, `scenes/battle/battle.tscn` as the project main scene. Click-to-move soldier, auto-firing hitscan units, enemies that attack units and the core, victory/defeat panel with restart. 13 new simulation tests (137 total, all pass). Known: default mission too easy (tuning in 1.6); feedback pass in 1.5.
 
+- 1.5: feedback pass. `BattleFeedback` presenter; `MuzzleFlash`, `ImpactSpark`, `DeathPuff`, `CameraShake` (cap 4 px), recoil, hit/core flashes, death collapse; generated placeholder audio (`SfxFactory`, `SfxVoicePool`, `SfxService`) with per-category caps and alert priority; `WeaponDefinition.sfx_id`; tracer moved into the presenter; controller signals now carry nodes (`shot_fired`, `hit_landed`, `enemy_died`, `unit_died`). 34 new tests (171 total, all pass).
+- Test runner: any error-level log during a test now fails it (previously silent script errors could pass); tests run in the first frame with a live tree (`TestCase.tree`).
+
 ## Milestone 0.5 — Isometric spike (complete, approved 2026-10-15)
 - Added headless test runner (`tests/run_tests.gd`, `tests/test_case.gd`).
 - Added `IsoProjection` (`scripts/iso/iso_projection.gd`) with 9 tests (known values, round-trip, cell edges, ellipse, altitude, facing, sort key). All pass.

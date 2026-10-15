@@ -5,6 +5,8 @@ extends IsoEntity
 
 const ARRIVE_EPS: float = 0.001
 const CHEST_PX: float = 22.0  # body height used for tracer origins (px above the footprint)
+const KICK_PX: float = 4.0
+const KICK_RECOVER_PX_PER_S: float = 60.0
 
 var uid: int = 0
 var def: UnitDefinition
@@ -13,6 +15,7 @@ var weapon_state: WeaponState
 var health: Health
 var facing: int = IsoProjection.Facing.SE
 var shadow: IsoShadow
+var _recoil: Vector2 = Vector2.ZERO  # draw-only offset; never moves the sort anchor
 var _move_target: Vector2 = Vector2.ZERO
 var _moving: bool = false
 
@@ -76,8 +79,22 @@ func local_rect() -> Rect2:
 	return Rect2(-12.0, -40.0, 24.0, 44.0)
 
 
-func _process(_delta: float) -> void:
-	if health != null and health.hp < health.max_hp:
+## Recoil: shove the drawn body a few px opposite to the shot (screen-space direction).
+func kick(shot_dir_screen: Vector2) -> void:
+	if shot_dir_screen.length_squared() > 0.0001:
+		_recoil = -shot_dir_screen.normalized() * KICK_PX
+		queue_redraw()
+
+
+func chest_world() -> Vector2:
+	return position + Vector2(0, -CHEST_PX if not def.is_fixed() else -14.0)
+
+
+func _process(delta: float) -> void:
+	if _recoil != Vector2.ZERO:
+		_recoil = _recoil.move_toward(Vector2.ZERO, KICK_RECOVER_PX_PER_S * delta)
+		queue_redraw()
+	elif health != null and health.hp < health.max_hp:
 		queue_redraw()
 
 
@@ -92,6 +109,7 @@ func _draw() -> void:
 		IsoProjection.ground_to_screen(dir * 0.25 - perp * 0.26),
 	])
 	draw_colored_polygon(wedge, Color("ffd23f"))
+	draw_set_transform(_recoil)
 	var base := def.placeholder_color
 	var dark := base.darkened(0.55)
 	var top: float
@@ -112,4 +130,5 @@ func _draw() -> void:
 		var chest := Vector2(0, -CHEST_PX)
 		draw_line(chest, chest + IsoProjection.ground_to_screen(dir * 0.45), Color(0.08, 0.08, 0.08), 3.0)
 		top = -46.0
+	draw_set_transform(Vector2.ZERO)
 	BattleDraw.health_bar(self, top, health.fraction() if health != null else 1.0)

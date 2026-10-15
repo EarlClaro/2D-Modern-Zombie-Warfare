@@ -10,3 +10,4 @@ shots_per_second = 8.0
 range_tiles = 9.0
 delivery = 0
 blast_radius = 0.0
+sfx_id = "shot_mg"

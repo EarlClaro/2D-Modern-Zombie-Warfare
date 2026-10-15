@@ -22,6 +22,7 @@ Folders: `assets/{sprites,tiles,animations,audio,fonts}` (created when first ass
 ## Provenance table
 | Asset | Source | License | Notes |
 |---|---|---|---|
-| (none yet) | | | |
+| Placeholder sound effects (rifle shot, MG shot, impact, death, alert) | Generated procedurally in code by `scripts/core/sfx_factory.gd` (noise/sine synthesis, fixed seeds) | Original, no third-party material; project-owned | Crude on purpose; replace in Milestone 7 |
+| Placeholder visuals (tiles, units, enemies, core, effects) | Drawn in code (`_draw`, generated tile atlas) | Original | No image files exist yet |
 
 PixelLab MCP tooling is available in the dev environment for generating pixel-art placeholders; if used, record prompts and license terms here.
