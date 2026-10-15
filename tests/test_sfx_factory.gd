@@ -82,3 +82,14 @@ func test_shot_sound_helper_and_weapon_validation() -> void:
 	var errs := w.validate()
 	assert_eq(errs.size(), 1)
 	assert_true("sfx_id 'kaboom'" in errs[0], errs[0])
+
+
+func test_explosion_is_a_long_deep_sound_in_the_blast_category() -> void:
+	var lib := Factory.build_library()
+	var boom: AudioStreamWAV = lib["explosion"]
+	var blast: AudioStreamWAV = lib["blast"]
+	assert_true(boom.get_length() > blast.get_length(), "longer than the artillery blast")
+	assert_true(boom.data != blast.data)
+	assert_eq(Factory.SETTINGS["explosion"]["category"], "blast")
+	assert_true(not Factory.is_shot_sound("explosion"), "weapons cannot use it as a shot sound")
+

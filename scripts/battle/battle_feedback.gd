@@ -49,6 +49,7 @@ func _on_shot(shooter: BattleUnit, target: BattleEnemy) -> void:
 	var from := shooter.muzzle_world()
 	var to := target.chest_world()
 	Tracer.spawn(_fx, from, to)
+	target.stagger(to - from)
 	MuzzleFlash.spawn(_fx, from, to - from)
 	shooter.kick(to - from)
 	sfx.play(shooter.weapon.sfx_id)
@@ -82,8 +83,25 @@ func _on_enemy_died(enemy: BattleEnemy) -> void:
 
 
 func _on_unit_died(unit: BattleUnit) -> void:
+	var sheet := unit.def.sprite
+	if sheet != null and sheet.explosion_px > 0.0:
+		# Vehicles and emplacements blow up (after the fall, for aircraft) instead of dropping a dust puff.
+		var at := IsoProjection.ground_to_screen(unit.ground_pos) + Vector2(0, -sheet.chest_px)
+		var delay := sheet.fall_time_s()
+		VehicleExplosion.spawn(_fx, at, sheet.explosion_px, delay)
+		ScorchMark.spawn(_battle.decal_layer(), unit.ground_pos, clampf(sheet.explosion_px / 40.0, 0.4, 1.0), delay)
+		if delay > 0.0 and is_inside_tree():
+			get_tree().create_timer(delay).timeout.connect(_explosion_bang)
+		else:
+			_explosion_bang()
+		return
 	DeathPuff.spawn(_fx, unit.position)
 	sfx.play("death")
+
+
+func _explosion_bang() -> void:
+	sfx.play("explosion")
+	shake.trigger(BLAST_SHAKE_PX, BLAST_SHAKE_S)
 
 
 func _on_blast(center: Vector2, radius: float) -> void:

@@ -6,7 +6,7 @@ extends RefCounted
 const MIX_RATE: int = 22050
 const PEAK: float = 0.9
 const SHOT_SOUNDS: Array[String] = ["shot_rifle", "shot_mg", "missile"]
-const ALL_SOUNDS: Array[String] = ["shot_rifle", "shot_mg", "missile", "impact", "death", "alert", "blast"]
+const ALL_SOUNDS: Array[String] = ["shot_rifle", "shot_mg", "missile", "impact", "death", "alert", "blast", "explosion"]
 
 ## Per sound: mixer category (see SfxVoicePool) and base volume in dB.
 const SETTINGS: Dictionary = {
@@ -17,6 +17,7 @@ const SETTINGS: Dictionary = {
 	"death": {"category": "death", "volume_db": -8.0},
 	"alert": {"category": "alert", "volume_db": -5.0},
 	"blast": {"category": "blast", "volume_db": -6.0},
+	"explosion": {"category": "blast", "volume_db": -3.0},
 }
 
 
@@ -34,6 +35,7 @@ static func build_library() -> Dictionary:
 		"death": _thud(150.0, 55.0, 0.26, 9.0, 0.3, 14),
 		"alert": _beeps([880.0, 660.0], 0.14),
 		"blast": _noise_burst(0.5, 8.0, 52.0, 9.0, 0.16, 15),
+		"explosion": _explosion(),
 	}
 
 
@@ -52,6 +54,31 @@ static func _noise_burst(duration: float, noise_decay: float, thump_hz: float, t
 		if thump_hz > 0.0:
 			s += 0.9 * sin(TAU * thump_hz * t) * exp(-t * thump_decay)
 		samples[i] = s
+	return _to_wav(samples)
+
+
+# A vehicle going up: a sharp crack, a deep falling boom, then a rumbling, crackling tail (~1.1 s).
+static func _explosion() -> AudioStreamWAV:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 17
+	var duration := 1.1
+	var n := int(duration * MIX_RATE)
+	var samples := PackedFloat32Array()
+	samples.resize(n)
+	var lp := 0.0
+	var rumble := 0.0
+	for i in n:
+		var t := float(i) / MIX_RATE
+		var white := rng.randf_range(-1.0, 1.0)
+		lp += (white - lp) * 0.35
+		rumble += (white - rumble) * 0.05
+		var crack := lp * exp(-t * 38.0)
+		var boom := sin(TAU * lerpf(70.0, 32.0, minf(t / 0.6, 1.0)) * t) * exp(-t * 3.2)
+		var tail := rumble * 1.6 * exp(-t * 2.6)
+		var crackle := 0.0
+		if rng.randf() < 0.012 * exp(-t * 2.0):  # sparse late crackles
+			crackle = rng.randf_range(-1.0, 1.0) * 0.8
+		samples[i] = crack * 0.9 + boom * 1.1 + tail + crackle
 	return _to_wav(samples)
 
 

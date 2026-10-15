@@ -73,6 +73,34 @@ func play_death(duration: float, shadow_node: Node = null) -> void:
 	tw.chain().tween_callback(_finish_death.bind(shadow_node))
 
 
+## Sprite death: play the sheet's death frames once, hold the last, fade, then free node and shadow.
+## Same contract as play_death (call after leaving the simulation, needs the scene tree).
+func play_sprite_death(sheet: SpriteSheet, shadow_node: Node = null) -> void:
+	dying = true
+	set_process(false)
+	if _flash_tween != null and _flash_tween.is_valid():
+		_flash_tween.kill()
+	self_modulate = base_self_modulate
+	_set_death_frame(sheet.death_first)
+	var anim_s := float(sheet.death_count) / sheet.death_fps
+	var tw := create_tween()
+	tw.tween_method(_play_death_frame.bind(sheet), 0.0, anim_s, anim_s)
+	tw.tween_interval(sheet.death_hold_s)
+	tw.tween_property(self, "modulate:a", 0.0, sheet.death_fade_s)
+	if shadow_node != null and is_instance_valid(shadow_node):
+		tw.parallel().tween_property(shadow_node, "modulate:a", 0.0, sheet.death_fade_s)
+	tw.tween_callback(_finish_death.bind(shadow_node))
+
+
+func _play_death_frame(t: float, sheet: SpriteSheet) -> void:
+	_set_death_frame(sheet.death_first + mini(floori(t * sheet.death_fps), sheet.death_count - 1))
+
+
+## Override: show this sheet frame (the body draws from its own frame index).
+func _set_death_frame(_frame_index: int) -> void:
+	pass
+
+
 func _finish_death(shadow_node: Node) -> void:
 	if shadow_node != null and is_instance_valid(shadow_node):
 		shadow_node.queue_free()

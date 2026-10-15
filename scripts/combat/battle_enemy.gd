@@ -4,6 +4,9 @@ extends IsoEntity
 ## lane offset so a horde doesn't stack on one line) and attacks the nearest player entity in range.
 
 const CHEST_PX: float = 18.0
+const ATTACK_ANIM_S: float = 0.25  # how long the attack frame shows after a swing
+const STAGGER_PX: float = 2.5
+const STAGGER_RECOVER_PX_PER_S: float = 40.0
 
 var uid: int = 0
 var def: EnemyDefinition
@@ -13,6 +16,10 @@ var facing: int = IsoProjection.Facing.W
 var shadow: IsoShadow
 var _waypoints: Array[Vector2] = []
 var _wp_index: int = 0
+var _anim_t: float = 0.0  # walk-cycle clock; only advances while the enemy actually moves
+var _frame: int = 0
+var _prev_ground: Vector2 = Vector2.ZERO
+var _stagger: Vector2 = Vector2.ZERO  # draw-only offset from being shot; never moves the sort anchor
 
 
 func setup(p_uid: int, p_def: EnemyDefinition, start_ground: Vector2, waypoints: Array[Vector2]) -> void:
@@ -23,6 +30,7 @@ func setup(p_uid: int, p_def: EnemyDefinition, start_ground: Vector2, waypoints:
 	_waypoints = waypoints
 	_wp_index = 0
 	ground_pos = start_ground
+	_prev_ground = start_ground
 	queue_redraw()
 
 
@@ -57,21 +65,72 @@ func advance_path(delta: float) -> void:
 		ground_pos += to / dist * step
 
 
+## True for a short moment after the attack cooldown restarts (the swing that just landed).
+func is_swinging() -> bool:
+	return attack_state.cooldown_remaining() > def.attack_interval_s - ATTACK_ANIM_S
+
+
 func chest_world() -> Vector2:
-	return position + Vector2(0, -CHEST_PX)
+	return position + Vector2(0, -(def.sprite.chest_px if def != null and def.sprite != null else CHEST_PX))
 
 
 func local_rect() -> Rect2:
 	return Rect2(-11.0, -38.0, 22.0, 42.0)
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
+	if _stagger != Vector2.ZERO:
+		_stagger = _stagger.move_toward(Vector2.ZERO, STAGGER_RECOVER_PX_PER_S * delta)
+		queue_redraw()
+	if def != null and def.sprite != null:
+		_update_sprite_frame(delta)
 	if health != null and health.hp < health.max_hp:
+		queue_redraw()
+
+
+func play_death(duration: float, shadow_node: Node = null) -> void:
+	if def != null and def.sprite != null and def.sprite.has_death():
+		play_sprite_death(def.sprite, shadow_node)
+	else:
+		super.play_death(duration, shadow_node)
+
+
+## Jerks the drawn body a couple of px along the shot (screen-space direction); it settles back by itself.
+func stagger(shot_dir_screen: Vector2) -> void:
+	if shot_dir_screen.length_squared() > 0.0001 and not dying:
+		_stagger = shot_dir_screen.normalized() * STAGGER_PX
+		queue_redraw()
+
+
+func _set_death_frame(frame_index: int) -> void:
+	_frame = frame_index
+	queue_redraw()
+
+
+## Walk animation follows real movement (an enemy that stops to attack idles); redraws on frame change.
+func _update_sprite_frame(delta: float) -> void:
+	var moved := ground_pos != _prev_ground
+	_prev_ground = ground_pos
+	var frame := def.sprite.idle_frame
+	if moved:
+		_anim_t += delta
+		frame = def.sprite.walk_frame(_anim_t, def.move_speed)
+	else:
+		_anim_t = 0.0
+		if def.sprite.attack_frame >= 0 and is_swinging():
+			frame = def.sprite.attack_frame
+	if frame != _frame:
+		_frame = frame
 		queue_redraw()
 
 
 func _draw() -> void:
 	if def == null:
+		return
+	if def.sprite != null:  # the art shows the facing; the placeholder wedge is only for unsprited enemies
+		def.sprite.draw_frame(self, _frame, facing, _stagger)
+		if not dying:
+			BattleDraw.health_bar(self, -def.sprite.top_px() - 6.0, health.fraction() if health != null else 1.0, 24.0, Color(0.9, 0.3, 0.25))
 		return
 	var dir := IsoProjection.ground_dir_of_facing(facing)
 	var perp := Vector2(-dir.y, dir.x)

@@ -19,6 +19,8 @@ const HIGH_AIR_ALTITUDE: float = 6.0
 ## Optional second weapon (aircraft only for now), fired independently of the first.
 @export var secondary_weapon_id: String = ""
 @export var placeholder_color: Color = Color.WHITE
+## Optional pixel-art sheet; units without one keep drawing the placeholder.
+@export var sprite: SpriteSheet
 
 
 func kind() -> String:

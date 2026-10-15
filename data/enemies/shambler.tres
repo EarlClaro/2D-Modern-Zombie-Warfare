@@ -1,9 +1,31 @@
-[gd_resource type="Resource" script_class="EnemyDefinition" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="EnemyDefinition" load_steps=11 format=3]
 
-[ext_resource type="Script" path="res://scripts/combat/enemy_definition.gd" id="1_enemy"]
+[ext_resource type="Script" path="res://scripts/combat/enemy_definition.gd" id="1_def"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_sheet"]
+[ext_resource type="Texture2D" path="res://assets/sprites/shambler/e.png" id="3_e"]
+[ext_resource type="Texture2D" path="res://assets/sprites/shambler/se.png" id="4_se"]
+[ext_resource type="Texture2D" path="res://assets/sprites/shambler/s.png" id="5_s"]
+[ext_resource type="Texture2D" path="res://assets/sprites/shambler/sw.png" id="6_sw"]
+[ext_resource type="Texture2D" path="res://assets/sprites/shambler/w.png" id="7_w"]
+[ext_resource type="Texture2D" path="res://assets/sprites/shambler/nw.png" id="8_nw"]
+[ext_resource type="Texture2D" path="res://assets/sprites/shambler/n.png" id="9_n"]
+[ext_resource type="Texture2D" path="res://assets/sprites/shambler/ne.png" id="10_ne"]
+
+[sub_resource type="Resource" id="Resource_sheet"]
+script = ExtResource("2_sheet")
+textures = {"E": ExtResource("3_e"), "SE": ExtResource("4_se"), "S": ExtResource("5_s"), "SW": ExtResource("6_sw"), "W": ExtResource("7_w"), "NW": ExtResource("8_nw"), "N": ExtResource("9_n"), "NE": ExtResource("10_ne")}
+frame_size = Vector2i(72, 72)
+origin = Vector2(36, 44)
+chest_px = 15.0
+height_px = 28.0
+walk_fps = 5.0
+stride_tiles = 0.55
+attack_frame = 5
+death_first = 6
+death_count = 4
 
 [resource]
-script = ExtResource("1_enemy")
+script = ExtResource("1_def")
 id = "shambler"
 display_name = "Shambler"
 max_health = 60.0
@@ -14,3 +36,4 @@ attack_interval_s = 1.0
 attack_range = 0.8
 footprint_radius = 0.3
 placeholder_color = Color(0.55, 0.72, 0.3, 1)
+sprite = SubResource("Resource_sheet")

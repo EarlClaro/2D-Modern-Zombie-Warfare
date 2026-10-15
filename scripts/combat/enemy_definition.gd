@@ -12,6 +12,8 @@ extends ContentDefinition
 @export var attack_range: float = 0.8  # tiles, ground distance
 @export var footprint_radius: float = 0.3
 @export var placeholder_color: Color = Color.WHITE
+## Optional pixel-art sheet; enemies without one keep drawing the placeholder.
+@export var sprite: SpriteSheet
 
 
 func kind() -> String:

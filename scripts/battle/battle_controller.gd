@@ -234,6 +234,11 @@ func fx_layer() -> Node2D:
 	return _fx
 
 
+## Ground layer under the shadows for permanent marks (scorch under wrecks); cleared on restart.
+func decal_layer() -> Node2D:
+	return _decals
+
+
 func camera_node() -> IsoCamera:
 	return _camera
 
@@ -684,6 +689,10 @@ func _clear_dynamic() -> void:
 	for layer in [_entities, _shadows, _fx]:
 		for child in layer.get_children():
 			layer.remove_child(child)
+			child.free()
+	for child in _decals.get_children():  # the Decals layer also holds the persistent highlight/preview nodes
+		if child is ScorchMark:
+			_decals.remove_child(child)
 			child.free()
 	for child in _air.get_children():  # the Air layer also holds the persistent shell view; only aircraft go
 		if child is BattleAircraft:

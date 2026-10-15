@@ -184,3 +184,71 @@ func test_weapon_sound_comes_from_weapon_data() -> void:
 	var db := _get_db()
 	assert_eq(db.weapon("mg").sfx_id, "shot_mg")
 	assert_eq(db.weapon("rifle").sfx_id, "shot_rifle")
+
+
+func test_a_destroyed_vehicle_explodes_instead_of_dropping_a_dust_puff() -> void:
+	var b := _battle(_variant([]))
+	var u := b._spawn_unit_at("tank", Vector2(9.5, 12.5))
+	assert_eq(b.units.size(), 1)
+	u.health.hp = 0.0
+	b.step(DT)
+	assert_true(u.dying, "tank collapses into its wreck")
+	assert_eq(_count_of(b.fx_layer(), "VehicleExplosion"), 1, "fireball")
+	assert_eq(_count_of(b.fx_layer(), "DeathPuff"), 0, "no dust puff for an explosive death")
+	_release()
+
+
+func test_a_destroyed_rifleman_still_drops_a_dust_puff_and_no_explosion() -> void:
+	var b := _battle(_variant([]))
+	var u := b._spawn_unit_at("rifle_soldier", Vector2(9.5, 12.5))
+	u.health.hp = 0.0
+	b.step(DT)
+	assert_eq(_count_of(b.fx_layer(), "VehicleExplosion"), 0)
+	assert_eq(_count_of(b.fx_layer(), "DeathPuff"), 1)
+	_release()
+
+
+func test_explosion_waits_for_its_delay_then_cleans_itself_up() -> void:
+	var holder := Node2D.new()
+	tree.root.add_child(holder)
+	var e := VehicleExplosion.spawn(holder, Vector2.ZERO, 20.0, 0.4)
+	e._process(0.1)
+	assert_true(not e.is_queued_for_deletion(), "alive during the delay")
+	e._process(e.lifetime_s())
+	assert_true(e.is_queued_for_deletion(), "frees itself after the smoke has gone")
+	holder.free()
+
+
+func test_a_wreck_leaves_a_scorch_mark_that_restart_removes() -> void:
+	var b := _battle(_variant([]))
+	var u := b._spawn_unit_at("tank", Vector2(9.5, 12.5))
+	u.health.hp = 0.0
+	b.step(DT)
+	assert_eq(_count_of(b.decal_layer(), "ScorchMark"), 1, "burnt ground under the wreck")
+	b.restart()
+	assert_eq(_count_of(b.decal_layer(), "ScorchMark"), 0, "restart clears it")
+	_release()
+
+
+func test_infantry_leave_no_scorch_mark() -> void:
+	var b := _battle(_variant([]))
+	var u := b._spawn_unit_at("rifle_soldier", Vector2(9.5, 12.5))
+	u.health.hp = 0.0
+	b.step(DT)
+	assert_eq(_count_of(b.decal_layer(), "ScorchMark"), 0)
+	_release()
+
+
+func test_being_shot_staggers_the_enemy_without_moving_it() -> void:
+	var b := _battle(_variant([_su("mg_nest", Vector2i(8, 14))]))
+	var e := _inject_enemy(b, Vector2(11.5, 13.5))
+	var anchor := e.position
+	for i in 90:
+		b.step(DT)
+		if e.is_alive() and e._stagger != Vector2.ZERO:
+			break
+	assert_true(e._stagger != Vector2.ZERO or not e.is_alive(), "the MG shot staggered it")
+	if e.is_alive():
+		assert_near(e.position.x, anchor.x, 60.0, "only the drawing jerks; movement is the sim's")
+	_release()
+
