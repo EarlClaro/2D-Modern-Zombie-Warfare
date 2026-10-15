@@ -24,6 +24,16 @@ All values are **initial guesses, unmeasured**. Tune after playtests; keep in da
 ## Enemy archetypes (MVP, relative)
 Shambler: slow, low HP. Runner: fast, low HP. Brute: high HP, armor vs small arms.
 
+## Milestone 1 initial values (unmeasured guesses; spec: [combat-vertical-slice.md](specs/combat-vertical-slice.md))
+| Entity | Key stats |
+|---|---|
+| Rifle soldier | HP 80, speed 3 tiles/s, rifle 12 dmg × 3 shots/s, range 8 |
+| MG nest | HP 150, fixed, MG 8 dmg × 8 shots/s, range 9 |
+| Shambler | HP 60, armor 0, speed 1.2 tiles/s, attack 10 dmg / 1.0 s, attack range 0.8 |
+| Core | HP 500 |
+| Mission | 90 s survival; waves ≈ 5 @ t=2 s, 12 @ t=20 s, 25 @ t=45 s (+ stress scenario: 100 at once) |
+| DamageService | `max(base − armor, base × 0.1) × falloff` |
+
 ## Performance targets
 Not set. To be measured in M1/M3; recorded here with hardware.
 

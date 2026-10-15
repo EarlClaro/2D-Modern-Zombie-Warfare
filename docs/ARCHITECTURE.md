@@ -14,7 +14,7 @@ Ground-plane truth · data-driven `Resource` definitions vs runtime state · exp
 ## Module map (created as milestones need them)
 ```
 scripts/iso/       IsoProjection (pure static, no nodes), IsoPicking, SortAnchor
-scripts/core/      GameSession (autoload, later), SeededRng helper
+scripts/core/      ContentDefinition (base, id+validate), ContentDb (loads/validates data by id), GameSession (autoload, later), SeededRng helper
 scripts/combat/    DamageService (pure), WeaponController, ProjectileSystem, TargetingService
 scripts/cards/     CardDefinition(Resource), DeckState (pure), CommandPoints (pure), CardEffects
 scripts/missions/  MissionDefinition(Resource), Objective subclasses, MissionDirector
