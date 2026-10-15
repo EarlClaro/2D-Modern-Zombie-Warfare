@@ -10,13 +10,21 @@ const BASE_ALPHA: float = 0.4
 var target: IsoEntity
 var radius_tiles: float = 0.4
 
+var _drawn_altitude: float = -1.0  # altitude the current polygon was built for (-1 = never drawn)
+## How many times a rebuild was requested (observable so tests can verify shadows aren't redrawn every frame).
+var redraw_requests: int = 0
+
 
 func _process(_delta: float) -> void:
 	if target == null or not is_instance_valid(target):
 		queue_free()
 		return
 	position = target.position
-	queue_redraw()
+	# The polygon only depends on altitude and radius, so ground shadows are built once, not every frame.
+	if not is_equal_approx(target.altitude, _drawn_altitude):
+		_drawn_altitude = target.altitude
+		redraw_requests += 1
+		queue_redraw()
 
 
 func _draw() -> void:

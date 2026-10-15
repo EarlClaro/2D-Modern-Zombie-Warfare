@@ -73,7 +73,7 @@ Pixel or hybrid pixel art, 2:1 iso, modern lighting/particles, placeholders (col
 | A3 | Base resolution 1920x1080, canvas_items stretch | yes | set in project.godot |
 | A4 | Test framework | custom headless GDScript runner | proposed (ADR-006), user to approve vs GUT |
 | A5 | Mouse + keyboard only for MVP | yes | assumed |
-| A6 | Flow field vs per-agent nav for hordes | decide in M3 after measurement | open |
+| A6 | Flow field vs per-agent nav for hordes | decide in M3; M1 data: waypoint walking is cheap (0.5–1.9 ms/tick for 100–500), separation is the real gap | open |
 | A7 | Occlusion approach | fade occluders (ADR-005) | validate in spike steps 5+ |
 | A8 | Sprite directions | 8 | assumed; 5-mirrored is fallback |
 | A9 | Real title | Last Defense is placeholder | open |

@@ -4,7 +4,7 @@
 - Custom headless runner (ADR-006) implemented. GUT not used.
 - Verified commands (2026-10-15):
   - `"$GODOT" --headless --path . --import --quit` — import/parse check; run it after adding new `class_name` scripts.
-  - `"$GODOT" --headless --path . --script tests/run_tests.gd` — 171 tests (26 iso + 34 M1.1 + 23 M1.2 + 41 M1.3 + 13 M1.4 + 34 M1.5: 12 voice pool, 8 sound generation, 6 camera shake, 8 feedback wiring), 0 failed, exit 0 (the whole suite runs in a few seconds). Confirmed it reports `FAIL` and exits 1 when a test fails (temporary failing test, since removed).
+  - `"$GODOT" --headless --path . --script tests/run_tests.gd` — 178 tests (26 iso + 34 M1.1 + 23 M1.2 + 41 M1.3 + 13 M1.4 + 34 M1.5 + 7 M1.6: 4 launch-option parsing, 3 shadow), 0 failed, exit 0 (the whole suite runs in a few seconds). Confirmed it reports `FAIL` and exits 1 when a test fails (temporary failing test, since removed).
 - Writing tests: file `tests/test_*.gd`, `extends TestCase`, methods `test_*`; helpers `assert_true/eq/near/vec_near`. Prefer `preload` of the script under test.
 
 - Scene smoke check (one-off, 2026-10-15): spike scene loaded in a real window (`--path . --script <driver>`), camera set to 4 zoom/pan configs, 93 sample points mapped viewport→canvas→`IsoPicking`→cell with 0 mismatches; no engine errors. This drove the camera transform directly; **synthetic mouse events could not be injected**, so real mouse handling is manual-only. The driver lived outside the repo.
@@ -23,6 +23,9 @@
 - Mutation check for 1.4: unit firing while moving, restart seed, wave off-by-one, kills not counted, shadows layer not cleared on restart, move onto the core allowed, and enemy speed doubled each failed tests (7 mutations, 9 failures); code restored.
 - Scene check (2026-10-15, driver outside the repo): the real `battle.tscn` ran in a window with the sim stepped 4 ticks per rendered frame to victory at 90 s, then `restart()`; no engine errors; HUD, hint text, core bar and result panel screenshots reviewed (found and fixed an off-screen hint label and a grey health bar). Real mouse/keyboard input (LMB move, R restart, camera) was not exercised, so it is manual.
 - Shipped-data tests assert relations (e.g. MG fires faster than rifle, nest is fixed), not balance values, so tuning doesn't break them.
+
+- **Performance scenarios (M1.6):** defined in `tools/` and recorded in [BALANCE.md](BALANCE.md) with hardware (i7-1165G7, MX330). Stress = `s1_stress_horde` (100 Shamblers + 2 defenders), scaled to 250/500 by the tool. Commands: `godot --headless --path . --script tools/perf_sim.gd` (simulation cost) and `godot --path . --resolution 1920x1080 --audio-driver Dummy --script tools/perf_fps.gd` (rendered FPS; not headless). The shadow test (`tests/test_iso_shadow.gd`) guards the fix those measurements motivated (verified by mutation: redrawing every frame again fails it).
+- The wave-schedule test now reads wave 0 from the mission data and samples mid-interval, so retuning the mission no longer breaks tests (checked by temporarily changing wave 0).
 
 ## Strategy
 1. **Pure-logic unit tests (headless)** — IsoProjection, DamageService, DeckState, CommandPoints, targeting filters, objective evaluation, save migration. These are `RefCounted` classes with injected RNG/config.

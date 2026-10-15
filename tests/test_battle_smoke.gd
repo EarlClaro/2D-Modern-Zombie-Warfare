@@ -196,16 +196,25 @@ func test_restart_after_the_end_replays_the_same_battle() -> void:
 
 # --- spawning & movement -------------------------------------------------------------------------
 
+func _run_until(b: BattleController, t: float) -> void:
+	while b.elapsed < t and not b.is_ended():
+		b.step(DT)
+
+
 func test_waves_spawn_on_schedule() -> void:
+	# Derived from the mission data (not hard-coded) and sampled mid-interval, away from float boundaries.
 	var b := _battle(_variant([]))
-	_run_for(b, 1.5)
-	assert_eq(b.stats["spawned"], 0, "nothing before the first wave at 2 s")
-	_run_for(b, 1.0)  # t = 2.5
-	assert_eq(b.stats["spawned"], 1)
-	_run_for(b, 2.0)  # t = 4.5: spawns at 2, 3, 4
-	assert_eq(b.stats["spawned"], 3)
-	_run_for(b, 2.0)  # t = 6.5: wave 1 finished (5 enemies at 2..6 s)
-	assert_eq(b.stats["spawned"], 5)
+	var w := b.mission.waves[0]
+	for other in b.mission.waves:
+		assert_true(other == w or other.start_s > w.last_spawn_s() + 1.0, "precondition: later waves start after wave 0 finishes")
+	assert_true(w.count >= 4 and w.interval_s > 0.0, "precondition: wave 0 has several spaced enemies")
+	_run_until(b, w.start_s - 0.5)
+	assert_eq(b.stats["spawned"], 0, "nothing before the first wave starts")
+	for k in [0, 1, 3]:
+		_run_until(b, w.start_s + (k + 0.5) * w.interval_s)
+		assert_eq(b.stats["spawned"], k + 1, "after %d full intervals" % k)
+	_run_until(b, w.last_spawn_s() + 0.5 * w.interval_s)
+	assert_eq(b.stats["spawned"], w.count, "wave 0 fully spawned, no more than its count")
 	_release()
 
 

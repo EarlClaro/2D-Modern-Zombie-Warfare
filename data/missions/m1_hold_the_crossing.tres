@@ -19,21 +19,22 @@ cell = Vector2i(7, 17)
 script = ExtResource("4_eyi27")
 start_s = 2.0
 enemy_id = "shambler"
-count = 5
+count = 6
+interval_s = 0.9
 
 [sub_resource type="Resource" id="Resource_cyqwv"]
 script = ExtResource("4_eyi27")
 start_s = 20.0
 enemy_id = "shambler"
-count = 12
-interval_s = 0.8
+count = 16
+interval_s = 0.65
 
 [sub_resource type="Resource" id="Resource_ywi0k"]
 script = ExtResource("4_eyi27")
 start_s = 45.0
 enemy_id = "shambler"
-count = 25
-interval_s = 0.5
+count = 36
+interval_s = 0.4
 
 [resource]
 script = ExtResource("2_rh4jd")

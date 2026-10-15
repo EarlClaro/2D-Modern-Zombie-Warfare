@@ -2,7 +2,7 @@
 
 A 2D, high-view isometric, high-tech military combined-arms **deckbuilder**. Command humanity's forces against mutant zombie hordes in real-time missions: build a deck of units, weapons, orders and support operations, deploy them on an isometric battlefield, complete mission objectives, and grow your arsenal.
 
-**Status:** Milestone 1 (combat vertical slice) in progress: a first playable battle exists (increment 1.4 of 1.6); feedback pass and tuning still to come. Cards/deck are not implemented yet. See [docs/ROADMAP.md](docs/ROADMAP.md).
+**Status:** Milestone 1 (combat vertical slice) is built — a playable defend-the-core battle with feedback effects, generated placeholder sounds, a result screen and a 100-zombie stress scenario — and awaits the owner's go / tune / no-go. Cards/deck are not implemented yet (Milestone 2). See [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## Prerequisites
 - Godot **4.7.2** (4.x; typed GDScript). Installed via WinGet on the dev machine.
@@ -10,6 +10,7 @@ A 2D, high-view isometric, high-tech military combined-arms **deckbuilder**. Com
 ## Run
 ```
 godot --path .            # runs the battle (main scene)
+godot --path . -- --mission=s1_stress_horde --seed=3   # 100-zombie stress scenario (FPS shown top-right)
 godot --path . scenes/dev/iso_spike.tscn   # isometric spike scene
 godot --headless --path . --import --quit   # import/parse check
 godot --headless --path . --script tests/run_tests.gd   # run tests

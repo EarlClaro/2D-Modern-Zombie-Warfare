@@ -47,11 +47,11 @@ HUD presenters read state via signals; never mutate rules.
 - **Projectiles**: data-oriented `ProjectileSystem` holding arrays of ground pos, velocity, z, vz; one `_physics_process`; rendered via one MultiMesh or `_draw` (decide in M1 by measuring). Not one node per bullet.
 - **Physics**: ground-plane footprints (circles). Godot 2D physics used minimally (no physics in screen space). Hit detection = ground distance + altitude range overlap.
 - **Layers** (CanvasItem z/y-sort): Ground tiles → shadows → ground entities (y_sort_enabled) → air entities → FX → HUD (CanvasLayer).
-- **Hordes**: per-agent steering over a shared flow field is the leading candidate; decision deferred to M3 with measurements (A6).
+- **Hordes**: per-agent steering over a shared flow field is the leading candidate; decision deferred to M3 (A6). **M1 measurement:** straight-line waypoint walking for 100–500 enemies costs 0.5–1.9 ms per tick headless (see BALANCE.md), so path-following is not the bottleneck yet; the open problems are separation/overlap and real obstacle avoidance, which only matter once maps have non-trivial walls (M3+).
 - **Autoloads (planned, max 4)**: `GameSession`, `SaveService`, `AudioService`, `SceneRouter`. None before they're needed.
 
 ## Testing seam
 Anything with rules is a `RefCounted` class taking an injected `RandomNumberGenerator` and config; scene scripts are thin. See [TESTING.md](TESTING.md).
 
 ## Open items
-Horde pathing (A6) · occlusion validation (A7) · projectile render strategy (M1) · exact TileMapLayer layout enum vs transform (verify in spike).
+Horde pathing/separation (A6, M3) · projectile render strategy (decided: none in M1 — hitscan only, D1; revisit with artillery/rockets in M2) · per-entity draw calls (~6 each; look at batching if hordes exceed ~500). Resolved earlier: occlusion = fade (validated in the spike), TileMapLayer layout = DIAMOND_DOWN + offset.

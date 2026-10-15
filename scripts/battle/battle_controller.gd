@@ -16,8 +16,8 @@ signal enemy_died(enemy: BattleEnemy)
 signal unit_died(unit: BattleUnit)
 signal core_damaged(amount: float)
 
-const SPAWN_JITTER: float = 0.35  # tiles
-const LANE_JITTER: float = 0.35
+const SPAWN_JITTER: float = 1.0  # tiles
+const LANE_JITTER: float = 0.9
 const CORE_ID: int = 0  # target id of the core; unit ids start at 1
 const DEATH_COLLAPSE_S: float = 0.3
 
@@ -69,9 +69,30 @@ var _highlight: IsoCellHighlight
 var _camera: IsoCamera
 
 
+## Parses launch options given after `--`, e.g. `godot --path . -- --mission=s1_stress_horde --seed=5`.
+## Unknown or malformed options are ignored. Returns {"mission": String?, "seed": int?} with only the keys given.
+static func parse_user_args(args: PackedStringArray) -> Dictionary:
+	var out: Dictionary = {}
+	for a in args:
+		if a.begins_with("--mission="):
+			var id := a.trim_prefix("--mission=")
+			if not id.is_empty():
+				out["mission"] = id
+		elif a.begins_with("--seed="):
+			var v := a.trim_prefix("--seed=")
+			if v.is_valid_int():
+				out["seed"] = v.to_int()
+	return out
+
+
 func _ready() -> void:
 	if mission != null:
 		return  # already set up by a test or caller
+	var cli := parse_user_args(OS.get_cmdline_user_args())
+	if cli.has("mission"):
+		mission_id = cli["mission"]
+	if cli.has("seed"):
+		rng_seed = cli["seed"]
 	var loaded := ContentDb.load_from()
 	if not loaded.is_valid():
 		_show_fatal("Content errors:\n" + "\n".join(loaded.errors))

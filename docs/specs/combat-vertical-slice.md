@@ -1,6 +1,6 @@
 # Spec: Milestone 1 — Combat Vertical Slice
 
-Status: **v0.2 approved 2026-10-15 (D1–D5 accepted as recommended).** Increments 1.1–1.5 done; 1.6 (stress test, FPS measurement, tuning, hand-over) next. Builds on the approved isometric foundation ([isometric-view.md](isometric-view.md), M0.5).
+Status: **v0.2 approved 2026-10-15 (D1–D5 accepted as recommended).** Increments 1.1–1.6 done. **Milestone 1 is built and verified as far as automation goes; the exit gate is your go / tune / no-go call (criterion 11).** Builds on the approved isometric foundation ([isometric-view.md](isometric-view.md), M0.5).
 
 ## Purpose
 Prove that core combat is **satisfying and readable** on the isometric view with the fewest systems. Pillars tested: (1) combat feel, (4) isometric readability. Cards/deck (pillar 2) and mission variety (3) are out of scope.
@@ -137,7 +137,7 @@ Manual / measured (reported honestly as pending until done):
 | 1.3 ☑ | `MissionRules` + `MissionDefinition`/map/waves data (`crossing` mission) | test 5 (done: 41 tests) |
 | 1.4 ☑ | Battle scene: map build, core, shambler movement/attack, unit/nest firing (hitscan, no polish), `BattleController.step`, result panel + restart | test 7 (done: 13 tests) + first playable (**manual play pending**) |
 | 1.5 ☑ | Feedback pass (flash, recoil, tracer, spark, hit flash, death, shake, generated audio + caps, health bars) | manual criterion 9 (**feel judged by you, pending**); pure parts + wiring tested (34 tests) |
-| 1.6 | Stress scenario + FPS measurement + tuning pass of `BALANCE.md` numbers; docs/changelog; hand over for the go/no-go | criteria 10, 11 |
+| 1.6 ☑ | Stress scenario + FPS measurement + tuning pass of `BALANCE.md` numbers; docs/changelog; hand over for the go/no-go | criterion 10 done (measured), criterion 11 **pending you** |
 
 ## Files (planned)
 Create:
@@ -152,8 +152,25 @@ Create:
 Modify (small): `scripts/iso/placeholder_unit.gd` stays for the spike scene only; `docs/{ARCHITECTURE,ROADMAP,TESTING,BALANCE}.md`, `CHANGELOG.md`, `README.md`; `project.godot` gets `run/main_scene` → battle scene at 1.4.
 Not touched: M0.5 projection/entity/occlusion code (reused as is). If a reuse need requires changing it, that is flagged first.
 
+## Acceptance status (end of Milestone 1)
+| # | Criterion | Status / evidence |
+|---|---|---|
+| 1 | DamageService math | ☑ 12 tests |
+| 2 | Health | ☑ 8 tests |
+| 3 | TargetingService | ☑ 12 tests |
+| 4 | WeaponState cadence | ☑ 11 tests |
+| 5 | MissionRules (incl. same-tick tie → fail) | ☑ 12 tests |
+| 6 | Definitions / ContentDb | ☑ 14 + 11 + 18 tests (map, mission, references) |
+| 7 | Battle smoke: deterministic, both outcomes reachable, restart leaves no leaked nodes | ☑ `test_battle_smoke.gd` (13) + `test_battle_feedback.gd` (8) |
+| 8 | Existing tests pass, headless import clean | ☑ 178 tests, 0 failed (runner now also fails on any logged error) |
+| 9 | Shots visible, kills legible with 20+ zombies, facing/recoil read in all directions | ◐ agent reviewed screenshots (fight, death, core hit, 100-zombie crowd); **you confirm by playing** |
+| 10 | Stress scenario FPS on the dev machine | ☑ measured, see BALANCE.md: 100 Shamblers 117–198 FPS avg, vsync-locked 60 with no frame > 20 ms; 500 Shamblers 98–119 FPS |
+| 11 | **"Is it satisfying?" — go / tune / no-go** | ☐ **pending you** |
+
+Not verified by anyone yet: real mouse/keyboard play (LMB move, R restart, camera), actual audio output and volume balance, and the subjective feel.
+
 ## Risks
-- **Zombie stacking** (no separation steering): mitigated by spawn jitter; may look like a blob at 100 — measured in 1.6; proper handling in M3 with the flow-field decision.
+- **Zombie stacking** (no separation steering): confirmed in 1.6 — with narrow lanes 100 zombies collapsed into one unreadable column. Mitigated by widening spawn jitter (1.0) and lane offset (0.9); now a dense crowd of distinct silhouettes. True separation is still a Milestone 3 item.
 - **Tuning**: the numbers in BALANCE are guesses; the win/fail smoke test (7) guarantees both outcomes exist, not that the difficulty is good.
 - **"Satisfying" is subjective**: feedback pass (1.5) is time-boxed and judged by you; sound quality of generated placeholders will be crude.
 - **Scope creep**: anything not in the table above goes to the roadmap, not into M1.

@@ -13,6 +13,9 @@
 - 1.5: feedback pass. `BattleFeedback` presenter; `MuzzleFlash`, `ImpactSpark`, `DeathPuff`, `CameraShake` (cap 4 px), recoil, hit/core flashes, death collapse; generated placeholder audio (`SfxFactory`, `SfxVoicePool`, `SfxService`) with per-category caps and alert priority; `WeaponDefinition.sfx_id`; tracer moved into the presenter; controller signals now carry nodes (`shot_fired`, `hit_landed`, `enemy_died`, `unit_died`). 34 new tests (171 total, all pass).
 - Test runner: any error-level log during a test now fails it (previously silent script errors could pass); tests run in the first frame with a live tree (`TestCase.tree`).
 
+- 1.6: stress mission `s1_stress_horde` (100 Shamblers), launch options `--mission=<id> --seed=<n>` (tested parser), FPS readout in the HUD, `tools/` (perf_sim, perf_fps, tune, tune_pos) for reproducible measurements. Performance: ground shadows are built once instead of every frame (500 enemies 40 → 98–119 FPS). Readability: wider spawn/lane spread so a horde is a crowd, not a column. Balance: waves retuned to 6/16/36 (default loadout ≈ 70 % win, soldier position decides the outcome); evidence in BALANCE.md. Wave-schedule test now derives from mission data. 4 new tests + 3 shadow tests (178 total, all pass).
+- **Milestone 1 status:** all six increments done; awaiting the user's go / tune / no-go.
+
 ## Milestone 0.5 — Isometric spike (complete, approved 2026-10-15)
 - Added headless test runner (`tests/run_tests.gd`, `tests/test_case.gd`).
 - Added `IsoProjection` (`scripts/iso/iso_projection.gd`) with 9 tests (known values, round-trip, cell edges, ellipse, altitude, facing, sort key). All pass.
