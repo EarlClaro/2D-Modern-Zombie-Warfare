@@ -14,11 +14,21 @@ Purpose: prove the isometric foundation before any combat. Non-goals: combat, ca
 
 ## Progress
 - ☑ 1 test runner · ☑ 2 IsoProjection + tests · ☑ 3 spike scene (`scenes/dev/iso_spike.tscn`, 16x16 placeholder TileMapLayer, `IsoCamera` pan/zoom) · ☑ 4 picking + hover highlight + tilemap agreement test (layout = DIAMOND_DOWN, layer offset (−32,0)).
-- ☐ 5 placeholder unit + tall structure · ☐ 6 flyer · ☐ 7 AoE ellipse · ☐ 8 final doc pass.
+- ☑ 5 placeholder unit (`PlaceholderUnit`: LMB moves it at 3 tiles/s in ground space, 8-way facing wedge, shadow) + tall structures (`PlaceholderStructure`, y-sorted, fade via `IsoOcclusion`) · ☑ 6 flyer (`PlaceholderFlyer`: orbits at altitude 3.0 on the Air layer, height line, ground shadow) · ☑ 7 AoE ellipse (`IsoAoeIndicator`, Q/E change radius 0.5–8, dots mark cells whose centre is in range) · ☑ 8 doc pass (this file, isometric-view, TESTING, ROADMAP, CHANGELOG).
+- Exit: user approved the spike and the decisions below on 2026-10-15. Milestone 0.5 complete.
 - Run the scene: `"$GODOT" --path . scenes/dev/iso_spike.tscn` (or open it in the editor and press F6). Controls: WASD/arrows pan, mouse wheel zoom toward cursor (0.5–3.0), middle-mouse drag pan.
 
-## Decisions to record at exit
-Tile size confirmed · sprite directions (8) · occlusion approach (fade vs silhouette) · light direction · TileMapLayer layout enum · Z_PX_PER_UNIT.
+## Decisions recorded at exit (approved 2026-10-15)
+| Item | Value |
+|---|---|
+| Tile size | 64x32 px, ground unit = 1 tile |
+| Sprite directions | 8 (facings map to the 8 principal ground directions) |
+| Occlusion | Fade occluder to alpha 0.4 over 0.15 s when a subject is behind it and screen rects overlap (ADR-005) |
+| Light direction | Top-left: faces lit top > lower-left > lower-right; shadows shift along ground +X (screen down-right), more with altitude |
+| TileMapLayer | `DIAMOND_DOWN`, layer position `IsoProjection.TILEMAP_LAYER_OFFSET` = (−32, 0) |
+| Z_PX_PER_UNIT | 32 (1 altitude unit = 1 tile height up) |
+| Multi-cell sort anchor | Footprint centre in ground space (ADR-010) |
+| Layers | Ground, Decals, Shadows, Entities (y-sort), Air (y-sort), HUD |
 
 ## Exit criteria
 All automated tests pass (command output shown) · headless import clean · manual checklist (isometric-view.md) completed by the user in the editor · user approves the look/feel. **Do not start Milestone 1 until approved.**

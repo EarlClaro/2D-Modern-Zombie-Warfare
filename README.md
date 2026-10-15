@@ -2,14 +2,14 @@
 
 A 2D, high-view isometric, high-tech military combined-arms **deckbuilder**. Command humanity's forces against mutant zombie hordes in real-time missions: build a deck of units, weapons, orders and support operations, deploy them on an isometric battlefield, complete mission objectives, and grow your arsenal.
 
-**Status:** Milestone 0.5 in progress (isometric projection + tests done; no gameplay yet). See [docs/ROADMAP.md](docs/ROADMAP.md).
+**Status:** Milestone 0.5 (isometric spike) complete; Milestone 1 (combat vertical slice) next. No gameplay yet. See [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## Prerequisites
 - Godot **4.7.2** (4.x; typed GDScript). Installed via WinGet on the dev machine.
 
 ## Run
 ```
-godot --path .            # no main scene yet
+godot --path . scenes/dev/iso_spike.tscn   # isometric spike scene (no main scene yet)
 godot --headless --path . --import --quit   # import/parse check
 godot --headless --path . --script tests/run_tests.gd   # run tests
 ```

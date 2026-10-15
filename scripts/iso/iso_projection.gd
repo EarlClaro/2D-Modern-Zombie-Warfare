@@ -26,11 +26,14 @@ static func screen_to_ground(s: Vector2) -> Vector2:
 	return Vector2(s.x / TILE_W + s.y / TILE_H, s.y / TILE_H - s.x / TILE_W)
 
 
+## Screen-space offset (px) of altitude z. Altitude only moves things up on screen.
+static func altitude_offset(z: float) -> Vector2:
+	return Vector2(0.0, -z * Z_PX_PER_UNIT)
+
+
 ## Screen position of a point at altitude z above ground position g.
 static func ground_to_screen_z(g: Vector2, z: float) -> Vector2:
-	var s := ground_to_screen(g)
-	s.y -= z * Z_PX_PER_UNIT
-	return s
+	return ground_to_screen(g) + altitude_offset(z)
 
 
 static func cell_of(g: Vector2) -> Vector2i:
@@ -44,6 +47,33 @@ static func cell_center(c: Vector2i) -> Vector2:
 ## Semi-axes (screen px) of the axis-aligned ellipse that a ground circle of radius r (tiles) projects to.
 static func ellipse_radii(r: float) -> Vector2:
 	return Vector2(r * TILE_W / sqrt(2.0), r * TILE_H / sqrt(2.0))
+
+
+## Screen-space bounding box (world px) of a grid cell's diamond.
+static func cell_screen_rect(c: Vector2i) -> Rect2:
+	return Rect2(ground_to_screen(Vector2(c)) - Vector2(TILE_W * 0.5, 0.0), Vector2(TILE_W, TILE_H))
+
+
+## Screen-space polygon (world px) of a ground circle: the projected circle, i.e. the 2:1 ellipse.
+static func ground_circle_polygon(center: Vector2, r: float, segments: int = 32) -> PackedVector2Array:
+	var pts := PackedVector2Array()
+	for i in segments:
+		var a := TAU * i / segments
+		pts.append(ground_to_screen(center + Vector2(cos(a), sin(a)) * r))
+	return pts
+
+
+## Unit ground-space direction for a facing (inverse of facing_from_ground_dir).
+static func ground_dir_of_facing(f: int) -> Vector2:
+	const DIRS: Array[Vector2] = [
+		Vector2(1, -1), Vector2(1, 0), Vector2(1, 1), Vector2(0, 1),
+		Vector2(-1, 1), Vector2(-1, 0), Vector2(-1, -1), Vector2(0, -1),
+	]
+	return DIRS[f].normalized()
+
+
+static func facing_name(f: int) -> String:
+	return Facing.keys()[f]
 
 
 ## Quantize a ground-space direction to one of 8 facings (45° ground sectors).

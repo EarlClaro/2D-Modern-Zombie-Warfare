@@ -22,7 +22,7 @@ In: projection math, picking, ellipses, sorting, occlusion, facings, light. Out:
 - TileMapLayer: tile shape Isometric, tile size 64x32, **`tile_layout = DIAMOND_DOWN`** (verified 2026-10-15 on Godot 4.7.2: the other layouts do not map +X down-right / +Y down-left). Godot centers cell (0,0) at layer-local (32,16) whereas our cell (0,0) is centered at (0,16), so every ground TileMapLayer must be positioned at `IsoProjection.TILEMAP_LAYER_OFFSET` = (−32, 0). Then `layer.map_to_local(c) + layer.position == ground_to_screen(cell_center(c))` and `layer.local_to_map(s − layer.position) == cell_of(screen_to_ground(s))`.
 
 ## Draw order
-Layers bottom→top: ground TileMapLayer → decals/shadows → ground entities node with `y_sort_enabled` → air layer (own y-sort, above ground) → FX layer → HUD (CanvasLayer). Sort anchor = footprint base point (center of the footprint on the ground, which is the node's origin). Sprites are offset up from the origin so the origin is the foot.
+Layers bottom→top: ground TileMapLayer → Decals (hover/AoE/range indicators, ground-plane) → Shadows (all entity shadows, incl. aircraft) → Entities node with `y_sort_enabled` → Air layer (own y-sort, above ground) → FX layer (later) → HUD (CanvasLayer). Implemented in `scripts/dev/iso_spike.gd`. Sort anchor = footprint base point (center of the footprint on the ground, which is the node's origin). Sprites are offset up from the origin so the origin is the foot. Multi-cell structures use the **footprint centre** as anchor (ADR-010): entities on the +X/+Y sides sort in front, beyond the far edges behind (tested in `test_iso_entities.gd`).
 Air units: node position = ground position (so sorting among air is by ground y), sprite offset by z, separate shadow sprite on ground layer at z=0.
 
 ## Occlusion (ADR-005, proposed)
@@ -46,6 +46,11 @@ Mouse outside map → no cell valid; NaN/inf inputs rejected by callers (not pro
 6. Facing quantization for the 8 axis/diagonal ground directions returns expected facings.
 7. Sort comparison: entity with greater ground (x+y) sorts in front.
 8. TileMapLayer `map_to_local(cell) + position` equals `ground_to_screen(cell_center)` and `local_to_map` agrees with `cell_of` for sample cells incl. negatives (DIAMOND_DOWN + offset). **Done — `tests/test_iso_tilemap.gd`.**
+
+## Spike results (automated / agent-checked, 2026-10-15)
+- Unit ground speed is identical in all 8 facings while screen speed differs (tested). Flyer's sort anchor stays on the ground while altitude lifts only its drawing (tested).
+- In the live scene: unit behind a structure fades it to alpha 0.4; unit in front restores 1.0; a hovered cell behind it also fades it (checked by driving `_update_occlusion`, screenshots reviewed).
+- AoE polygon is the projected ground circle (ellipse equation tested); dots mark cells with centre inside the radius (brute-force tested).
 
 ## Manual checklist (spike)
 Unit behind tall object visible after fade · shadows present on ground & air · AoE ellipse matches cells it covers · hover highlight lands on the cell under the cursor at zoom 0.5/1/2 and with panned camera · 8 facings readable.

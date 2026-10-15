@@ -30,3 +30,6 @@ Units/vehicles/enemies use 8 facings (placeholders show facing). Fallback: 5 mir
 
 ## ADR-009 — Display baseline · Accepted (set in project.godot)
 1920x1080 base viewport, `canvas_items` stretch, nearest texture filtering for pixel art. Revisit in Milestone 7 for UI scaling.
+
+## ADR-010 — Multi-cell structure sort anchor = footprint centre · Accepted (2026-10-15)
+Y-sort anchor for a multi-cell structure is the centre of its ground footprint (not the front corner). Entities on the +X/+Y sides of the footprint sort in front, beyond the far edges behind; verified in `test_iso_entities.gd`. Known limit: very large footprints can mis-sort against units diagonally adjacent; split such objects into several sorted pieces if it becomes visible. Confirmed at spike exit.

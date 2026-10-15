@@ -1,0 +1,28 @@
+class_name IsoShadow
+extends Node2D
+## Ground shadow for an entity: a ground-plane circle (drawn as a 2:1 ellipse) at the entity's ground
+## position, shifted toward screen bottom-right (light from top-left). Higher entities cast a smaller,
+## fainter, more displaced shadow. Lives on the Shadows layer so it never sorts above ground entities.
+
+const LIGHT_SHIFT_DIR: Vector2 = Vector2(1, 0)  # ground +X = screen down-right
+const BASE_ALPHA: float = 0.4
+
+var target: IsoEntity
+var radius_tiles: float = 0.4
+
+
+func _process(_delta: float) -> void:
+	if target == null or not is_instance_valid(target):
+		queue_free()
+		return
+	position = target.position
+	queue_redraw()
+
+
+func _draw() -> void:
+	if target == null or not is_instance_valid(target):
+		return
+	var scale_by_height := 1.0 / (1.0 + target.altitude * 0.15)
+	var shift := LIGHT_SHIFT_DIR * (0.1 + 0.05 * target.altitude)
+	var poly := IsoProjection.ground_circle_polygon(shift, radius_tiles * scale_by_height, 24)
+	draw_colored_polygon(poly, Color(0, 0, 0, BASE_ALPHA * scale_by_height))
