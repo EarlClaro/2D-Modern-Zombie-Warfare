@@ -12,4 +12,4 @@ hand_cap = 5
 draw_interval_s = 4.0
 cp_start = 5.0
 cp_cap = 10.0
-cp_regen_interval_s = 1.5
+cp_regen_interval_s = 3.0

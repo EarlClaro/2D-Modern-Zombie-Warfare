@@ -8,29 +8,29 @@
 script = ExtResource("3_wave")
 start_s = 4.0
 enemy_id = "shambler"
-count = 6
-interval_s = 0.9
+count = 30
+interval_s = 0.2
 
 [sub_resource type="Resource" id="Resource_w2"]
 script = ExtResource("3_wave")
 start_s = 25.0
 enemy_id = "shambler"
-count = 14
-interval_s = 0.7
+count = 100
+interval_s = 0.1
 
 [sub_resource type="Resource" id="Resource_w3"]
 script = ExtResource("3_wave")
 start_s = 55.0
 enemy_id = "shambler"
-count = 24
-interval_s = 0.5
+count = 220
+interval_s = 0.07
 
 [sub_resource type="Resource" id="Resource_w4"]
 script = ExtResource("3_wave")
 start_s = 85.0
 enemy_id = "shambler"
-count = 36
-interval_s = 0.4
+count = 360
+interval_s = 0.05
 
 [resource]
 script = ExtResource("2_mission")

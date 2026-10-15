@@ -6,12 +6,12 @@
 script = ExtResource("1_op")
 id = "artillery_strike"
 display_name = "Artillery Strike"
-shell_count = 5
+shell_count = 6
 target_radius = 3.0
-warning_s = 2.0
+warning_s = 1.2
 shell_interval_s = 0.35
-flight_time_s = 0.9
+flight_time_s = 0.7
 arc_height = 6.0
-shell_damage = 90.0
+shell_damage = 110.0
 blast_radius = 1.8
 launch_offset = Vector2(-10, 10)

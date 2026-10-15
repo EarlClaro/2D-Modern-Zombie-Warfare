@@ -14,6 +14,6 @@ projectile_speed = 14.0
 projectile_arc = 0.0
 projectile_accel = 0.85
 projectile_drop = 0.35
-ammo = 4
+ammo = 6
 can_fire_moving = true
 sfx_id = "missile"
