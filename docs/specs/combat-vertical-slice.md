@@ -1,6 +1,6 @@
 # Spec: Milestone 1 — Combat Vertical Slice
 
-Status: **v0.2 approved 2026-10-15 (D1–D5 accepted as recommended).** Increments 1.1 and 1.2 done; 1.3 next. Builds on the approved isometric foundation ([isometric-view.md](isometric-view.md), M0.5).
+Status: **v0.2 approved 2026-10-15 (D1–D5 accepted as recommended).** Increments 1.1–1.3 done; 1.4 (first playable battle scene) next. Builds on the approved isometric foundation ([isometric-view.md](isometric-view.md), M0.5).
 
 ## Purpose
 Prove that core combat is **satisfying and readable** on the isometric view with the fewest systems. Pillars tested: (1) combat feel, (4) isometric readability. Cards/deck (pillar 2) and mission variety (3) are out of scope.
@@ -48,6 +48,36 @@ Every definition has `validate() -> PackedStringArray` (empty = valid): positive
 **As built in 1.1:** all definitions extend `ContentDefinition` (`scripts/core/content_definition.gd`: `id` + `validate()` + id format `^[a-z][a-z0-9_]*$`). `ContentDb.load_from(root)` registers valid definitions only, collects `errors` (invalid fields, bad ids, duplicates per kind, missing dirs, wrong resource type, unknown `weapon_id`). `WeaponDefinition.PROJECTILE` is rejected by validation until M2.
 
 **As built in 1.2:** `TargetCandidate` (id, ground pos, alive) is the snapshot type. `TargetingService.pick` is nearest-first, range inclusive, exact ties → lowest id, stateless (no sticky targets). `WeaponState` starts ready, carries fractional overshoot so the long-run rate equals `shots_per_second`, never banks a burst while idle, and after a frame hitch of one interval or more drops the backlog and waits a full interval (found by a failing test, fixed).
+
+**As built in 1.3:** `MapDefinition` (ASCII rows, `.` grass / `=` road / `#` rock, `segment_is_walkable`), `StartUnit`, `WaveEntry`, `MissionDefinition` (validates geometry: core/spawn/path/start units walkable, path ends at the core, **every straight path segment stays off rock**, waves reference valid spawns and finish before the mission ends), `MissionRules` (ADR-007: fail wins ties, ends exactly once, first result final). `ContentDb` now also loads `data/maps` and `data/missions` and checks mission → unit/enemy ids.
+Shipped data: map `crossing` and mission `m1_hold_the_crossing` (core (3,20), spawn (20,3), MG nest (8,14), soldier (7,17), waves 5 @ 2 s / 12 @ 20 s / 25 @ 45 s, 90 s, core HP 500). Layout rationale: the route runs along ground (−1,+1), which is **screen-horizontal**, so the fight uses the widescreen; the rock wall runs down the main diagonal (screen-vertical) with a ~3-cell gap the route crosses. Rows (x → right on the grid, y → down; remember ground +X is screen down-right):
+```
+##.....................=
+.##...................==
+..##.................==.
+...##.##............==..
+....##.............==...
+.....##.........##==....
+......##.........==.....
+.......##.......==......
+........##.....==.......
+.....##..##...==.....#..
+..........#..==.........
+............==..........
+...........==...........
+..........==.##.........
+.........==...##..##....
+........==.....##.......
+.......==.......##......
+......==.........##.....
+.....==...........##....
+....==.......##....##...
+...==...............##..
+..==......#..........##.
+.==...................##
+==.....................#
+```
+The `.tres` files are the source of truth and hand-editable (a one-off generator script produced the first version; it is not kept in the repo).
 
 ## Interfaces (pure logic = `RefCounted`/static, testable headless)
 - `DamageService.compute(base: float, armor: float, falloff: float = 1.0) -> float`: `max(base − armor, base × MIN_DAMAGE_FRACTION) × falloff`, `MIN_DAMAGE_FRACTION = 0.1`. `DamageService.blast_falloff(distance, radius) -> float` (1.0 at centre → `MIN_FALLOFF` at edge, 0 outside).
@@ -98,7 +128,7 @@ Manual / measured (reported honestly as pending until done):
 |---|---|---|
 | 1.1 ☑ | Definitions + `ContentDb` + validation + `Health` + `DamageService` | tests 1, 2, 6 (done: 34 tests; map/mission/wave definitions arrive in 1.3) |
 | 1.2 ☑ | `TargetingService` + `WeaponState` | tests 3, 4 (done: 23 tests) |
-| 1.3 | `MissionRules` + `MissionDefinition`/map/waves data (`crossing` mission) | test 5 |
+| 1.3 ☑ | `MissionRules` + `MissionDefinition`/map/waves data (`crossing` mission) | test 5 (done: 41 tests) |
 | 1.4 | Battle scene: map build, core, shambler movement/attack, unit/nest firing (hitscan, no polish), `BattleController.step`, result panel + restart | test 7 + first playable (manual) |
 | 1.5 | Feedback pass (flash, recoil, tracer, spark, hit flash, death, shake, generated audio + caps, health bars) | manual criterion 9 |
 | 1.6 | Stress scenario + FPS measurement + tuning pass of `BALANCE.md` numbers; docs/changelog; hand over for the go/no-go | criteria 10, 11 |

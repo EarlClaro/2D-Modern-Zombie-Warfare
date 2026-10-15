@@ -17,7 +17,7 @@ scripts/iso/       IsoProjection (pure static, no nodes), IsoPicking, SortAnchor
 scripts/core/      ContentDefinition (base, id+validate), ContentDb (loads/validates data by id), GameSession (autoload, later), SeededRng helper
 scripts/combat/    DamageService (pure), WeaponController, ProjectileSystem, TargetingService
 scripts/cards/     CardDefinition(Resource), DeckState (pure), CommandPoints (pure), CardEffects
-scripts/missions/  MissionDefinition(Resource), Objective subclasses, MissionDirector
+scripts/missions/  MapDefinition, MissionDefinition, StartUnit, WaveEntry (Resources); MissionRules (pure win/fail, ADR-007); later: Objective subclasses, MissionDirector
 scripts/save/      SaveService (autoload, M5)
 data/              .tres definitions: cards, units, weapons, enemies, missions
 scenes/battle/     Battle.tscn composes: GroundLayer (TileMapLayer), UnitsLayer (y_sort), AirLayer, FxLayer, Camera, HUD

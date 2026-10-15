@@ -6,6 +6,8 @@
 - 1.2: `TargetCandidate`, `TargetingService` (nearest, inclusive range, tie → lowest id, ground distance), `WeaponState` (fire cadence, carry-over, no idle burst, hitch guard). 23 new tests (83 total, all pass).
 - Test runner: scripts that fail to compile now count as failures instead of hanging the run.
 
+- 1.3: `MapDefinition`, `StartUnit`, `WaveEntry`, `MissionDefinition` (geometry/path/wave validation), `MissionRules` (ADR-007), `ContentDb` maps/missions + reference checks. Data: map `crossing`, mission `m1_hold_the_crossing`. 41 new tests (124 total, all pass).
+
 ## Milestone 0.5 — Isometric spike (complete, approved 2026-10-15)
 - Added headless test runner (`tests/run_tests.gd`, `tests/test_case.gd`).
 - Added `IsoProjection` (`scripts/iso/iso_projection.gd`) with 9 tests (known values, round-trip, cell edges, ellipse, altitude, facing, sort key). All pass.

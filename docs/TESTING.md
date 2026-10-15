@@ -4,7 +4,7 @@
 - Custom headless runner (ADR-006) implemented. GUT not used.
 - Verified commands (2026-10-15):
   - `"$GODOT" --headless --path . --import --quit` — import/parse check; run it after adding new `class_name` scripts.
-  - `"$GODOT" --headless --path . --script tests/run_tests.gd` — 83 tests (26 iso + 34 from M1.1 + 12 `TargetingService` + 11 `WeaponState`), 0 failed, exit 0. Confirmed it reports `FAIL` and exits 1 when a test fails (temporary failing test, since removed).
+  - `"$GODOT" --headless --path . --script tests/run_tests.gd` — 124 tests (26 iso + 34 M1.1 + 23 M1.2 + 41 M1.3: 12 `MissionRules`, 11 `MapDefinition`, 18 `MissionDefinition`/db refs), 0 failed, exit 0. Confirmed it reports `FAIL` and exits 1 when a test fails (temporary failing test, since removed).
 - Writing tests: file `tests/test_*.gd`, `extends TestCase`, methods `test_*`; helpers `assert_true/eq/near/vec_near`. Prefer `preload` of the script under test.
 
 - Scene smoke check (one-off, 2026-10-15): spike scene loaded in a real window (`--path . --script <driver>`), camera set to 4 zoom/pan configs, 93 sample points mapped viewport→canvas→`IsoPicking`→cell with 0 mismatches; no engine errors. This drove the camera transform directly; **synthetic mouse events could not be injected**, so real mouse handling is manual-only. The driver lived outside the repo.
@@ -14,6 +14,7 @@
 - Mutation sanity check (2026-10-15, temporary edits reverted): weakening the damage floor, removing the dead-target guard in `Health`, and disabling the duplicate-id check each made tests fail (4 failing tests), confirming those tests detect regressions.
 - Runner robustness (2026-10-15): a test file that fails to compile previously made the runner error out before `quit()` and **hang**. It now reports `FAIL <file>: script failed to load/compile` and exits 1 (verified with a deliberately broken file, since removed). Always run the suite with a timeout (`timeout 90 ...`) when scripting it.
 - Mutation check for 1.2: reversing the tie-break, ignoring `alive`, making range exclusive, banking idle cooldown, and removing the hitch guard each failed tests (6 failures across 5 mutations); code restored.
+- Mutation check for 1.3: win-beats-fail on ties, removing the end-once guard, removing path-ends-at-core, removing the rock-crossing segment check, accepting waves that end after the mission, a broken `in_bounds`, and dropping the wave enemy-id reference check each failed tests (10 failures across 7 mutations); code restored.
 - Shipped-data tests assert relations (e.g. MG fires faster than rifle, nest is fixed), not balance values, so tuning doesn't break them.
 
 ## Strategy

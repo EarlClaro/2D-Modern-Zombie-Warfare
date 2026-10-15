@@ -7,15 +7,19 @@ extends RefCounted
 var weapons: Dictionary = {}  # id -> WeaponDefinition
 var units: Dictionary = {}  # id -> UnitDefinition
 var enemies: Dictionary = {}  # id -> EnemyDefinition
+var maps: Dictionary = {}  # id -> MapDefinition
+var missions: Dictionary = {}  # id -> MissionDefinition
 var errors: PackedStringArray = PackedStringArray()
 
 
-## Loads data/{weapons,units,enemies} under `root`, then verifies cross-references.
+## Loads data/{weapons,units,enemies,maps,missions} under `root`, then verifies cross-references.
 static func load_from(root: String = "res://data") -> ContentDb:
 	var db := ContentDb.new()
 	db._load_dir(root + "/weapons", "weapon")
 	db._load_dir(root + "/units", "unit")
 	db._load_dir(root + "/enemies", "enemy")
+	db._load_dir(root + "/maps", "map")
+	db._load_dir(root + "/missions", "mission")
 	db.validate_references()
 	return db
 
@@ -36,6 +40,14 @@ func enemy(id: String) -> EnemyDefinition:
 	return enemies.get(id)
 
 
+func map(id: String) -> MapDefinition:
+	return maps.get(id)
+
+
+func mission(id: String) -> MissionDefinition:
+	return missions.get(id)
+
+
 func add_weapon(def: WeaponDefinition) -> bool:
 	return _register(weapons, def)
 
@@ -48,12 +60,28 @@ func add_enemy(def: EnemyDefinition) -> bool:
 	return _register(enemies, def)
 
 
+func add_map(def: MapDefinition) -> bool:
+	return _register(maps, def)
+
+
+func add_mission(def: MissionDefinition) -> bool:
+	return _register(missions, def)
+
+
 ## Adds an error for every reference to an id that is not registered.
 func validate_references() -> void:
 	for id in units:
 		var u: UnitDefinition = units[id]
 		if not weapons.has(u.weapon_id):
 			errors.append("unit '%s': unknown weapon_id '%s'" % [id, u.weapon_id])
+	for id in missions:
+		var m: MissionDefinition = missions[id]
+		for su in m.start_units:
+			if su != null and not su.unit_id.is_empty() and not units.has(su.unit_id):
+				errors.append("mission '%s': start unit references unknown unit_id '%s'" % [id, su.unit_id])
+		for w in m.waves:
+			if w != null and not w.enemy_id.is_empty() and not enemies.has(w.enemy_id):
+				errors.append("mission '%s': wave references unknown enemy_id '%s'" % [id, w.enemy_id])
 
 
 func _register(table: Dictionary, def: ContentDefinition) -> bool:
@@ -100,3 +128,13 @@ func _load_dir(path: String, kind: String) -> void:
 					add_enemy(res)
 				else:
 					errors.append("%s is not an EnemyDefinition" % full)
+			"map":
+				if res is MapDefinition:
+					add_map(res)
+				else:
+					errors.append("%s is not a MapDefinition" % full)
+			"mission":
+				if res is MissionDefinition:
+					add_mission(res)
+				else:
+					errors.append("%s is not a MissionDefinition" % full)
