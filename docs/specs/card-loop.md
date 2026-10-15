@@ -1,6 +1,6 @@
 # Spec: Milestone 2 — First Card Loop
 
-Status: **v0.2 approved 2026-10-15 (D1–D7 as recommended).** Increment 2.1 done (pure deck/economy, 234 tests); 2.2 next. D3 applied: starter deck is 15. Builds on [combat-vertical-slice.md](combat-vertical-slice.md) (M1) and refines [deck-and-economy.md](deck-and-economy.md) (rules stay as written there except where D3 says otherwise).
+Status: **v0.2 approved 2026-10-15 (D1–D7 as recommended).** Increments 2.1 and 2.2 done (276 tests in the tree); 2.3 next. D3 applied: starter deck is 15. Builds on [combat-vertical-slice.md](combat-vertical-slice.md) (M1) and refines [deck-and-economy.md](deck-and-economy.md) (rules stay as written there except where D3 says otherwise).
 
 ## Purpose
 Prove pillar 2: **playing cards creates meaningful tactical choices.** The player no longer starts with pre-placed defenders; they build the defence in real time from a drawn hand, spending Command Points (CP), with every placement previewed on the ground plane.
@@ -60,3 +60,13 @@ Reward choice, deck editor, save, upgrades (M5); new enemy types and flow field 
 - Card scope is large for one milestone; the increments are ordered so each leaves a runnable game and 2.5 can be cut or deferred without breaking the rest.
 - Balance has a cliff (M1 lesson); card power compounds it. Mitigation: 2.6 sweeps before any tuning claim.
 - Hand UI at 1920×1080 with canvas_items stretch must stay clear of the play area; checked in screenshots, not assumed.
+
+## As built (M2.2)
+- `PlacementRules.check_deploy(map, cell, core_cell, deploy_radius, occupied)`: reasons in priority order are out of bounds, not buildable, too far from the core (ground distance, inclusive), occupied (core cell or any living player unit's current cell). `formation_offsets(n)`: one unit in the cell centre, several on a 0.28-tile ring (stays inside the cell).
+- `BattleController.check_card(slot, cell)` (never mutates) and `play_card(slot, cell)`; `CardPlayService.Reason.UNAVAILABLE` covers no deck, battle over, and operation/sortie cards (refused before any CP is spent until 2.4/2.5). `Result.placement` says why a target was invalid.
+- Deck RNG is separate from the simulation RNG (seeded from the battle seed), so card plays and reshuffles never change where enemies spawn; restart replays the same opening hand.
+- Area damage: `blast_radius > 0` on a hitscan weapon hits every living enemy within the ground circle around the target with `DamageService.blast_falloff` (1.0 at the centre, 0.25 at the edge) after armor; player units are never hit.
+- Placeholder art: the tank and Gatling use the generic placeholder bodies (the tank currently looks like a standing soldier); real art is a later pass.
+- Interim input/UI: keys 1-5 play that hand slot at the cell under the mouse; a text readout shows CP, pile sizes, hand and lockouts. The real hand UI and previews are 2.3.
+- Not yet verified by anyone: number-key input in a real window, and the sound of the tank cannon (it reuses the rifle sound).
+

@@ -104,7 +104,25 @@ func validate_references() -> void:
 		for w in m.waves:
 			if w != null and not w.enemy_id.is_empty() and not enemies.has(w.enemy_id):
 				errors.append("mission '%s': wave references unknown enemy_id '%s'" % [id, w.enemy_id])
+		if not m.deck_id.is_empty() and not decks.has(m.deck_id):
+			errors.append("mission '%s': unknown deck_id '%s'" % [id, m.deck_id])
+	_validate_card_units()
 	_validate_decks()
+
+
+## Cards must point at real units of the right kind: deployments are ground units, sorties are aircraft.
+func _validate_card_units() -> void:
+	for id in cards:
+		var c: CardDefinition = cards[id]
+		if c.card_kind == CardDefinition.CardKind.OPERATION:
+			continue
+		var u: UnitDefinition = units.get(c.unit_id)
+		if u == null:
+			errors.append("card '%s': unknown unit_id '%s'" % [id, c.unit_id])
+		elif c.card_kind == CardDefinition.CardKind.DEPLOYMENT and u.height_class != UnitDefinition.HeightClass.GROUND:
+			errors.append("card '%s': deployment unit '%s' must be a ground unit" % [id, c.unit_id])
+		elif c.card_kind == CardDefinition.CardKind.SORTIE and u.height_class == UnitDefinition.HeightClass.GROUND:
+			errors.append("card '%s': sortie unit '%s' must be an aircraft" % [id, c.unit_id])
 
 
 ## Deck legality needs the rules and the card table, so it is checked here once everything is loaded.

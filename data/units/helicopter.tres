@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="UnitDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/unit_definition.gd" id="1_unit"]
+
+[resource]
+script = ExtResource("1_unit")
+id = "helicopter"
+display_name = "Helicopter"
+max_health = 200.0
+armor = 0.0
+move_speed = 3.0
+footprint_radius = 0.5
+height_class = 1
+weapon_id = "heli_gun"
+placeholder_color = Color(0.3, 0.35, 0.4, 1)

@@ -13,6 +13,10 @@ extends ContentDefinition
 @export var path_cells: Array[Vector2i] = []
 @export var start_units: Array[StartUnit] = []
 @export var waves: Array[WaveEntry] = []
+## Optional: the deck id the player draws from (empty = no cards, as in M1 missions).
+@export var deck_id: String = ""
+## Deployment cards may only be placed within this many tiles of the core.
+@export var deploy_radius: float = 10.0
 
 
 func kind() -> String:
@@ -47,6 +51,8 @@ func validate() -> PackedStringArray:
 			errs.append(_err("map '%s' is invalid (%d error(s)); fix the map first" % [map.id, map_errs.size()]))
 	if map_ok:
 		_validate_geometry(errs)
+	if deploy_radius <= 0.0:
+		errs.append(_err("deploy_radius must be > 0"))
 	_validate_start_units(errs, map_ok)
 	_validate_waves(errs)
 	return errs

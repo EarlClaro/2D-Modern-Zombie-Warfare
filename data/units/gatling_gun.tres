@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="UnitDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/unit_definition.gd" id="1_unit"]
+
+[resource]
+script = ExtResource("1_unit")
+id = "gatling_gun"
+display_name = "Gatling Gun"
+max_health = 90.0
+armor = 0.0
+move_speed = 0.0
+footprint_radius = 0.45
+height_class = 0
+weapon_id = "gatling"
+placeholder_color = Color(0.35, 0.5, 0.3, 1)

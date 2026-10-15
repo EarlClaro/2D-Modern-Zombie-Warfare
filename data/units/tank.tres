@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="UnitDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/unit_definition.gd" id="1_unit"]
+
+[resource]
+script = ExtResource("1_unit")
+id = "tank"
+display_name = "Tank"
+max_health = 400.0
+armor = 5.0
+move_speed = 1.0
+footprint_radius = 0.6
+height_class = 0
+weapon_id = "tank_cannon"
+placeholder_color = Color(0.45, 0.5, 0.25, 1)

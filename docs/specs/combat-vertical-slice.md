@@ -26,7 +26,7 @@ Prove that core combat is **satisfying and readable** on the isometric view with
 Cards/deck/CP, multiple enemy types, flow field (decision stays A6/M3), separation steering beyond a tiny spawn jitter, arcing/physical projectiles (see Decision D1), upgrades, save, final art/audio, damage types/resistances (only `armor` now; type resistances arrive with the Brute in M3).
 
 ## Tick order (fixed, in `BattleController.step(delta)`; driven by `_physics_process`, callable manually for tests)
-1. Advance mission clock; spawn due wave entries (seeded RNG for spawn jitter).
+1. Advance mission clock; (M2.2) tick the card economy if the mission has a deck; spawn due wave entries (seeded RNG for spawn jitter).
 2. Enemies: choose behaviour (attack target in range, else advance along path); apply their attacks (cooldown-gated) → damage queued.
 3. Player units: acquire target (`TargetingService`), update weapon cooldown, fire → hitscan resolves immediately → damage queued. Mobile units process move orders.
 4. Apply all queued damage via `DamageService`; collect deaths (dead entities are removed **after** all damage this tick, so simultaneous kills are consistent).

@@ -11,7 +11,7 @@ var discard: Array[String] = []
 var draw_timer: float = 0.0
 var lockouts: Dictionary = {}  # card id -> seconds remaining
 
-const EPS: float = 1e-6  # a 20 s lockout ticked in 0.1 s steps must end at 20 s, not one float-error later
+const EPS: float = 1e-6  # a 4 s draw or 20 s lockout ticked in small steps must land on time, not one float-error later
 
 var _deck: Array[String]
 var _rng: RandomNumberGenerator
@@ -59,11 +59,11 @@ func tick(delta: float) -> void:
 	if hand.size() >= rules.hand_cap:
 		return  # timer pauses at the cap and resumes from where it was
 	draw_timer += maxf(delta, 0.0)
-	while draw_timer >= rules.draw_interval_s:
+	while draw_timer + EPS >= rules.draw_interval_s:
 		if not draw_one():
 			draw_timer = rules.draw_interval_s  # nothing to draw (or hand now full): stay ready, don't bank time
 			return
-		draw_timer -= rules.draw_interval_s
+		draw_timer = maxf(draw_timer - rules.draw_interval_s, 0.0)
 		if hand.size() >= rules.hand_cap:
 			return
 

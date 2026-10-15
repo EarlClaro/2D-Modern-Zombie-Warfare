@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="WeaponDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/weapon_definition.gd" id="1_weapon"]
+
+[resource]
+script = ExtResource("1_weapon")
+id = "tank_cannon"
+damage = 45.0
+shots_per_second = 0.5
+range_tiles = 9.0
+delivery = 0
+blast_radius = 1.6
+sfx_id = "shot_rifle"

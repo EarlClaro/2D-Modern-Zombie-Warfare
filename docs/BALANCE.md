@@ -67,6 +67,15 @@ So positioning swings the result from "always lose" to "always win" — the slic
 
 Open tuning questions for your playtest: is "50–70 % to hold by default" the right tension? is 90 s the right length? do you want the soldier to start further forward/back?
 
+## Milestone 2 values (spec: [card-loop.md](specs/card-loop.md)): all **unmeasured first guesses**, swept in 2.6
+| Entity | Key stats |
+|---|---|
+| Gatling gun | HP 90, fixed, 5 dmg x 18 shots/s, range 7 |
+| Tank | HP 400, armor 5, speed 1.0, cannon 45 dmg x 0.5 shots/s, range 9, blast radius 1.6 (falloff 1.0 to 0.25) |
+| Helicopter | HP 200, speed 3, 6 dmg x 12 shots/s, range 8 (data only until 2.5) |
+| Rifle squad | 3 x rifle soldier |
+| Mission `m2_card_defense` | 120 s, core 500 HP, deploy radius 10; waves 6 @ 4 s (0.9 s), 14 @ 25 s (0.7), 24 @ 55 s (0.5), 36 @ 85 s (0.4) = 80 Shamblers. **Not yet tuned.** A screenshot run with a 5-zombie probe says nothing about the real waves |
+
 ## Performance (measured, Milestone 1.6)
 **Hardware:** Windows 11 laptop, Intel Core i7-1165G7, 23.7 GB RAM, NVIDIA GeForce MX330 (used by Godot; Intel Iris Xe also present), Forward+ renderer, 1920×1061 window. A low-end GPU is a deliberately conservative baseline.
 **Method:** `tools/perf_sim.gd` (simulation only, headless) and `tools/perf_fps.gd` (real scene in a window, 7 s warm-up, 12 s sampled, vsync off unless stated). Repeated runs on this laptop vary a lot (power/thermal state), so figures are ranges.

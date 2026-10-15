@@ -5,7 +5,8 @@ extends RefCounted
 ## invalid target. `target_ok` is the caller's placement verdict (PlacementRules, M2.2); pass true when the
 ## card has not been aimed yet, to ask "is this card playable at all right now?".
 
-enum Reason { OK, EMPTY_SLOT, UNKNOWN_CARD, LOCKED_OUT, INSUFFICIENT_CP, INVALID_TARGET }
+## UNAVAILABLE is for callers (e.g. no deck in this mission, battle over, card kind not supported yet).
+enum Reason { OK, EMPTY_SLOT, UNKNOWN_CARD, LOCKED_OUT, INSUFFICIENT_CP, INVALID_TARGET, UNAVAILABLE }
 
 
 class Result:
@@ -13,6 +14,7 @@ class Result:
 	var ok: bool = false
 	var reason: Reason = Reason.EMPTY_SLOT
 	var card: CardDefinition = null  # set whenever the card id is known, even on failure
+	var placement: PlacementRules.Reason = PlacementRules.Reason.OK  # why INVALID_TARGET, when the caller knows
 
 	func _init(p_reason: Reason, p_card: CardDefinition = null) -> void:
 		reason = p_reason

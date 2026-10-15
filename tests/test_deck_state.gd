@@ -64,6 +64,18 @@ func test_periodic_draw_every_interval_while_below_cap() -> void:
 	assert_eq(d.hand.size(), 5, "one card at 4 s")
 
 
+func test_draw_lands_on_time_when_ticked_in_small_steps() -> void:
+	# 240 ticks of 1/60 s sum to just under 4.0 in floats; the draw must still happen at the 4 s tick.
+	for delta in [1.0 / 60.0, 1.0 / 30.0, 0.1, 1.0 / 120.0]:
+		var d := _deck(15)
+		var steps := int(round(4.0 / delta))
+		for i in steps - 1:
+			d.tick(delta)
+		assert_eq(d.hand.size(), 4, "not before 4 s (delta %s)" % str(delta))
+		d.tick(delta)
+		assert_eq(d.hand.size(), 5, "exactly at 4 s (delta %s)" % str(delta))
+
+
 func test_draw_stops_at_cap_and_timer_pauses() -> void:
 	var d := _deck(15)
 	d.tick(4.0)

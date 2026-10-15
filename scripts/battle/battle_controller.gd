@@ -2,7 +2,7 @@ class_name BattleController
 extends Node2D
 ## Owns one battle. `step(delta)` is the whole simulation tick (driven by _physics_process; tests call it
 ## directly). Fixed order, see docs/specs/combat-vertical-slice.md:
-##   1 clock + spawns  2 enemies  3 player units  4 apply damage, remove the dead  5 mission rules
+##   1 clock + card economy + spawns  2 enemies  3 player units  4 apply damage, remove the dead  5 mission rules
 ## All rules run in ground space. Presentation (tracers, HUD) only reacts to signals/state.
 
 signal battle_started
@@ -15,6 +15,10 @@ signal hit_landed(target: Node, amount: float)
 signal enemy_died(enemy: BattleEnemy)
 signal unit_died(unit: BattleUnit)
 signal core_damaged(amount: float)
+## An area weapon went off at `center` (ground position, tiles) with the given ground radius.
+signal blast_landed(center: Vector2, radius: float)
+## A card was played successfully (units are already in the battle).
+signal card_played(card: CardDefinition, cell: Vector2i)
 
 const SPAWN_JITTER: float = 1.0  # tiles
 const LANE_JITTER: float = 0.9
@@ -51,9 +55,13 @@ var stats: Dictionary = {"spawned": 0, "kills": 0, "shots": 0, "units_lost": 0}
 var core: BattleCore
 var units: Array[BattleUnit] = []
 var enemies: Array[BattleEnemy] = []
+## Card economy; both null in missions without a deck_id. Ticked inside step(), mutated only by play_card().
+var deck: DeckState
+var points: CommandPoints
 
 var _rules: MissionRules
 var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
+var _deck_rng: RandomNumberGenerator = RandomNumberGenerator.new()  # separate so playing cards never shifts spawn jitter
 var _seed: int = 0  # seed of the current battle; restart replays it
 var _next_uid: int = 1
 var _wave_spawned: Array[int] = []
@@ -122,6 +130,7 @@ func setup(p_db: ContentDb, p_mission: MissionDefinition, p_seed: int) -> void:
 	_clear_dynamic()
 	_seed = p_seed
 	_rng.seed = p_seed
+	_deck_rng.seed = p_seed * 7919 + 13
 	elapsed = 0.0
 	stats = {"spawned": 0, "kills": 0, "shots": 0, "units_lost": 0}
 	_next_uid = 1
@@ -137,7 +146,8 @@ func setup(p_db: ContentDb, p_mission: MissionDefinition, p_seed: int) -> void:
 	_build_map()
 	_spawn_core()
 	for su in mission.start_units:
-		_spawn_unit(su)
+		_spawn_unit_at(su.unit_id, IsoProjection.cell_center(su.cell))
+	_setup_cards()
 	if _camera != null and is_inside_tree():
 		_camera.position = IsoProjection.ground_to_screen(Vector2(mission.map.width(), mission.map.height()) * 0.5)
 	battle_started.emit()
@@ -185,8 +195,11 @@ func _physics_process(delta: float) -> void:
 func step(delta: float) -> void:
 	if _rules == null or _rules.is_ended() or delta <= 0.0:
 		return
-	# 1. clock + spawns
+	# 1. clock + card economy + spawns
 	elapsed += delta
+	if deck != null:
+		deck.tick(delta)
+		points.tick(delta)
 	_spawn_due_enemies()
 	_pending.clear()
 	# 2. enemies, 3. player units (both only *queue* damage)
@@ -229,7 +242,8 @@ func _enemy_phase(delta: float) -> void:
 			var target: Object = by_id[tid]
 			e.face_toward((target as IsoEntity).ground_pos)
 			if e.attack_state.tick(delta, true):
-				_pending.append(Hit.new(target, DamageService.compute(e.def.attack_damage, 0.0)))
+				var armor: float = (target as BattleUnit).def.armor if target is BattleUnit else 0.0
+				_pending.append(Hit.new(target, DamageService.compute(e.def.attack_damage, armor)))
 		else:
 			e.attack_state.tick(delta, false)
 			e.advance_path(delta)
@@ -252,9 +266,24 @@ func _unit_phase(delta: float) -> void:
 		if u.weapon_state.tick(delta, tid != TargetingService.NO_TARGET):
 			var target: BattleEnemy = by_id[tid]
 			u.face_toward(target.ground_pos)
-			_pending.append(Hit.new(target, DamageService.compute(u.weapon.damage, target.def.armor)))
+			if u.weapon.blast_radius > 0.0:
+				_queue_blast(target.ground_pos, u.weapon)
+			else:
+				_pending.append(Hit.new(target, DamageService.compute(u.weapon.damage, target.def.armor)))
 			stats["shots"] += 1
 			shot_fired.emit(u, target)
+
+
+## Area damage on the ground plane: every living enemy within the radius takes the weapon's damage
+## with armor, then distance falloff. Friendly fire is off (only enemies are hit).
+func _queue_blast(center: Vector2, weapon: WeaponDefinition) -> void:
+	for e in enemies:
+		if not e.is_alive():
+			continue
+		var falloff := DamageService.blast_falloff(e.ground_pos.distance_to(center), weapon.blast_radius)
+		if falloff > 0.0:
+			_pending.append(Hit.new(e, DamageService.compute(weapon.damage, e.def.armor, falloff)))
+	blast_landed.emit(center, weapon.blast_radius)
 
 
 func _apply_damage() -> void:
@@ -309,6 +338,11 @@ func _unhandled_input(event: InputEvent) -> void:
 		order_move_all(IsoPicking.cell_under_mouse(self))
 	elif event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_R:
 		restart()
+	elif event is InputEventKey and event.pressed and not event.echo and deck != null and not is_ended():
+		# Interim card input (2.2): number keys play that hand slot on the cell under the mouse. The real hand UI is 2.3.
+		var slot: int = event.keycode - KEY_1
+		if slot >= 0 and slot < 9:
+			play_card(slot, IsoPicking.cell_under_mouse(self))
 
 
 func _process(delta: float) -> void:
@@ -334,6 +368,70 @@ func _update_core_fade(delta: float) -> void:
 				faded = true
 				break
 	core.update_fade(faded, delta)
+
+
+# --- cards ---------------------------------------------------------------------------------------
+
+func has_cards() -> bool:
+	return deck != null
+
+
+## Cells holding the core or a living player unit (deployments cannot be placed there).
+func occupied_cells() -> Array[Vector2i]:
+	var out: Array[Vector2i] = [mission.core_cell]
+	for u in units:
+		if u.is_alive():
+			out.append(IsoProjection.cell_of(u.ground_pos))
+	return out
+
+
+## Would the card in hand slot `hand_index` be accepted on `cell`? Never changes state.
+func check_card(hand_index: int, cell: Vector2i) -> CardPlayService.Result:
+	if deck == null or is_ended():
+		return CardPlayService.Result.new(CardPlayService.Reason.UNAVAILABLE)
+	var def: CardDefinition = cards_by_id().get(deck.card_at(hand_index))
+	var placement := PlacementRules.Reason.OK
+	if def != null:
+		if def.card_kind != CardDefinition.CardKind.DEPLOYMENT:
+			# Operations and sorties are added in 2.4 / 2.5; until then they are refused before any CP is spent.
+			return CardPlayService.Result.new(CardPlayService.Reason.UNAVAILABLE, def)
+		placement = PlacementRules.check_deploy(mission.map, cell, mission.core_cell, mission.deploy_radius, occupied_cells())
+	var res := CardPlayService.check(deck, points, cards_by_id(), hand_index, placement == PlacementRules.Reason.OK)
+	res.placement = placement
+	return res
+
+
+## Plays the card in hand slot `hand_index` on `cell`: validates, then spends CP, discards the card, starts its
+## lockout and spawns the units. A rejected play changes nothing.
+func play_card(hand_index: int, cell: Vector2i) -> CardPlayService.Result:
+	var check := check_card(hand_index, cell)
+	if not check.ok:
+		return check
+	var res := CardPlayService.try_play(deck, points, cards_by_id(), hand_index, true)
+	res.placement = PlacementRules.Reason.OK
+	var card := res.card
+	var centre := IsoProjection.cell_center(cell)
+	for off in PlacementRules.formation_offsets(card.unit_count):
+		_spawn_unit_at(card.unit_id, centre + off)
+	card_played.emit(card, cell)
+	return res
+
+
+func cards_by_id() -> Dictionary:
+	return db.cards if db != null else {}
+
+
+func _setup_cards() -> void:
+	deck = null
+	points = null
+	if mission.deck_id.is_empty() or db.deck_rules == null:
+		return
+	var d := db.deck(mission.deck_id)
+	if d == null:
+		return
+	deck = DeckState.new(db.deck_rules, d.ids(), _deck_rng)
+	deck.start()
+	points = CommandPoints.from_rules(db.deck_rules)
 
 
 # --- building the world --------------------------------------------------------------------------
@@ -394,15 +492,17 @@ func _spawn_core() -> void:
 	_entities.add_child(core)
 
 
-func _spawn_unit(su: StartUnit) -> void:
-	var def := db.unit(su.unit_id)
+func _spawn_unit_at(unit_id: String, ground: Vector2) -> BattleUnit:
+	var def := db.unit(unit_id)
 	var u := BattleUnit.new()
 	u.name = "Unit%d" % _next_uid
-	u.setup(_next_uid, def, db.weapon(def.weapon_id), su.cell)
+	u.setup(_next_uid, def, db.weapon(def.weapon_id), IsoProjection.cell_of(ground))
+	u.ground_pos = ground
 	_next_uid += 1
 	_entities.add_child(u)
 	u.shadow = _add_shadow(u, def.footprint_radius + 0.1)
 	units.append(u)
+	return u
 
 
 func _spawn_enemy(w: WaveEntry) -> void:

@@ -16,6 +16,7 @@ Source of intent: [MasterPrompt.md](MasterPrompt.md). Where docs and the master 
 ## Commands that exist today
 - Import/parse check: `"$GODOT" --headless --path . --import --quit`
 - Run game: `"$GODOT" --path .` (main scene = `scenes/battle/battle.tscn`); spike scene: `"$GODOT" --path . scenes/dev/iso_spike.tscn`
+- Card mission (M2): `"$GODOT" --path . -- --mission=m2_card_defense` (number keys 1-5 play hand slots at the cursor; interim until the hand UI in 2.3).
 - Stress mission: `"$GODOT" --path . -- --mission=s1_stress_horde`; measurements/sweeps: `tools/perf_sim.gd`, `tools/perf_fps.gd` (windowed), `tools/tune.gd`, `tools/tune_pos.gd` (usage in each file header; results in docs/BALANCE.md).
 - Run tests: `"$GODOT" --headless --path . --script tests/run_tests.gd` (run `--import` first after adding `class_name` scripts). Always wrap in `timeout 120` when scripting. The runner fails any test during which an error-level message is logged, and runs tests in the first frame (`TestCase.tree` is a live SceneTree).
 

@@ -16,7 +16,7 @@ Ground-plane truth · data-driven `Resource` definitions vs runtime state · exp
 scripts/iso/       IsoProjection (pure static, no nodes), IsoPicking, SortAnchor
 scripts/core/      ContentDefinition (base, id+validate), ContentDb (loads/validates data by id), GameSession (autoload, later), SeededRng helper
 scripts/combat/    DamageService (pure), WeaponController, ProjectileSystem, TargetingService
-scripts/cards/     CardDefinition, DeckDefinition, DeckRules (Resources); DeckState, CommandPoints, CardPlayService (pure, M2.1); later PlacementRules, CardEffects
+scripts/cards/     CardDefinition, DeckDefinition, DeckRules (Resources); DeckState, CommandPoints, CardPlayService (pure, M2.1); PlacementRules (pure, M2.2); later CardEffects
 scripts/missions/  MapDefinition, MissionDefinition, StartUnit, WaveEntry (Resources); MissionRules (pure win/fail, ADR-007); later: Objective subclasses, MissionDirector
 scripts/save/      SaveService (autoload, M5)
 data/              .tres definitions: cards, units, weapons, enemies, missions
@@ -35,8 +35,8 @@ MissionDirector listens to signals (core damaged, enemy died, timer) → evaluat
 HUD presenters read state via signals; never mutate rules.
 ```
 
-## Battle tick (as built, M1.4)
-`BattleController.step(delta)`: (1) clock + wave spawns (seeded RNG), (2) enemies choose target/attack or advance and queue damage, (3) player units move/target/fire (hitscan) and queue damage, (4) apply all queued damage via `DamageService`/`Health`, then remove the dead, (5) `MissionRules.evaluate`. `_physics_process` calls `step` unless `auto_step` is false (tests step manually). Presentation reacts to signals (`shot_fired`, `enemy_died`, `battle_ended`, ...) and never feeds back into rules.
+## Battle tick (as built, M1.4; cards M2.2)
+`BattleController.step(delta)`: (1) clock, **card economy (`DeckState.tick`, `CommandPoints.tick`)**, wave spawns (seeded RNG), (2) enemies choose target/attack or advance and queue damage, (3) player units move/target/fire (hitscan; weapons with `blast_radius` queue falloff damage on every enemy in the ground circle, no friendly fire) and queue damage, (4) apply all queued damage via `DamageService`/`Health`, then remove the dead, (5) `MissionRules.evaluate`. `_physics_process` calls `step` unless `auto_step` is false (tests step manually). Card plays happen between ticks via `play_card(slot, cell)` (validate, spend, discard, lockout, spawn units); the deck has its own seeded RNG so playing cards never shifts spawn jitter. Presentation reacts to signals (`shot_fired`, `blast_landed`, `card_played`, `enemy_died`, `battle_ended`, ...) and never feeds back into rules.
 
 ## Presentation (as built, M1.5)
 `BattleFeedback` (a child of the battle) is the only presenter: it subscribes to controller signals and spawns transient effects on the controller's Fx layer, plays sounds through `SfxService`, shakes the camera and flashes/kicks entities. Rules never read anything it produces (verified by a test that runs the same battle with and without it). Entities carry only cosmetic helpers (`IsoEntity.flash`, `play_death`, `BattleUnit.kick`). Sound pooling is pure logic (`SfxVoicePool`).

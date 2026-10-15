@@ -215,3 +215,80 @@ func test_db_reports_missing_rules_when_a_deck_exists() -> void:
 	db.add_deck(d)
 	db.validate_references()
 	assert_true(_has(db.errors, "deck rules are missing"))
+
+
+# --- card -> unit references (2.2) -----------------------------------------------------------------------
+
+func test_shipped_card_units_exist_with_the_right_height_class() -> void:
+	var db := ContentDb.load_from("res://data")
+	assert_true(db.is_valid(), "\n".join(db.errors))
+	assert_true(db.unit("helicopter").height_class != UnitDefinition.HeightClass.GROUND)
+	for cid in ["rifle_squad", "gatling_gun", "tank"]:
+		assert_eq(db.unit(db.card(cid).unit_id).height_class, UnitDefinition.HeightClass.GROUND, cid)
+
+
+func _db_with_card(unit_id: String, kind: CardDefinition.CardKind) -> ContentDb:
+	var db := ContentDb.load_from("res://data")
+	db.errors.clear()
+	var c := _card("test_card")
+	c.card_kind = kind
+	c.unit_id = unit_id
+	db.add_card(c)
+	db.validate_references()
+	return db
+
+
+func test_card_with_an_unknown_unit_is_a_reference_error() -> void:
+	var db := _db_with_card("ghost_unit", CardDefinition.CardKind.DEPLOYMENT)
+	assert_true(_has(db.errors, "card 'test_card': unknown unit_id 'ghost_unit'"))
+
+
+func test_deployment_cannot_name_an_aircraft_and_sortie_cannot_name_a_ground_unit() -> void:
+	var dep := _db_with_card("helicopter", CardDefinition.CardKind.DEPLOYMENT)
+	assert_true(_has(dep.errors, "must be a ground unit"))
+	var sortie := _db_with_card("tank", CardDefinition.CardKind.SORTIE)
+	assert_true(_has(sortie.errors, "must be an aircraft"))
+
+
+func test_mission_with_an_unknown_deck_is_a_reference_error() -> void:
+	var db := ContentDb.load_from("res://data")
+	db.errors.clear()
+	var m: MissionDefinition = db.mission("m2_card_defense").duplicate()
+	m.id = "m2_bad_deck"
+	m.deck_id = "ghost_deck"
+	assert_true(db.add_mission(m))
+	db.validate_references()
+	assert_true(_has(db.errors, "mission 'm2_bad_deck': unknown deck_id 'ghost_deck'"))
+
+
+func test_mission_deploy_radius_must_be_positive() -> void:
+	var db := ContentDb.load_from("res://data")
+	var m: MissionDefinition = db.mission("m2_card_defense").duplicate()
+	m.deploy_radius = 0.0
+	assert_true(_has(m.validate(), "deploy_radius"))
+
+
+func test_card_mission_shipped_data_gives_the_player_room_to_build() -> void:
+	var db := ContentDb.load_from("res://data")
+	var m := db.mission("m2_card_defense")
+	assert_true(m.start_units.is_empty(), "defence is built from cards")
+	assert_true(db.deck(m.deck_id) != null)
+	var free_cells := 0
+	for y in m.map.height():
+		for x in m.map.width():
+			var cell := Vector2i(x, y)
+			if PlacementRules.check_deploy(m.map, cell, m.core_cell, m.deploy_radius, []) == PlacementRules.Reason.OK:
+				free_cells += 1
+	assert_true(free_cells >= 20, "at least 20 buildable cells in the deploy zone (found %d)" % free_cells)
+
+
+func test_unit_armor_must_not_be_negative() -> void:
+	var u := UnitDefinition.new()
+	u.id = "armored"
+	u.display_name = "A"
+	u.max_health = 10.0
+	u.weapon_id = "rifle"
+	u.armor = -1.0
+	assert_true(_has(u.validate(), "armor"))
+	u.armor = 4.0
+	assert_eq(u.validate().size(), 0)

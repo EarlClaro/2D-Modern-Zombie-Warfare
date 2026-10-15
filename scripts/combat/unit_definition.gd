@@ -6,6 +6,8 @@ enum HeightClass { GROUND, LOW_AIR, HIGH_AIR }
 
 @export var display_name: String = ""
 @export var max_health: float = 0.0
+## Flat damage reduction against every hit (DamageService keeps a minimum-damage floor).
+@export var armor: float = 0.0
 @export var move_speed: float = 0.0  # tiles per second
 @export var footprint_radius: float = 0.3  # tiles, ground plane
 @export var height_class: HeightClass = HeightClass.GROUND
@@ -23,6 +25,8 @@ func validate() -> PackedStringArray:
 		errs.append(_err("display_name is empty"))
 	if max_health <= 0.0:
 		errs.append(_err("max_health must be > 0"))
+	if armor < 0.0:
+		errs.append(_err("armor must be >= 0"))
 	if move_speed < 0.0:
 		errs.append(_err("move_speed must be >= 0 (0 = fixed)"))
 	if footprint_radius <= 0.0:
