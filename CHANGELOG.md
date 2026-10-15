@@ -1,6 +1,9 @@
 # Changelog
 
-## Milestone 1 — Combat vertical slice (in progress)
+## Milestone 2 — First card loop (in progress; plan approved 2026-10-15, decisions D1–D7 as recommended)
+- 2.1: pure deck and economy. `CardDefinition`, `DeckDefinition`, `DeckRules` (+ deck legality), `DeckState`, `CommandPoints`, `CardPlayService`; `ContentDb` loads cards/decks/rules and rejects illegal decks and unaffordable cards. Data: 5 cards (`rifle_squad`, `gatling_gun`, `tank`, `artillery_strike`, `helicopter_support`), `starter` deck (15), `deck_rules`. Starter deck is 15, not 16 (D3). 50 new tests (228 with the M2.1 work alone; 234 in the tree now because 6 sprite-sheet tests from separate art work were added meanwhile; all pass); mutation check 15/15 caught after adding a test for the reshuffle (a mutation that removed the shuffle had survived). Card → unit reference checks land in 2.2.
+
+## Milestone 1 — Combat vertical slice (complete; exit gate treated as go on 2026-10-15)
 - 1.1: `ContentDefinition` base, `WeaponDefinition`, `UnitDefinition`, `EnemyDefinition`, `ContentDb` (validation, duplicate/unknown-id reporting), `Health`, `DamageService` (armor with min-damage floor, blast falloff). Data: weapons `rifle`, `mg`; units `rifle_soldier`, `mg_nest`; enemy `shambler`. 34 new tests (60 total, all pass).
 
 - 1.2: `TargetCandidate`, `TargetingService` (nearest, inclusive range, tie → lowest id, ground distance), `WeaponState` (fire cadence, carry-over, no idle burst, hitch guard). 23 new tests (83 total, all pass).
@@ -15,6 +18,7 @@
 
 - 1.6: stress mission `s1_stress_horde` (100 Shamblers), launch options `--mission=<id> --seed=<n>` (tested parser), FPS readout in the HUD, `tools/` (perf_sim, perf_fps, tune, tune_pos) for reproducible measurements. Performance: ground shadows are built once instead of every frame (500 enemies 40 → 98–119 FPS). Readability: wider spawn/lane spread so a horde is a crowd, not a column. Balance: waves retuned to 6/16/36 (default loadout ≈ 70 % win, soldier position decides the outcome); evidence in BALANCE.md. Wave-schedule test now derives from mission data. 4 new tests + 3 shadow tests (178 total, all pass).
 - **Milestone 1 status:** all six increments done; awaiting the user's go / tune / no-go.
+
 
 ## Milestone 0.5 — Isometric spike (complete, approved 2026-10-15)
 - Added headless test runner (`tests/run_tests.gd`, `tests/test_case.gd`).

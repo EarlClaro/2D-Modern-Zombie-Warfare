@@ -4,7 +4,7 @@
 - Custom headless runner (ADR-006) implemented. GUT not used.
 - Verified commands (2026-10-15):
   - `"$GODOT" --headless --path . --import --quit` — import/parse check; run it after adding new `class_name` scripts.
-  - `"$GODOT" --headless --path . --script tests/run_tests.gd` — 178 tests (26 iso + 34 M1.1 + 23 M1.2 + 41 M1.3 + 13 M1.4 + 34 M1.5 + 7 M1.6: 4 launch-option parsing, 3 shadow), 0 failed, exit 0 (the whole suite runs in a few seconds). Confirmed it reports `FAIL` and exits 1 when a test fails (temporary failing test, since removed).
+  - `"$GODOT" --headless --path . --script tests/run_tests.gd` — 234 tests (178 through M1.6 + 50 M2.1: 7 command points, 18 deck state, 10 card play, 15 card/rules/deck content + 6 sprite-sheet tests from separate, concurrent art work), 0 failed, exit 0 (the whole suite runs in a few seconds). Confirmed it reports `FAIL` and exits 1 when a test fails (temporary failing test, since removed).
 - Writing tests: file `tests/test_*.gd`, `extends TestCase`, methods `test_*`; helpers `assert_true/eq/near/vec_near`. Prefer `preload` of the script under test.
 
 - Scene smoke check (one-off, 2026-10-15): spike scene loaded in a real window (`--path . --script <driver>`), camera set to 4 zoom/pan configs, 93 sample points mapped viewport→canvas→`IsoPicking`→cell with 0 mismatches; no engine errors. This drove the camera transform directly; **synthetic mouse events could not be injected**, so real mouse handling is manual-only. The driver lived outside the repo.

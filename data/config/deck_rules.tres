@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="DeckRules" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/cards/deck_rules.gd" id="1_rules"]
+
+[resource]
+script = ExtResource("1_rules")
+id = "default"
+deck_min = 12
+deck_max = 24
+initial_hand = 4
+hand_cap = 5
+draw_interval_s = 4.0
+cp_start = 5.0
+cp_cap = 10.0
+cp_regen_interval_s = 1.5

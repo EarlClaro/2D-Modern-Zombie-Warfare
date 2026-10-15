@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CardDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/cards/card_definition.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = "helicopter_support"
+display_name = "Helicopter Support"
+description = "A gunship strafes the area for a short time, then leaves."
+card_kind = 2
+cost = 5
+lockout_s = 25.0
+max_copies = 3
+unit_id = "helicopter"
+unit_count = 1
+effect_id = ""

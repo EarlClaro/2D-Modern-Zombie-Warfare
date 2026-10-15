@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CardDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/cards/card_definition.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = "rifle_squad"
+display_name = "Rifle Squad"
+description = "Three riflemen. Cheap, mobile, fragile."
+card_kind = 0
+cost = 2
+lockout_s = 0.0
+max_copies = 3
+unit_id = "rifle_soldier"
+unit_count = 3
+effect_id = ""

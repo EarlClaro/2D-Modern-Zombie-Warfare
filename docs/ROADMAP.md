@@ -6,8 +6,8 @@ Legend: ☐ not started · ◐ in progress · ☑ done (acceptance criteria chec
 |---|---|---|
 | 0 Specification foundation | ☑ | Docs written; user approved plan + ADR-005..008 (2026-10-15) |
 | 0.5 Isometric spike | ☑ | [spec](specs/milestone-0.5-iso-spike.md). All 8 steps implemented; 26 passing tests. User approved the spike look/feel and decisions on 2026-10-15 (exit gate passed) |
-| 1 Combat vertical slice | ◐ built, **awaiting your go / tune / no-go** | [spec v0.2](specs/combat-vertical-slice.md) approved (D1–D5). Increments 1.1–1.5 done (playable battle with feedback pass, `battle.tscn` is the main scene); 1.6 (stress test + FPS + tuning + hand-over) next |
-| 2 First card loop | ☐ | [spec](specs/deck-and-economy.md) |
+| 1 Combat vertical slice | ☑ (exit gate taken as **go** from "Start next", 2026-10-15; real-input/audio/feel never verified by the agent) | [spec v0.2](specs/combat-vertical-slice.md). Increments 1.1–1.6 done; 178 tests at the time |
+| 2 First card loop | ◐ plan approved (D1–D7 as recommended). 2.1 done; 2.2 next | [spec v0.2](specs/card-loop.md) (increments 2.1–2.6); rules in [deck-and-economy](specs/deck-and-economy.md) |
 | 3 Horde + mission objectives | ☐ | decide flow field (A6) with measurements |
 | 4 Mission variety | ☐ | |
 | 5 Progression + deck editor | ☐ | save versioning |
@@ -21,7 +21,7 @@ Legend: ☐ not started · ◐ in progress · ☑ done (acceptance criteria chec
 ## Next tasks
 1. **You:** play the slice (`godot --path .`, with sound), try different soldier positions, and give the milestone's exit verdict: **go** (start Milestone 2, card loop), **tune** (list what to change: effect strength, loudness, difficulty, length, controls), or **no-go**.
 2. Optional: run the stress mission yourself: `godot --path . -- --mission=s1_stress_horde` (FPS shown top-right).
-3. On **go**: Milestone 2 spec refinement (deck/economy spec already drafted) and an implementation plan for approval, as for Milestone 1. Projectiles (artillery/rockets) enter here.
+3. Go taken; Milestone 2 plan approved — see the M2 row and [card-loop.md](specs/card-loop.md). Next: increment 2.2.
 
 ## Evidence log
 - 2026-10-15: Godot `4.7.2.stable.official.ed1daf0bf` found via WinGet; `--headless --import --quit` exited 0 on the empty project. No tests exist yet.
@@ -35,3 +35,4 @@ Legend: ☐ not started · ◐ in progress · ☑ done (acceptance criteria chec
 - 2026-10-15: Increment 1.4 done: 137/137 tests pass; mutation check (7 mutations) passed; real scene ran to victory and restart in a window, screenshots reviewed. Default mission is far too easy (5/5 seeds won with no core damage, no unit lost); tuning scheduled for 1.6.
 - 2026-10-15: Increment 1.5 done: 171/171 tests pass; runner now fails tests on any logged error (closed a false-pass hole); mutation check 8/8; real scene screenshots reviewed (muzzle/tracer/spark/hit flash/death collapse/core flash). Audio and feel are manual.
 - 2026-10-15: Increment 1.6 done: 178/178 tests. Stress scenario measured (see BALANCE.md): sim 0.48 ms/tick at 100; 117–198 FPS avg at 100, 98–119 at 500 after a shadow-redraw fix (was 40). Waves retuned (6/16/36): default loadout now wins ~70 % passively and soldier placement swings 0–100 %. Milestone 1 awaits the user's go/tune/no-go.
+- 2026-10-15: Milestone 1 treated as **go** (user: "Start next"). M2 plan approved with D1–D7 as recommended. Increment 2.1 done: 234/234 tests (50 new from M2.1; 6 more belong to separate sprite-sheet work in the tree); mutation check 15/15 after strengthening the reshuffle test.

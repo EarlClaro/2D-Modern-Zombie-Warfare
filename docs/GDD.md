@@ -29,7 +29,7 @@ Categories: Infantry, Armor, Artillery/Ordnance, Aviation, Naval, Drones, Comman
 ### Deck and economy rules (recommended defaults — detail: [specs/deck-and-economy.md](specs/deck-and-economy.md))
 | Rule | Default |
 |---|---|
-| Deck size | min 12, max 24; starter deck 16 |
+| Deck size | min 12, max 24; starter deck 15 (3 copies × 5 designs, M2 decision D3; 16 is impossible with 5 designs and a 3-copy cap) |
 | Duplicates | max 3 copies per card id (Legendary: 1) |
 | Initial hand / hand cap | 4 / 5 |
 | Draw | On battle start draw 4. Then 1 card per 4 s while hand < cap |

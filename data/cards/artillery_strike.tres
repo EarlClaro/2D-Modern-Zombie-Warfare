@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CardDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/cards/card_definition.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = "artillery_strike"
+display_name = "Artillery Strike"
+description = "Marks a circle; five shells land after a short warning."
+card_kind = 1
+cost = 4
+lockout_s = 15.0
+max_copies = 3
+unit_id = ""
+unit_count = 1
+effect_id = "artillery_strike"

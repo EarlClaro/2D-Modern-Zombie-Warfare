@@ -5,20 +5,21 @@ All values are **initial guesses, unmeasured**. Tune after playtests; keep in da
 ## Economy ([specs/deck-and-economy.md](specs/deck-and-economy.md))
 | Key | Value |
 |---|---|
-| deck_min / deck_max / starter | 12 / 24 / 16 |
+| deck_min / deck_max / starter | 12 / 24 / 15 (3 × 5 designs) |
 | max_copies (Legendary) | 3 (1) |
 | initial_hand / hand_cap | 4 / 5 |
 | draw_interval_s | 4 |
 | cp_start / cp_cap / cp_regen_s | 5 / 10 / 1.5 per CP |
 
-## Proposed MVP card costs (CP) — A10
+## MVP card costs (CP) — A10
+Shipped in `data/cards/` (M2.1) per the M2 spec; **unmeasured**, to be swept in 2.6. Ammo Resupply is not in M2.
 | Card | Kind | Cost | Identity |
 |---|---|---|---|
 | Rifle Squad | Deployment | 2 | cheap, flexible, fragile |
-| Gatling Gun | Deployment | 4 | crowd shred, overheats |
-| Tank | Deployment | 7 | durable, slow, expensive |
-| Artillery Strike | Operation | 5 | telegraphed AoE, delayed |
-| Helicopter Support | Sortie | 6 | mobile, timed |
+| Gatling Gun | Deployment | 3 | crowd shred (overheat not in M2) |
+| Tank | Deployment | 6 (lockout 20 s) | durable, slow, expensive |
+| Artillery Strike | Operation | 4 (lockout 15 s) | telegraphed AoE, delayed |
+| Helicopter Support | Sortie | 5 (lockout 25 s) | mobile, timed |
 | Ammo Resupply | Operation | 2 | logistics: refills/relieves overheat |
 
 ## Enemy archetypes (MVP, relative)
