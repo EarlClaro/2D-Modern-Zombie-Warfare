@@ -34,6 +34,8 @@ Shambler: slow, low HP. Runner: fast, low HP. Brute: high HP, armor vs small arm
 | Mission | 90 s survival; waves ≈ 5 @ t=2 s, 12 @ t=20 s, 25 @ t=45 s (+ stress scenario: 100 at once) |
 | DamageService | `max(base − armor, base × 0.1) × falloff` |
 
+**Observed in 1.4 (headless sim, 5 seeds):** default loadout (soldier + MG nest) wins all 5 with the core at 500/500, 0 units lost, ~320 shots for 42 kills; no defenders loses at ~32 s. Conclusion: enemy pressure is far too low for the defenders' range/DPS (zombies are shot dead near the wall). Candidate levers for 1.6: more/faster/tougher enemies (Runner/Brute arrive later), weaker or fewer defenders, shorter range, bigger waves. Not changed yet, to keep tuning together with the feel pass.
+
 ## Performance targets
 Not set. To be measured in M1/M3; recorded here with hardware.
 

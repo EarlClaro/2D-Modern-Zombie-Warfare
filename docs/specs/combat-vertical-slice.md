@@ -1,6 +1,6 @@
 # Spec: Milestone 1 — Combat Vertical Slice
 
-Status: **v0.2 approved 2026-10-15 (D1–D5 accepted as recommended).** Increments 1.1–1.3 done; 1.4 (first playable battle scene) next. Builds on the approved isometric foundation ([isometric-view.md](isometric-view.md), M0.5).
+Status: **v0.2 approved 2026-10-15 (D1–D5 accepted as recommended).** Increments 1.1–1.4 done; 1.5 (feedback pass) next. Builds on the approved isometric foundation ([isometric-view.md](isometric-view.md), M0.5).
 
 ## Purpose
 Prove that core combat is **satisfying and readable** on the isometric view with the fewest systems. Pillars tested: (1) combat feel, (4) isometric readability. Cards/deck (pillar 2) and mission variety (3) are out of scope.
@@ -79,6 +79,10 @@ Shipped data: map `crossing` and mission `m1_hold_the_crossing` (core (3,20), sp
 ```
 The `.tres` files are the source of truth and hand-editable (a one-off generator script produced the first version; it is not kept in the repo).
 
+**As built in 1.4:** `BattleController` (`scenes/battle/battle.tscn`, now the project's main scene) builds the map/core/units from a `MissionDefinition` and runs `step(delta)` in the specified order; it only *queues* damage in phases 2–3 and applies it all in phase 4, then removes the dead, then evaluates `MissionRules`. Entities: `BattleUnit`, `BattleEnemy`, `BattleCore` (a `PlaceholderStructure`, so it fades like other tall objects when something is behind it). `BattleHud` and `ResultPanel` (in `ui/`) only read state/signals. Controls: LMB = move the soldier (cell must be walkable, not the core), R = restart (replays the same seed), WASD/MMB/wheel camera. A minimal `Tracer` line shows each shot; the real feedback pass is 1.5. Enemies target the nearest player entity in attack range (D2), soldiers don't fire while moving, `weapon.blast_radius` is not used yet (all M1 weapons are single-target hitscan, D1).
+
+**Finding from 1.4 (balance, unmeasured guesses as warned):** with the shipped numbers the default loadout wins every seed (5/5 checked, 90 s) with the core untouched, 0 units lost, and zombies dying near the wall before they reach any defender. A mission with no defenders is lost (~32 s). So both outcomes are reachable, but the default is far too easy; tuning is part of 1.6 (and difficulty should be judged together with the feedback pass).
+
 ## Interfaces (pure logic = `RefCounted`/static, testable headless)
 - `DamageService.compute(base: float, armor: float, falloff: float = 1.0) -> float`: `max(base − armor, base × MIN_DAMAGE_FRACTION) × falloff`, `MIN_DAMAGE_FRACTION = 0.1`. `DamageService.blast_falloff(distance, radius) -> float` (1.0 at centre → `MIN_FALLOFF` at edge, 0 outside).
 - `Health`: `hp`, `max_hp`, `take_damage(amount) -> bool` (true on the lethal hit), `is_dead()`; clamps; signals `changed`, `died` (emitted once).
@@ -129,7 +133,7 @@ Manual / measured (reported honestly as pending until done):
 | 1.1 ☑ | Definitions + `ContentDb` + validation + `Health` + `DamageService` | tests 1, 2, 6 (done: 34 tests; map/mission/wave definitions arrive in 1.3) |
 | 1.2 ☑ | `TargetingService` + `WeaponState` | tests 3, 4 (done: 23 tests) |
 | 1.3 ☑ | `MissionRules` + `MissionDefinition`/map/waves data (`crossing` mission) | test 5 (done: 41 tests) |
-| 1.4 | Battle scene: map build, core, shambler movement/attack, unit/nest firing (hitscan, no polish), `BattleController.step`, result panel + restart | test 7 + first playable (manual) |
+| 1.4 ☑ | Battle scene: map build, core, shambler movement/attack, unit/nest firing (hitscan, no polish), `BattleController.step`, result panel + restart | test 7 (done: 13 tests) + first playable (**manual play pending**) |
 | 1.5 | Feedback pass (flash, recoil, tracer, spark, hit flash, death, shake, generated audio + caps, health bars) | manual criterion 9 |
 | 1.6 | Stress scenario + FPS measurement + tuning pass of `BALANCE.md` numbers; docs/changelog; hand over for the go/no-go | criteria 10, 11 |
 

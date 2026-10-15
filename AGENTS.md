@@ -15,7 +15,7 @@ Source of intent: [MasterPrompt.md](MasterPrompt.md). Where docs and the master 
 
 ## Commands that exist today
 - Import/parse check: `"$GODOT" --headless --path . --import --quit`
-- Run game: `"$GODOT" --path .` (no main scene yet)
+- Run game: `"$GODOT" --path .` (main scene = `scenes/battle/battle.tscn`); spike scene: `"$GODOT" --path . scenes/dev/iso_spike.tscn`
 - Run tests: `"$GODOT" --headless --path . --script tests/run_tests.gd` (run `--import` first after adding `class_name` scripts).
 
 ## Workflow rules

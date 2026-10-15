@@ -35,6 +35,9 @@ MissionDirector listens to signals (core damaged, enemy died, timer) → evaluat
 HUD presenters read state via signals; never mutate rules.
 ```
 
+## Battle tick (as built, M1.4)
+`BattleController.step(delta)`: (1) clock + wave spawns (seeded RNG), (2) enemies choose target/attack or advance and queue damage, (3) player units move/target/fire (hitscan) and queue damage, (4) apply all queued damage via `DamageService`/`Health`, then remove the dead, (5) `MissionRules.evaluate`. `_physics_process` calls `step` unless `auto_step` is false (tests step manually). Presentation reacts to signals (`shot_fired`, `enemy_died`, `battle_ended`, ...) and never feeds back into rules.
+
 ## Key design choices
 - **Pure logic classes** (`RefCounted`, no Node dependency) for IsoProjection, DamageService, DeckState, CommandPoints, objective evaluation → trivially headless-testable.
 - **Definitions vs runtime**: `CardDefinition` (Resource, immutable) vs `CardRuntime`/`DeckState` entries (id + mutable lockout).

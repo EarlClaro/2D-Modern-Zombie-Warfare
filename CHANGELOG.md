@@ -8,6 +8,8 @@
 
 - 1.3: `MapDefinition`, `StartUnit`, `WaveEntry`, `MissionDefinition` (geometry/path/wave validation), `MissionRules` (ADR-007), `ContentDb` maps/missions + reference checks. Data: map `crossing`, mission `m1_hold_the_crossing`. 41 new tests (124 total, all pass).
 
+- 1.4: first playable battle. `BattleController` (tick order per spec, restart replays seed), `BattleUnit`, `BattleEnemy`, `BattleCore`, `BattleDraw`, minimal `Tracer`, `BattleHud`, `ResultPanel`, `scenes/battle/battle.tscn` as the project main scene. Click-to-move soldier, auto-firing hitscan units, enemies that attack units and the core, victory/defeat panel with restart. 13 new simulation tests (137 total, all pass). Known: default mission too easy (tuning in 1.6); feedback pass in 1.5.
+
 ## Milestone 0.5 — Isometric spike (complete, approved 2026-10-15)
 - Added headless test runner (`tests/run_tests.gd`, `tests/test_case.gd`).
 - Added `IsoProjection` (`scripts/iso/iso_projection.gd`) with 9 tests (known values, round-trip, cell edges, ellipse, altitude, facing, sort key). All pass.

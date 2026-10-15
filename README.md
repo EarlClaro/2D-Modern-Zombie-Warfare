@@ -2,21 +2,22 @@
 
 A 2D, high-view isometric, high-tech military combined-arms **deckbuilder**. Command humanity's forces against mutant zombie hordes in real-time missions: build a deck of units, weapons, orders and support operations, deploy them on an isometric battlefield, complete mission objectives, and grow your arsenal.
 
-**Status:** Milestone 0.5 (isometric spike) complete; Milestone 1 (combat vertical slice) next. No gameplay yet. See [docs/ROADMAP.md](docs/ROADMAP.md).
+**Status:** Milestone 1 (combat vertical slice) in progress: a first playable battle exists (increment 1.4 of 1.6); feedback pass and tuning still to come. Cards/deck are not implemented yet. See [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## Prerequisites
 - Godot **4.7.2** (4.x; typed GDScript). Installed via WinGet on the dev machine.
 
 ## Run
 ```
-godot --path . scenes/dev/iso_spike.tscn   # isometric spike scene (no main scene yet)
+godot --path .            # runs the battle (main scene)
+godot --path . scenes/dev/iso_spike.tscn   # isometric spike scene
 godot --headless --path . --import --quit   # import/parse check
 godot --headless --path . --script tests/run_tests.gd   # run tests
 ```
 (Use the full path to the Godot console binary if it is not on PATH — see [AGENTS.md](AGENTS.md).)
 
 ## Controls
-None yet. Planned: mouse for card play/placement, pan and zoom camera (no rotation).
+Battle: **LMB** move the soldier (click a walkable cell), **R** restart, **WASD/arrows** or **middle-mouse drag** pan, **wheel** zoom (toward cursor). The MG nest and core are fixed; combat is automatic. Cards come in Milestone 2.
 
 ## Documentation
 | Doc | Purpose |
