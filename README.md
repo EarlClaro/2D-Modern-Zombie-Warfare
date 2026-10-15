@@ -11,7 +11,7 @@ A 2D, high-view isometric, high-tech military combined-arms **deckbuilder**. Com
 ```
 godot --path .            # runs the battle (main scene)
 godot --path . -- --mission=s1_stress_horde --seed=3   # 100-zombie stress scenario (FPS shown top-right)
-godot --path . -- --mission=m2_card_defense   # card mission: keys 1-5 play the hand slot on the cell under the mouse (interim input until 2.3)
+godot --path . -- --mission=m2_card_defense   # card mission: 1-5 / click a card to select, LMB places it, RMB or Esc cancels
 godot --path . scenes/dev/iso_spike.tscn   # isometric spike scene
 godot --headless --path . --import --quit   # import/parse check
 godot --headless --path . --script tests/run_tests.gd   # run tests

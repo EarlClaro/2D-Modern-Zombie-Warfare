@@ -16,7 +16,7 @@ Ground-plane truth · data-driven `Resource` definitions vs runtime state · exp
 scripts/iso/       IsoProjection (pure static, no nodes), IsoPicking, SortAnchor
 scripts/core/      ContentDefinition (base, id+validate), ContentDb (loads/validates data by id), GameSession (autoload, later), SeededRng helper
 scripts/combat/    DamageService (pure), WeaponController, ProjectileSystem, TargetingService
-scripts/cards/     CardDefinition, DeckDefinition, DeckRules (Resources); DeckState, CommandPoints, CardPlayService (pure, M2.1); PlacementRules (pure, M2.2); later CardEffects
+scripts/cards/     CardDefinition, DeckDefinition, DeckRules (Resources); DeckState, CommandPoints, CardPlayService (pure, M2.1); PlacementRules (pure, M2.2), CardTargeting (pure selection + preview state, M2.3); later CardEffects
 scripts/missions/  MapDefinition, MissionDefinition, StartUnit, WaveEntry (Resources); MissionRules (pure win/fail, ADR-007); later: Objective subclasses, MissionDirector
 scripts/save/      SaveService (autoload, M5)
 data/              .tres definitions: cards, units, weapons, enemies, missions
@@ -37,6 +37,9 @@ HUD presenters read state via signals; never mutate rules.
 
 ## Battle tick (as built, M1.4; cards M2.2)
 `BattleController.step(delta)`: (1) clock, **card economy (`DeckState.tick`, `CommandPoints.tick`)**, wave spawns (seeded RNG), (2) enemies choose target/attack or advance and queue damage, (3) player units move/target/fire (hitscan; weapons with `blast_radius` queue falloff damage on every enemy in the ground circle, no friendly fire) and queue damage, (4) apply all queued damage via `DamageService`/`Health`, then remove the dead, (5) `MissionRules.evaluate`. `_physics_process` calls `step` unless `auto_step` is false (tests step manually). Card plays happen between ticks via `play_card(slot, cell)` (validate, spend, discard, lockout, spawn units); the deck has its own seeded RNG so playing cards never shifts spawn jitter. Presentation reacts to signals (`shot_fired`, `blast_landed`, `card_played`, `enemy_died`, `battle_ended`, ...) and never feeds back into rules.
+
+## Card UI (as built, M2.3)
+`CardTargeting` (pure) holds the selected hand slot and builds a `Preview` (valid?, why not, weapon range, blast radius, where units would stand) for the cell under the mouse; `BattleController` exposes `select_slot` / `cancel_selection` / `confirm_at(cell)` and the current `preview`, and emits `card_rejected`. `HandUi` (`ui/hand_ui.gd`) draws the five slots, CP pips, draw timer, pile counts, refusal toast and a cursor tooltip, and sends clicks back through the controller; `CardPreview` draws the target cell, range/blast ground circles and the deploy zone through `IsoProjection`. Both only read state; rules never live in them. Layout maths (`HandUi.slot_rect/slot_at/capture_rect`) is static and tested.
 
 ## Presentation (as built, M1.5)
 `BattleFeedback` (a child of the battle) is the only presenter: it subscribes to controller signals and spawns transient effects on the controller's Fx layer, plays sounds through `SfxService`, shakes the camera and flashes/kicks entities. Rules never read anything it produces (verified by a test that runs the same battle with and without it). Entities carry only cosmetic helpers (`IsoEntity.flash`, `play_death`, `BattleUnit.kick`). Sound pooling is pure logic (`SfxVoicePool`).

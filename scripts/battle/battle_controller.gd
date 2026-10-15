@@ -19,6 +19,8 @@ signal core_damaged(amount: float)
 signal blast_landed(center: Vector2, radius: float)
 ## A card was played successfully (units are already in the battle).
 signal card_played(card: CardDefinition, cell: Vector2i)
+## A play was refused (no CP, locked, bad cell...). `slot` is the hand slot; the result says why.
+signal card_rejected(slot: int, result: CardPlayService.Result)
 
 const SPAWN_JITTER: float = 1.0  # tiles
 const LANE_JITTER: float = 0.9
@@ -58,6 +60,10 @@ var enemies: Array[BattleEnemy] = []
 ## Card economy; both null in missions without a deck_id. Ticked inside step(), mutated only by play_card().
 var deck: DeckState
 var points: CommandPoints
+## Which hand slot is selected for placement (state only; the HUD and the world preview read it).
+var targeting: CardTargeting = CardTargeting.new()
+## Preview of the selected card over the cell under the mouse; null when nothing is selected. Updated every frame.
+var preview: CardTargeting.Preview
 
 var _rules: MissionRules
 var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
@@ -74,6 +80,7 @@ var _shadows: Node2D
 var _entities: Node2D
 var _fx: Node2D
 var _highlight: IsoCellHighlight
+var _preview_node: CardPreview
 var _camera: IsoCamera
 
 
@@ -113,6 +120,11 @@ func _ready() -> void:
 	var hud := BattleHud.new()
 	add_child(hud)
 	hud.bind(self)
+	if has_cards():
+		var hand_ui := HandUi.new()
+		hand_ui.name = "HandUi"
+		add_child(hand_ui)
+		hand_ui.bind(self)
 	var panel := ResultPanel.new()
 	add_child(panel)
 	panel.bind(self)
@@ -315,6 +327,7 @@ func _apply_damage() -> void:
 
 
 func _on_rules_ended(res: MissionRules.Result) -> void:
+	targeting.cancel()
 	battle_ended.emit(res)
 
 
@@ -335,22 +348,32 @@ func _unhandled_input(event: InputEvent) -> void:
 	if mission == null:
 		return
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT and not is_ended():
-		order_move_all(IsoPicking.cell_under_mouse(self))
+		if targeting.is_selecting():
+			confirm_at(IsoPicking.cell_under_mouse(self))
+		else:
+			order_move_all(IsoPicking.cell_under_mouse(self))
+	elif event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_RIGHT:
+		cancel_selection()
+	elif event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
+		cancel_selection()
 	elif event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_R:
 		restart()
 	elif event is InputEventKey and event.pressed and not event.echo and deck != null and not is_ended():
-		# Interim card input (2.2): number keys play that hand slot on the cell under the mouse. The real hand UI is 2.3.
-		var slot: int = event.keycode - KEY_1
+		var slot: int = event.keycode - KEY_1  # 1..9 select hand slots 0..8
 		if slot >= 0 and slot < 9:
-			play_card(slot, IsoPicking.cell_under_mouse(self))
+			select_slot(slot)
 
 
 func _process(delta: float) -> void:
 	if mission == null or not is_inside_tree():
 		return
 	var cell := IsoPicking.cell_under_mouse(self)
-	_highlight.visible = mission.map.is_walkable(cell) and not is_ended()
+	if deck != null:
+		targeting.sync(deck)
+	preview = targeting.preview(self, cell) if not is_ended() else null
+	_highlight.visible = preview == null and mission.map.is_walkable(cell) and not is_ended()
 	_highlight.cell = cell
+	_preview_node.show_preview(preview, IsoProjection.cell_center(mission.core_cell), mission.deploy_radius)
 	_update_core_fade(delta)
 
 
@@ -417,6 +440,33 @@ func play_card(hand_index: int, cell: Vector2i) -> CardPlayService.Result:
 	return res
 
 
+## Selects (or deselects, if already selected) a hand slot for placement.
+func select_slot(slot: int) -> void:
+	if deck == null or is_ended():
+		return
+	targeting.select(deck, slot)
+
+
+func cancel_selection() -> void:
+	targeting.cancel()
+
+
+## Plays the selected card on `cell`. A success clears the selection; a refusal keeps it (so the player can try
+## another cell) and emits `card_rejected`. Returns null when no card is selected.
+func confirm_at(cell: Vector2i) -> CardPlayService.Result:
+	if deck == null or not targeting.is_selecting():
+		return null
+	var slot := targeting.selected_slot
+	var res := play_card(slot, cell)
+	if res.ok:
+		targeting.cancel()
+	else:
+		card_rejected.emit(slot, res)
+		if res.reason == CardPlayService.Reason.EMPTY_SLOT or res.reason == CardPlayService.Reason.UNKNOWN_CARD:
+			targeting.cancel()
+	return res
+
+
 func cards_by_id() -> Dictionary:
 	return db.cards if db != null else {}
 
@@ -424,6 +474,8 @@ func cards_by_id() -> Dictionary:
 func _setup_cards() -> void:
 	deck = null
 	points = null
+	targeting = CardTargeting.new()
+	preview = null
 	if mission.deck_id.is_empty() or db.deck_rules == null:
 		return
 	var d := db.deck(mission.deck_id)
@@ -451,6 +503,9 @@ func _ensure_layers() -> void:
 	_highlight = IsoCellHighlight.new()
 	_highlight.name = "HoverHighlight"
 	_decals.add_child(_highlight)
+	_preview_node = CardPreview.new()
+	_preview_node.name = "CardPreview"
+	_decals.add_child(_preview_node)
 	_camera = IsoCamera.new()
 	_camera.name = "Camera"
 	add_child(_camera)

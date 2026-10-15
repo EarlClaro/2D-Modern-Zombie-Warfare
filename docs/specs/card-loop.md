@@ -1,6 +1,6 @@
 # Spec: Milestone 2 — First Card Loop
 
-Status: **v0.2 approved 2026-10-15 (D1–D7 as recommended).** Increments 2.1 and 2.2 done (276 tests in the tree); 2.3 next. D3 applied: starter deck is 15. Builds on [combat-vertical-slice.md](combat-vertical-slice.md) (M1) and refines [deck-and-economy.md](deck-and-economy.md) (rules stay as written there except where D3 says otherwise).
+Status: **v0.2 approved 2026-10-15 (D1–D7 as recommended).** Increments 2.1-2.3 done (312 tests in the tree); 2.4 next. D3 applied: starter deck is 15. Builds on [combat-vertical-slice.md](combat-vertical-slice.md) (M1) and refines [deck-and-economy.md](deck-and-economy.md) (rules stay as written there except where D3 says otherwise).
 
 ## Purpose
 Prove pillar 2: **playing cards creates meaningful tactical choices.** The player no longer starts with pre-placed defenders; they build the defence in real time from a drawn hand, spending Command Points (CP), with every placement previewed on the ground plane.
@@ -69,4 +69,12 @@ Reward choice, deck editor, save, upgrades (M5); new enemy types and flow field 
 - Placeholder art: the tank and Gatling use the generic placeholder bodies (the tank currently looks like a standing soldier); real art is a later pass.
 - Interim input/UI: keys 1-5 play that hand slot at the cell under the mouse; a text readout shows CP, pile sizes, hand and lockouts. The real hand UI and previews are 2.3.
 - Not yet verified by anyone: number-key input in a real window, and the sound of the tank cannon (it reuses the rifle sound).
+
+## As built (M2.3)
+- Selection: `1`-`5` or a click on a card selects it (selecting it again deselects); LMB on the field places it, RMB / Esc cancels. A refused placement keeps the card selected so the player can try another cell and shows why (toast above the CP bar, card shake, and a tooltip at the cursor). A successful play clears the selection. LMB with nothing selected still orders units to move. The selection is also cleared when the battle ends, on restart, and if the selected card leaves its slot.
+- Preview: target cell green/red, weapon range (and blast radius, orange) of the deployed unit as true ground circles, small dots where each unit would stand, and the deploy zone around the core while a deployment card is selected. Artillery's blast circle and the strike telegraph come with 2.4.
+- Hand UI: five slots (key hint, cost badge red when unaffordable, kind colour, name, kind label, lockout seconds over a dark overlay), CP shown as ten pips (partial fill for the fractional point; a yellow outline marks the pips the selected card would spend), draw-timer bar ("NEXT CARD" / "HAND FULL"), draw/discard counts. It captures mouse clicks only inside its own area at the bottom centre; the rest of the screen reaches the field.
+- Operation and sortie cards can be selected but show "Can't be played right now" until 2.4 / 2.5.
+- No new sounds (refusals are visual only).
+- Not yet verified by anyone: real mouse clicks on cards, the number keys and RMB/Esc in a window (the driver selected via the controller API and moved the real mouse cursor for hover), UI legibility on a different resolution or aspect ratio.
 
