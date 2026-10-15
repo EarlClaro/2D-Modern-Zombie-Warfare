@@ -74,7 +74,11 @@ Open tuning questions for your playtest: is "50–70 % to hold by default" the r
 | Tank | HP 400, armor 5, speed 1.0, cannon 45 dmg x 0.5 shots/s, range 9, blast radius 1.6 (falloff 1.0 to 0.25) |
 | Helicopter | HP 200, speed 3, 6 dmg x 12 shots/s, range 8 (data only until 2.5) |
 | Rifle squad | 3 x rifle soldier |
+| Artillery strike (`data/operations/artillery_strike.tres`) | 5 shells, scatter radius 3, warning 2.0 s, one shell per 0.35 s, flight 0.9 s (first impact 2.9 s after the card), 90 dmg, blast 1.8 (falloff 1.0 to 0.25), card cost 4, lockout 15 s. Walking zombies leave the circle during the delay: tune warning/flight in 2.6 |
 | Mission `m2_card_defense` | 120 s, core 500 HP, deploy radius 10; waves 6 @ 4 s (0.9 s), 14 @ 25 s (0.7), 24 @ 55 s (0.5), 36 @ 85 s (0.4) = 80 Shamblers. **Not yet tuned.** A screenshot run with a 5-zombie probe says nothing about the real waves |
+
+## Performance: projectiles (measured, M2.4)
+`ProjectileSystem` with the 256-shell cap full: 0.46 ms per tick including per-shell position/altitude queries (headless, same laptop). A strike uses 5 shells. Rendering of shells/telegraphs under a 500-zombie horde is measured in 2.6.
 
 ## Performance (measured, Milestone 1.6)
 **Hardware:** Windows 11 laptop, Intel Core i7-1165G7, 23.7 GB RAM, NVIDIA GeForce MX330 (used by Godot; Intel Iris Xe also present), Forward+ renderer, 1920×1061 window. A low-end GPU is a deliberately conservative baseline.

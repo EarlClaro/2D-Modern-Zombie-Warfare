@@ -6,7 +6,7 @@ extends RefCounted
 const MIX_RATE: int = 22050
 const PEAK: float = 0.9
 const SHOT_SOUNDS: Array[String] = ["shot_rifle", "shot_mg"]
-const ALL_SOUNDS: Array[String] = ["shot_rifle", "shot_mg", "impact", "death", "alert"]
+const ALL_SOUNDS: Array[String] = ["shot_rifle", "shot_mg", "impact", "death", "alert", "blast"]
 
 ## Per sound: mixer category (see SfxVoicePool) and base volume in dB.
 const SETTINGS: Dictionary = {
@@ -15,6 +15,7 @@ const SETTINGS: Dictionary = {
 	"impact": {"category": "impact", "volume_db": -14.0},
 	"death": {"category": "death", "volume_db": -8.0},
 	"alert": {"category": "alert", "volume_db": -5.0},
+	"blast": {"category": "blast", "volume_db": -6.0},
 }
 
 
@@ -30,6 +31,7 @@ static func build_library() -> Dictionary:
 		"impact": _noise_burst(0.06, 75.0, 0.0, 1.0, 0.35, 13),
 		"death": _thud(150.0, 55.0, 0.26, 9.0, 0.3, 14),
 		"alert": _beeps([880.0, 660.0], 0.14),
+		"blast": _noise_burst(0.5, 8.0, 52.0, 9.0, 0.16, 15),
 	}
 
 

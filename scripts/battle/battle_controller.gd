@@ -2,7 +2,7 @@ class_name BattleController
 extends Node2D
 ## Owns one battle. `step(delta)` is the whole simulation tick (driven by _physics_process; tests call it
 ## directly). Fixed order, see docs/specs/combat-vertical-slice.md:
-##   1 clock + card economy + spawns  2 enemies  3 player units  4 apply damage, remove the dead  5 mission rules
+##   1 clock + card economy + spawns  2 enemies  3 player units, then projectiles  4 apply damage, remove the dead  5 mission rules
 ## All rules run in ground space. Presentation (tracers, HUD) only reacts to signals/state.
 
 signal battle_started
@@ -19,6 +19,8 @@ signal core_damaged(amount: float)
 signal blast_landed(center: Vector2, radius: float)
 ## A card was played successfully (units are already in the battle).
 signal card_played(card: CardDefinition, cell: Vector2i)
+## A strike was called: `center` is the ground target, `reach` the outer edge of the danger zone (tiles).
+signal strike_called(center: Vector2, reach: float, duration: float)
 ## A play was refused (no CP, locked, bad cell...). `slot` is the hand slot; the result says why.
 signal card_rejected(slot: int, result: CardPlayService.Result)
 
@@ -26,6 +28,25 @@ const SPAWN_JITTER: float = 1.0  # tiles
 const LANE_JITTER: float = 0.9
 const CORE_ID: int = 0  # target id of the core; unit ids start at 1
 const DEATH_COLLAPSE_S: float = 0.3
+
+
+## A called-in strike's telegraph (the danger circle on the ground) while its shells are still coming.
+class Strike:
+	extends RefCounted
+	var center: Vector2
+	var reach: float
+	var scatter: float
+	var duration: float
+	var time_left: float
+	var warning_s: float
+
+	func _init(p_center: Vector2, p_reach: float, p_scatter: float, p_duration: float, p_warning: float) -> void:
+		center = p_center
+		reach = p_reach
+		scatter = p_scatter
+		duration = p_duration
+		time_left = p_duration
+		warning_s = p_warning
 
 const TERRAIN_BY_CHAR: Dictionary = {
 	MapDefinition.GRASS: IsoTileSet.TERRAIN_GRASS,
@@ -62,12 +83,16 @@ var deck: DeckState
 var points: CommandPoints
 ## Which hand slot is selected for placement (state only; the HUD and the world preview read it).
 var targeting: CardTargeting = CardTargeting.new()
+## Arcing shells in flight (artillery) and the telegraphs of strikes that are still landing.
+var projectiles: ProjectileSystem = ProjectileSystem.new()
+var strikes: Array[Strike] = []
 ## Preview of the selected card over the cell under the mouse; null when nothing is selected. Updated every frame.
 var preview: CardTargeting.Preview
 
 var _rules: MissionRules
 var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
 var _deck_rng: RandomNumberGenerator = RandomNumberGenerator.new()  # separate so playing cards never shifts spawn jitter
+var _ops_rng: RandomNumberGenerator = RandomNumberGenerator.new()  # shell scatter; also separate from spawn jitter
 var _seed: int = 0  # seed of the current battle; restart replays it
 var _next_uid: int = 1
 var _wave_spawned: Array[int] = []
@@ -78,6 +103,7 @@ var _ground: TileMapLayer
 var _decals: Node2D
 var _shadows: Node2D
 var _entities: Node2D
+var _air: Node2D
 var _fx: Node2D
 var _highlight: IsoCellHighlight
 var _preview_node: CardPreview
@@ -143,6 +169,9 @@ func setup(p_db: ContentDb, p_mission: MissionDefinition, p_seed: int) -> void:
 	_seed = p_seed
 	_rng.seed = p_seed
 	_deck_rng.seed = p_seed * 7919 + 13
+	_ops_rng.seed = p_seed * 104729 + 7
+	projectiles.clear()
+	strikes.clear()
 	elapsed = 0.0
 	stats = {"spawned": 0, "kills": 0, "shots": 0, "units_lost": 0}
 	_next_uid = 1
@@ -217,6 +246,7 @@ func step(delta: float) -> void:
 	# 2. enemies, 3. player units (both only *queue* damage)
 	_enemy_phase(delta)
 	_unit_phase(delta)
+	_projectile_phase(delta)
 	# 4. apply all damage, then remove the dead
 	_apply_damage()
 	# 5. mission rules, after all damage and deaths of this tick
@@ -279,7 +309,7 @@ func _unit_phase(delta: float) -> void:
 			var target: BattleEnemy = by_id[tid]
 			u.face_toward(target.ground_pos)
 			if u.weapon.blast_radius > 0.0:
-				_queue_blast(target.ground_pos, u.weapon)
+				_queue_blast(target.ground_pos, u.weapon.damage, u.weapon.blast_radius)
 			else:
 				_pending.append(Hit.new(target, DamageService.compute(u.weapon.damage, target.def.armor)))
 			stats["shots"] += 1
@@ -288,14 +318,25 @@ func _unit_phase(delta: float) -> void:
 
 ## Area damage on the ground plane: every living enemy within the radius takes the weapon's damage
 ## with armor, then distance falloff. Friendly fire is off (only enemies are hit).
-func _queue_blast(center: Vector2, weapon: WeaponDefinition) -> void:
+func _queue_blast(center: Vector2, damage: float, radius: float) -> void:
 	for e in enemies:
 		if not e.is_alive():
 			continue
-		var falloff := DamageService.blast_falloff(e.ground_pos.distance_to(center), weapon.blast_radius)
+		var falloff := DamageService.blast_falloff(e.ground_pos.distance_to(center), radius)
 		if falloff > 0.0:
-			_pending.append(Hit.new(e, DamageService.compute(weapon.damage, e.def.armor, falloff)))
-	blast_landed.emit(center, weapon.blast_radius)
+			_pending.append(Hit.new(e, DamageService.compute(damage, e.def.armor, falloff)))
+	blast_landed.emit(center, radius)
+
+
+## Moves the shells in flight; each one that lands queues an area hit like any other blast. Strike telegraphs
+## expire once their last shell has landed.
+func _projectile_phase(delta: float) -> void:
+	for imp in projectiles.tick(delta):
+		_queue_blast(imp.ground_pos, imp.damage, imp.radius)
+	for i in range(strikes.size() - 1, -1, -1):
+		strikes[i].time_left -= delta
+		if strikes[i].time_left <= 0.0:
+			strikes.remove_at(i)
 
 
 func _apply_damage() -> void:
@@ -415,10 +456,14 @@ func check_card(hand_index: int, cell: Vector2i) -> CardPlayService.Result:
 	var def: CardDefinition = cards_by_id().get(deck.card_at(hand_index))
 	var placement := PlacementRules.Reason.OK
 	if def != null:
-		if def.card_kind != CardDefinition.CardKind.DEPLOYMENT:
-			# Operations and sorties are added in 2.4 / 2.5; until then they are refused before any CP is spent.
-			return CardPlayService.Result.new(CardPlayService.Reason.UNAVAILABLE, def)
-		placement = PlacementRules.check_deploy(mission.map, cell, mission.core_cell, mission.deploy_radius, occupied_cells())
+		match def.card_kind:
+			CardDefinition.CardKind.DEPLOYMENT:
+				placement = PlacementRules.check_deploy(mission.map, cell, mission.core_cell, mission.deploy_radius, occupied_cells())
+			CardDefinition.CardKind.OPERATION:
+				placement = PlacementRules.check_ground_target(mission.map, cell)
+			_:
+				# Sorties arrive in 2.5; until then they are refused before any CP is spent.
+				return CardPlayService.Result.new(CardPlayService.Reason.UNAVAILABLE, def)
 	var res := CardPlayService.check(deck, points, cards_by_id(), hand_index, placement == PlacementRules.Reason.OK)
 	res.placement = placement
 	return res
@@ -434,10 +479,24 @@ func play_card(hand_index: int, cell: Vector2i) -> CardPlayService.Result:
 	res.placement = PlacementRules.Reason.OK
 	var card := res.card
 	var centre := IsoProjection.cell_center(cell)
-	for off in PlacementRules.formation_offsets(card.unit_count):
-		_spawn_unit_at(card.unit_id, centre + off)
+	if card.card_kind == CardDefinition.CardKind.OPERATION:
+		_start_strike(db.operation(card.effect_id), centre)
+	else:
+		for off in PlacementRules.formation_offsets(card.unit_count):
+			_spawn_unit_at(card.unit_id, centre + off)
 	card_played.emit(card, cell)
 	return res
+
+
+## Calls in a barrage: picks the impact points now (seeded) and queues every shell with its launch delay.
+func _start_strike(op: OperationDefinition, center: Vector2) -> void:
+	var targets := op.shell_targets(center, _ops_rng)
+	for i in targets.size():
+		var delay := op.warning_s + float(i) * op.shell_interval_s
+		projectiles.spawn(targets[i] + op.launch_offset, targets[i], op.flight_time_s, op.arc_height, op.shell_damage, op.blast_radius, delay)
+	var duration := op.total_duration_s()
+	strikes.append(Strike.new(center, op.reach_radius(), op.target_radius, duration, op.warning_s))
+	strike_called.emit(center, op.reach_radius(), duration)
 
 
 ## Selects (or deselects, if already selected) a hand slot for placement.
@@ -499,13 +558,22 @@ func _ensure_layers() -> void:
 	_decals = _add_layer("Decals", false)
 	_shadows = _add_layer("Shadows", false)
 	_entities = _add_layer("Entities", true)
+	_air = _add_layer("Air", false)
 	_fx = _add_layer("Fx", false)
 	_highlight = IsoCellHighlight.new()
 	_highlight.name = "HoverHighlight"
 	_decals.add_child(_highlight)
+	var telegraph := StrikeTelegraph.new()
+	telegraph.name = "StrikeTelegraph"
+	telegraph.bind(self)
+	_decals.add_child(telegraph)
 	_preview_node = CardPreview.new()
 	_preview_node.name = "CardPreview"
 	_decals.add_child(_preview_node)
+	var shells := ProjectileView.new()
+	shells.name = "Shells"
+	shells.bind(self)
+	_air.add_child(shells)
 	_camera = IsoCamera.new()
 	_camera.name = "Camera"
 	add_child(_camera)

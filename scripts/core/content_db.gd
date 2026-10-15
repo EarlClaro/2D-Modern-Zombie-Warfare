@@ -11,11 +11,12 @@ var maps: Dictionary = {}  # id -> MapDefinition
 var missions: Dictionary = {}  # id -> MissionDefinition
 var cards: Dictionary = {}  # id -> CardDefinition
 var decks: Dictionary = {}  # id -> DeckDefinition
+var operations: Dictionary = {}  # id -> OperationDefinition (battle effects of Operation cards)
 var deck_rules: DeckRules  # data/config/deck_rules.tres; null if missing/invalid (reported in errors)
 var errors: PackedStringArray = PackedStringArray()
 
 
-## Loads data/{weapons,units,enemies,maps,missions,cards,decks} and data/config/deck_rules.tres under `root`, then verifies cross-references.
+## Loads data/{weapons,units,enemies,maps,missions,cards,decks,operations} and data/config/deck_rules.tres under `root`, then verifies cross-references.
 static func load_from(root: String = "res://data") -> ContentDb:
 	var db := ContentDb.new()
 	db._load_dir(root + "/weapons", "weapon")
@@ -25,6 +26,7 @@ static func load_from(root: String = "res://data") -> ContentDb:
 	db._load_dir(root + "/missions", "mission")
 	db._load_dir(root + "/cards", "card")
 	db._load_dir(root + "/decks", "deck")
+	db._load_dir(root + "/operations", "operation")
 	db._load_deck_rules(root + "/config/deck_rules.tres")
 	db.validate_references()
 	return db
@@ -60,6 +62,14 @@ func card(id: String) -> CardDefinition:
 
 func deck(id: String) -> DeckDefinition:
 	return decks.get(id)
+
+
+func operation(id: String) -> OperationDefinition:
+	return operations.get(id)
+
+
+func add_operation(def: OperationDefinition) -> bool:
+	return _register(operations, def)
 
 
 func add_card(def: CardDefinition) -> bool:
@@ -115,6 +125,8 @@ func _validate_card_units() -> void:
 	for id in cards:
 		var c: CardDefinition = cards[id]
 		if c.card_kind == CardDefinition.CardKind.OPERATION:
+			if not operations.has(c.effect_id):
+				errors.append("card '%s': unknown effect_id '%s'" % [id, c.effect_id])
 			continue
 		var u: UnitDefinition = units.get(c.unit_id)
 		if u == null:
@@ -209,6 +221,11 @@ func _load_dir(path: String, kind: String) -> void:
 					add_card(res)
 				else:
 					errors.append("%s is not a CardDefinition" % full)
+			"operation":
+				if res is OperationDefinition:
+					add_operation(res)
+				else:
+					errors.append("%s is not an OperationDefinition" % full)
 			"deck":
 				if res is DeckDefinition:
 					add_deck(res)

@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="OperationDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/cards/operation_definition.gd" id="1_op"]
+
+[resource]
+script = ExtResource("1_op")
+id = "artillery_strike"
+display_name = "Artillery Strike"
+shell_count = 5
+target_radius = 3.0
+warning_s = 2.0
+shell_interval_s = 0.35
+flight_time_s = 0.9
+arc_height = 6.0
+shell_damage = 90.0
+blast_radius = 1.8
+launch_offset = Vector2(-10, 10)

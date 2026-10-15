@@ -1,6 +1,6 @@
 class_name PlacementRules
 extends RefCounted
-## Pure placement checks for Deployment cards, in ground space (no nodes). A deployment cell must be
+## Pure placement checks for cards, in ground space (no nodes). A deployment cell must be
 ## buildable, inside the mission's deploy radius around the core, and not already occupied by the core
 ## or a player unit.
 
@@ -20,6 +20,11 @@ static func check_deploy(map: MapDefinition, cell: Vector2i, core_cell: Vector2i
 	if cell == core_cell or occupied.has(cell):
 		return Reason.OCCUPIED
 	return Reason.OK
+
+
+## Operations (strikes) may be aimed at any ground cell inside the map, whatever the terrain.
+static func check_ground_target(map: MapDefinition, cell: Vector2i) -> Reason:
+	return Reason.OK if map.in_bounds(cell) else Reason.OUT_OF_BOUNDS
 
 
 static func describe(reason: Reason) -> String:

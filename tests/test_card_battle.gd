@@ -192,13 +192,12 @@ func test_empty_slot_is_ignored() -> void:
 	_release()
 
 
-func test_operation_and_sortie_cards_are_refused_without_spending_until_they_exist() -> void:
-	# Interim (M2.2): artillery arrives in 2.4 and the helicopter in 2.5; this test changes then.
+func test_sortie_cards_are_refused_without_spending_until_they_exist() -> void:
+	# Interim: the helicopter arrives in 2.5; this test changes then.
 	var b := _battle()
-	_hand(b, ["artillery_strike", "helicopter_support"] as Array[String])
+	_hand(b, ["helicopter_support"] as Array[String])
 	var before := _snapshot(b)
 	assert_eq(b.play_card(0, GOOD).reason, R.UNAVAILABLE)
-	assert_eq(b.play_card(1, GOOD).reason, R.UNAVAILABLE)
 	assert_eq(_snapshot(b), before)
 	_release()
 

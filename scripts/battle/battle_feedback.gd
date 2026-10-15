@@ -7,6 +7,9 @@ extends Node
 const FLASH_HIT_S: float = 0.06
 const FLASH_CORE_S: float = 0.14
 const CORE_SHAKE_PX: float = 3.0
+const BLAST_SHAKE_PX: float = 2.5
+const BLAST_SHAKE_S: float = 0.18
+const SPARK_BLAST := Color(1.0, 0.7, 0.3)
 const CORE_SHAKE_S: float = 0.15
 const ALERT_MIN_INTERVAL_S: float = 1.0
 
@@ -84,3 +87,9 @@ func _on_unit_died(unit: BattleUnit) -> void:
 
 func _on_blast(center: Vector2, radius: float) -> void:
 	BlastRing.spawn(_fx, center, radius, Color(1.0, 0.7, 0.3))
+	var pos := IsoProjection.ground_to_screen(center)
+	for k in 5:
+		ImpactSpark.spawn(_fx, pos, SPARK_BLAST)
+	DeathPuff.spawn(_fx, pos)
+	sfx.play("blast")
+	shake.trigger(BLAST_SHAKE_PX, BLAST_SHAKE_S)

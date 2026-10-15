@@ -18,6 +18,9 @@ class Preview:
 	## Ground radius (tiles) of the deployed unit's weapon range / blast; 0 when the card has none.
 	var range_tiles: float = 0.0
 	var blast_radius: float = 0.0
+	## Operations: outer edge of everything the barrage can hurt, and the circle its shells land in.
+	var area_radius: float = 0.0
+	var scatter_radius: float = 0.0
 	## Where the deployed units would stand (ground positions).
 	var ground_points: Array[Vector2] = []
 
@@ -67,6 +70,12 @@ func preview(battle: BattleController, cell: Vector2i) -> Preview:
 	p.reason = res.reason
 	p.placement = res.placement
 	p.message = "" if res.ok else message_for(res, battle.deck)
+	if res.card != null and res.card.card_kind == CardDefinition.CardKind.OPERATION:
+		var op: OperationDefinition = battle.db.operation(res.card.effect_id)
+		if op != null:
+			p.area_radius = op.reach_radius()
+			p.scatter_radius = op.target_radius
+			p.blast_radius = op.blast_radius
 	if res.card != null and res.card.card_kind == CardDefinition.CardKind.DEPLOYMENT:
 		var unit: UnitDefinition = battle.db.unit(res.card.unit_id)
 		var weapon: WeaponDefinition = battle.db.weapon(unit.weapon_id) if unit != null else null

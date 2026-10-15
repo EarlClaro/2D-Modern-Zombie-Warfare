@@ -43,9 +43,12 @@ func _draw() -> void:
 	var is_deploy := _info.card != null and _info.card.card_kind == CardDefinition.CardKind.DEPLOYMENT
 	if is_deploy and _zone_radius > 0.0:
 		_ring(_zone_center, _zone_radius, ZONE, 0.08, 0.35)
+	if _info.area_radius > 0.0:
+		_ring(centre, _info.area_radius, BLAST, 0.12, 0.8)
+		_ring(centre, _info.scatter_radius, ZONE, 0.0, 0.5)
 	if _info.range_tiles > 0.0:
 		_ring(centre, _info.range_tiles, col, 0.07, 0.45)
-	if _info.blast_radius > 0.0:
+	if _info.blast_radius > 0.0 and _info.area_radius <= 0.0:
 		_ring(centre, _info.blast_radius, BLAST, 0.12, 0.8)
 	var c := Vector2(_info.cell)
 	var pts := PackedVector2Array([

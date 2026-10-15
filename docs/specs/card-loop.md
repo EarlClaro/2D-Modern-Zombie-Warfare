@@ -1,6 +1,6 @@
 # Spec: Milestone 2 — First Card Loop
 
-Status: **v0.2 approved 2026-10-15 (D1–D7 as recommended).** Increments 2.1-2.3 done (312 tests in the tree); 2.4 next. D3 applied: starter deck is 15. Builds on [combat-vertical-slice.md](combat-vertical-slice.md) (M1) and refines [deck-and-economy.md](deck-and-economy.md) (rules stay as written there except where D3 says otherwise).
+Status: **v0.2 approved 2026-10-15 (D1–D7 as recommended).** Increments 2.1-2.4 done (354 tests in the tree); 2.5 next. D3 applied: starter deck is 15. Builds on [combat-vertical-slice.md](combat-vertical-slice.md) (M1) and refines [deck-and-economy.md](deck-and-economy.md) (rules stay as written there except where D3 says otherwise).
 
 ## Purpose
 Prove pillar 2: **playing cards creates meaningful tactical choices.** The player no longer starts with pre-placed defenders; they build the defence in real time from a drawn hand, spending Command Points (CP), with every placement previewed on the ground plane.
@@ -77,4 +77,12 @@ Reward choice, deck editor, save, upgrades (M5); new enemy types and flow field 
 - Operation and sortie cards can be selected but show "Can't be played right now" until 2.4 / 2.5.
 - No new sounds (refusals are visual only).
 - Not yet verified by anyone: real mouse clicks on cards, the number keys and RMB/Esc in a window (the driver selected via the controller API and moved the real mouse cursor for hover), UI legibility on a different resolution or aspect ratio.
+
+## As built (M2.4)
+- Artillery strike: playing the card queues 5 shells scattered evenly over a 3-tile circle around the chosen cell (random turn and random firing order from a dedicated seeded RNG), shows a red danger zone (scatter radius + blast radius = the reach) with a shrinking countdown ring for the 2 s warning, then fires a shell every 0.35 s; each flies 0.9 s along a straight ground line with a parabolic altitude arc (6 tile-heights) and explodes with 90 damage, blast radius 1.8, armor then falloff 1.0 to 0.25, enemies only. Shells come from an off-map battery 10 tiles to one side (data: `launch_offset`).
+- A strike may be aimed at any in-bounds cell (rock, road, grass); outside the map it is refused without spending anything.
+- Preview while the card is selected: orange danger zone + white scatter circle at the cursor; the CP bar shows the spend as for any card.
+- Explosion feedback is shared by the tank cannon and the artillery: ring, sparks, dust, a new generated `blast` sound and a 2.5 px shake (the 4 px cap still holds).
+- **Observation to tune in 2.6:** the first shell lands 2.9 s after the card is played (2.0 s warning + 0.9 s flight). A horde walking at 1.2 tiles/s moves about 3.5 tiles in that time, so against moving zombies the player must lead the target; a stationary 14-zombie crowd lost 11 to one barrage, while a walking crowd left the circle and nothing died. Warning/flight/damage are first guesses in `data/operations/artillery_strike.tres`.
+- Not yet verified by anyone: how the strike feels and sounds with real input, and shell visibility at different zoom levels.
 
