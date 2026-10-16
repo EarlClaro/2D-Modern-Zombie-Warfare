@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://0hmdk6guwg0n"
-path="res://.godot/imported/a10.png-7b955e27ab91bce53d8ed7b54271bdf4.ctex"
+uid="uid://pfy30581ja8b"
+path="res://.godot/imported/f15e.png-f8b91795af2dfccd3ee19536116603c6.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/cutaways/a10.png"
-dest_files=["res://.godot/imported/a10.png-7b955e27ab91bce53d8ed7b54271bdf4.ctex"]
+source_file="res://assets/cutaways/f15e.png"
+dest_files=["res://.godot/imported/f15e.png-f8b91795af2dfccd3ee19536116603c6.ctex"]
 
 [params]
 

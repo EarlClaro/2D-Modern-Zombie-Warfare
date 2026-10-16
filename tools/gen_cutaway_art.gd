@@ -6,7 +6,7 @@ extends SceneTree
 ##   howitzer_body.png   a tracked self-propelled howitzer without its barrel (hull, tracks, turret); the barrel pivots at BODY_PIVOT
 ##   howitzer_barrel.png the 52-calibre barrel with fume extractor and muzzle brake, facing right; it pivots at BARREL_PIVOT
 ##   battleship.png      an Iowa-class battleship in profile, bow to the right, without its gun barrels (the scene draws them)
-##   a10.png             an A-10 Thunderbolt II in profile, nose to the right, with two bombs under the wing
+##   f15e.png            an F-15E Strike Eagle in profile, nose to the right, with empty weapon pylons under the conformal tanks
 
 const OUT_DIR := "res://assets/cutaways"
 const INK := Color("12140f")
@@ -28,7 +28,7 @@ const GHOST_TOP: Array[Color] = [Color("464d55"), Color("5f6770"), Color("7a848d
 const GHOST_LOW: Array[Color] = [Color("6b737b"), Color("8a929a"), Color("a8b0b8")]
 const GLASS: Array[Color] = [Color("1e3b4a"), Color("2f6a85"), Color("8fd0ea")]
 const SHIP_SIZE := Vector2i(384, 112)
-const A10_SIZE := Vector2i(112, 40)
+const F15_SIZE := Vector2i(112, 40)
 
 
 func _initialize() -> void:
@@ -36,7 +36,7 @@ func _initialize() -> void:
 	_save(_body(), "howitzer_body")
 	_save(_barrel(), "howitzer_barrel")
 	_save(_battleship(), "battleship")
-	_save(_a10(), "a10")
+	_save(_f15e(), "f15e")
 	quit()
 
 
@@ -250,44 +250,37 @@ func _funnel(img: Image, x0: int, x1: int, top: int) -> void:
 	_rect(img, x0 + 4, top + 14, x1 - 3, top + 15, HAZE_DEEP)
 
 
-## An A-10 Thunderbolt II in profile, nose to the right (16 m is 80 px, so 1 px is 0.2 m): the 30 mm cannon in the nose,
-## the bubble canopy, a straight low wing with two empty bomb pylons and a pod, the two turbofans high on the rear fuselage,
-## twin fins, in the grey "ghost" scheme with the shark mouth some squadrons painted.
-func _a10() -> Image:
-	var img := _blank(A10_SIZE)
-	# the fin and tailplane at the back
-	_poly(img, PackedVector2Array([Vector2(8, 3), Vector2(16, 3), Vector2(22, 15), Vector2(10, 15)]), GHOST_TOP)
-	_rect(img, 4, 14, 24, 16, STEEL)
-	# the tail boom behind the engines
-	_poly(img, PackedVector2Array([Vector2(6, 14), Vector2(26, 15), Vector2(26, 23), Vector2(8, 18)]), GHOST_TOP)
-	# the far engine peeks out above the near one
-	_poly(img, PackedVector2Array([Vector2(34, 7), Vector2(38, 5), Vector2(60, 5), Vector2(62, 7)]), GHOST_LOW)
-	# the fuselage: grey on top, a lighter belly
-	_poly(img, PackedVector2Array([Vector2(22, 17), Vector2(42, 15), Vector2(70, 14), Vector2(86, 16), Vector2(98, 20), Vector2(98, 27), Vector2(70, 28), Vector2(40, 27), Vector2(22, 23)]), GHOST_TOP)
-	_poly(img, PackedVector2Array([Vector2(24, 23), Vector2(42, 24), Vector2(72, 24), Vector2(98, 24), Vector2(98, 27), Vector2(70, 28), Vector2(40, 27), Vector2(22, 24)]), GHOST_LOW)
-	# the turbofan nacelle on its pylon, with a dark intake ring and the exhaust
-	_poly(img, PackedVector2Array([Vector2(30, 10), Vector2(34, 7), Vector2(58, 7), Vector2(62, 10), Vector2(62, 15), Vector2(30, 15)]), GHOST_TOP)
-	_rect(img, 30, 9, 33, 15, RUBBER)
-	_rect(img, 60, 10, 63, 15, STEEL)
-	_rect(img, 38, 14, 54, 16, GHOST_TOP)
-	_rect(img, 36, 8, 56, 9, [GHOST_TOP[1], GHOST_TOP[2], GHOST_LOW[2]] as Array[Color])
-	# the bubble canopy
-	_poly(img, PackedVector2Array([Vector2(74, 15), Vector2(78, 9), Vector2(88, 9), Vector2(94, 17)]), GLASS)
-	_rect(img, 80, 9, 81, 15, STEEL)
-	# the straight wing, edge-on, with pylons, two bombs and an ECM pod
-	_rect(img, 36, 25, 70, 27, GHOST_LOW)
-	for bx in [42, 54]:  # the pylons the bombs hang from (the cutaway draws the bombs, so they can drop)
-		_rect(img, bx, 27, bx + 1, 29, STEEL)
-	_rect(img, 63, 27, 64, 29, STEEL)
-	_rect(img, 60, 29, 70, 33, GHOST_LOW)
-	# the nose: the cannon barrels stick out in front, the shark mouth is painted on the nose
-	_rect(img, 98, 21, 110, 26, STEEL)
-	for rx in [100, 104, 108]:
-		_rect(img, rx, 21, rx + 1, 26, RUBBER)
-	_rect(img, 86, 20, 98, 25, GHOST_TOP)
-	_poly(img, PackedVector2Array([Vector2(84, 21), Vector2(98, 22), Vector2(98, 26), Vector2(86, 26)]), [Color("7a1818"), Color("a02424"), Color("b83030")] as Array[Color])
-	for tx in range(87, 98, 3):
-		_poly(img, PackedVector2Array([Vector2(tx, 22), Vector2(tx + 2, 22), Vector2(tx + 1, 25)]), [Color("d8d8d0"), Color("ece8e4"), Color("ffffff")] as Array[Color])
-	_rect(img, 90, 16, 94, 18, STEEL)  # the Pave Penny pod
+## An F-15E Strike Eagle in profile, nose to the right (19.4 m long is 97 px, so 1 px is 0.2 m): the long pointed nose, the
+## two-seat bubble canopy, a rectangular intake under the wing root, conformal fuel tanks along the fuselage with four
+## weapon pylons under them (the scene hangs the missiles there so they can be released), twin canted fins, a speed brake
+## on the spine and two afterburner nozzles. Gunship grey, with a squadron band on the fin.
+func _f15e() -> Image:
+	var img := _blank(F15_SIZE)
+	# the far fin and the near fin with its squadron band
+	_poly(img, PackedVector2Array([Vector2(15, 4), Vector2(23, 4), Vector2(31, 22), Vector2(17, 22)]), GHOST_TOP)
+	_poly(img, PackedVector2Array([Vector2(8, 7), Vector2(17, 7), Vector2(27, 24), Vector2(8, 24)]), GHOST_LOW)
+	_poly(img, PackedVector2Array([Vector2(10, 9), Vector2(15, 9), Vector2(17, 13), Vector2(10, 13)]), [Color("8a6a10"), Color("c49a1c"), Color("e8c030")] as Array[Color])
+	# the stabilator and the two nozzles with their glow
+	_rect(img, 1, 26, 24, 28, STEEL)
+	_rect(img, 2, 21, 9, 31, STEEL)
+	_rect(img, 0, 23, 2, 29, [Color("a03c0a"), Color("e8781c"), Color("ffc060")] as Array[Color])
+	# the fuselage: grey on top, a lighter belly, a speed brake on the spine
+	_poly(img, PackedVector2Array([Vector2(8, 22), Vector2(30, 20), Vector2(56, 19), Vector2(72, 20), Vector2(86, 22), Vector2(104, 26), Vector2(86, 29), Vector2(56, 32), Vector2(30, 31), Vector2(8, 30)]), GHOST_TOP)
+	_poly(img, PackedVector2Array([Vector2(8, 28), Vector2(30, 29), Vector2(56, 30), Vector2(86, 28), Vector2(104, 26), Vector2(86, 29), Vector2(56, 32), Vector2(30, 31), Vector2(8, 30)]), GHOST_LOW)
+	_rect(img, 44, 17, 54, 20, STEEL)
+	# the conformal tank along the side, with the pylons under it
+	_poly(img, PackedVector2Array([Vector2(33, 24), Vector2(62, 24), Vector2(66, 28), Vector2(62, 31), Vector2(33, 31)]), GHOST_LOW)
+	_line(img, Vector2(36, 27), Vector2(64, 27), GHOST_TOP[1])
+	for px in [38, 44, 50, 56]:
+		_rect(img, px, 31, px + 1, 33, STEEL)
+	# the intake under the wing root
+	_poly(img, PackedVector2Array([Vector2(60, 22), Vector2(72, 22), Vector2(77, 26), Vector2(72, 31), Vector2(60, 31)]), GHOST_TOP)
+	_rect(img, 70, 23, 74, 30, RUBBER)
+	# the canopy over both seats
+	_poly(img, PackedVector2Array([Vector2(70, 20), Vector2(75, 14), Vector2(86, 14), Vector2(93, 22)]), GLASS)
+	_rect(img, 80, 14, 81, 21, STEEL)
+	# the radome and the pitot probe
+	_poly(img, PackedVector2Array([Vector2(86, 22), Vector2(105, 26), Vector2(86, 29)]), [STEEL[1], STEEL[2], HUB[1]] as Array[Color])
+	_line(img, Vector2(105, 26), Vector2(111, 26), STEEL[2])
 	_outline(img)
 	return img

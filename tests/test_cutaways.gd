@@ -379,3 +379,16 @@ func test_scene_shake_stays_small_and_finite_for_every_recipe() -> void:
 		for i in 21:
 			var sh := scene.shake(1.5 * float(i) / 20.0, 1.5)
 			assert_true(is_finite(sh.x) and is_finite(sh.y) and sh.length() < 30.0, "%s shake at step %d is %s" % [id, i, str(sh)])
+
+
+func test_the_air_strike_releases_every_missile_and_all_of_them_land_before_the_clip_ends() -> void:
+	var last := 0.0
+	for j in CloseAirSupportScene.LAG.size():
+		for k in CloseAirSupportScene.HARDPOINTS.size():
+			var r := CloseAirSupportScene.release_at(j, k)
+			var l := CloseAirSupportScene.land_at(j, k)
+			assert_true(l > r and r > 0.0, "jet %d missile %d flies after its release" % [j, k])
+			last = maxf(last, l)
+	assert_true(last < 0.95, "the last missile lands at %.2f of the clip, leaving the aftermath on screen" % last)
+	assert_eq(CloseAirSupportScene.LAG.size() * CloseAirSupportScene.HARDPOINTS.size(), 12, "three jets with four missiles each")
+	assert_true(CloseAirSupportScene.release_at(0, 3) < CloseAirSupportScene.release_at(2, 0) + 0.2, "the flight dives together")

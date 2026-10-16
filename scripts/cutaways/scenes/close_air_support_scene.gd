@@ -1,22 +1,29 @@
 class_name CloseAirSupportScene
 extends CutawayScene
-## Close air support cutaway: an A-10 Thunderbolt II makes a diving pass over a column of enemy vehicles. It comes in
-## from the left, opens up with the 30 mm cannon (muzzle fire, a stream of tracers, dirt kicked up along the ground
-## ahead of it), releases two bombs, and pulls up as they hit. The jet is the generated sprite of
-## tools/gen_cutaway_art.gd; the dusk plain, the vehicles, tracers, bombs and explosions are drawn here.
+## Close air support cutaway: a flight of three F-15E Strike Eagles in echelon crosses a dusk plain, noses over into a
+## dive and releases every missile (four each, AGM-65 Maverick-sized, hung under the conformal tanks). The jets pull up
+## and sweep away to the right while the missiles, each on its own smoke trail, race down onto the enemy base and burst.
+## The jet is the generated sprite of tools/gen_cutaway_art.gd (without its missiles); the plain, the targets, the
+## missiles, trails and explosions are drawn here. Missiles are drawn about 1.5 times their real size so they read.
 
-const JET: Texture2D = preload("res://assets/cutaways/a10.png")
+const JET: Texture2D = preload("res://assets/cutaways/f15e.png")
 ## Must match tools/gen_cutaway_art.gd.
-const JET_NOSE: Vector2 = Vector2(110.0, 23.5)  # the muzzle end of the cannon, in sprite px
-const JET_CENTRE: Vector2 = Vector2(56.0, 20.0)
-const BOMB_BAYS: Array[Vector2] = [Vector2(42.0, 33.0), Vector2(54.0, 33.0)]  # where the two bombs hang
+const JET_CENTRE: Vector2 = Vector2(56.0, 26.0)
+const NOZZLES: Vector2 = Vector2(1.0, 26.0)
+const HARDPOINTS: Array[Vector2] = [Vector2(38.5, 35.8), Vector2(44.5, 35.8), Vector2(50.5, 35.8), Vector2(56.5, 35.8)]
+const MISSILE_LEN: float = 18.75  # a Maverick is 2.5 m: 12.5 sprite px, drawn at 1.5 times that
 
-const GUN_FROM: float = 0.14  # the cannon fires between these shares of the clip
-const GUN_TO: float = 0.5
-const DROP_AT: float = 0.46
-const HIT_AT: float = 0.64  # the first bomb lands; the second 0.03 later
+## The flight: how far behind the leader each jet is on the same path (share of the clip), its altitude offset (share of
+## the picture height) and its size (the leader is nearest the camera).
+const LAG: Array[float] = [0.0, 0.09, 0.17]
+const ALT: Array[float] = [0.0, -0.14, 0.12]
+const SIZE: Array[float] = [1.0, 0.82, 0.68]
+const DROP_AT: float = 0.44  # the leader's release; the others release at the same point of the path
+const RIPPLE: float = 0.014  # share of the clip between one missile and the next off the same jet
+const FLIGHT: float = 0.2  # a missile's flight time as a share of the clip
 const DESIGN_H: float = 684.0
 const SHAKE_PX: float = 7.0
+const TARGETS: int = 12
 
 const SKY_TOP: Color = Color(0.11, 0.14, 0.27)
 const SKY_LOW: Color = Color(0.93, 0.62, 0.36)
@@ -27,14 +34,25 @@ const GROUND_NEAR: Color = Color(0.17, 0.16, 0.1)
 var _shake: Vector2 = Vector2.ZERO
 
 
+## Share of the clip at which missile number `k` of jet `j` is released and at which it lands.
+static func release_at(j: int, k: int) -> float:
+	return DROP_AT + LAG[j] + RIPPLE * float(k)
+
+
+static func land_at(j: int, k: int) -> float:
+	return release_at(j, k) + FLIGHT
+
+
 func shake(t: float, length: float) -> Vector2:
 	var u := t / maxf(length, 0.001)
-	var hit := u - HIT_AT
-	var amp := 0.0
-	if hit >= 0.0:
-		amp = SHAKE_PX * exp(-hit * 12.0)
-	elif u > GUN_FROM and u < GUN_TO:
-		amp = 2.0  # the cannon shakes the camera a little too
+	var amp := 1.2 if u > 0.2 and u < 0.9 else 0.0  # the rumble of the flight
+	# every impact kicks the picture a little; they add up to at most SHAKE_PX
+	for j in LAG.size():
+		for k in HARDPOINTS.size():
+			var d := u - land_at(j, k)
+			if d >= 0.0 and d < 0.1:
+				amp += SHAKE_PX * 0.22 * exp(-d * 30.0)
+	amp = minf(amp, SHAKE_PX)
 	return Vector2(sin(t * 97.0) * amp, cos(t * 83.0) * amp)
 
 
@@ -43,47 +61,209 @@ func draw(ci: CanvasItem, rect: Rect2, t: float, length: float) -> void:
 	var s := rect.size.y / DESIGN_H
 	_shake = shake(t, length)
 	var horizon := rect.position.y + rect.size.y * 0.46
-	var ground_y := rect.position.y + rect.size.y * 0.84
+	var targets := _targets(rect, s)
 	ci.draw_set_transform(_shake, 0.0, Vector2.ONE)
 	_backdrop(ci, rect, horizon, s)
-	var convoy := _convoy(rect, ground_y, s)
-	_draw_convoy(ci, convoy, ground_y, s, u)
-	# the jet's path: in from the left, descending into the gun run, then pulling up and away to the right
-	var sc := 5.2 * s
-	var pos := _jet_position(rect, ground_y, u)
-	var angle := _jet_angle(u)
-	var nose := pos + (JET_NOSE - JET_CENTRE).rotated(angle) * sc
-	# gun run: tracers and the dirt they kick up, under the jet
-	if u >= GUN_FROM and u <= GUN_TO + 0.06:
-		_gun_run(ci, rect, ground_y, nose, angle, t, u, s)
-	ci.draw_set_transform(pos + _shake, angle, Vector2(sc, sc))
-	ci.draw_texture(JET, -JET_CENTRE)
-	ci.draw_set_transform(_shake, 0.0, Vector2.ONE)
-	_exhaust(ci, pos, angle, sc, t)
-	if u >= GUN_FROM and u <= GUN_TO:
-		_muzzle_fire(ci, nose, angle, sc, t)
-	_bombs(ci, pos, angle, sc, ground_y, convoy, u, s)
+	_draw_targets(ci, targets, u, s)
+	# the missiles' trails first, then the missiles, then the jets over them
+	for j in LAG.size():
+		for k in HARDPOINTS.size():
+			_missile_trail(ci, rect, j, k, targets, u, s)
+	for j in LAG.size():
+		for k in HARDPOINTS.size():
+			_missile(ci, rect, j, k, targets, u, s)
+	for j in range(LAG.size() - 1, -1, -1):  # the far jets first, the leader in front
+		_jet(ci, rect, j, u, t, s)
 	ci.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
-	var hit := u - HIT_AT
-	if hit >= 0.0:
-		ci.draw_rect(rect, Color(1.0, 0.9, 0.7, 0.45 * exp(-hit * 26.0)))
+	var first := land_at(0, 0)
+	if u >= first:
+		ci.draw_rect(rect, Color(1.0, 0.9, 0.7, 0.3 * exp(-(u - first) * 26.0)))
 
 
-func _jet_position(rect: Rect2, ground_y: float, u: float) -> Vector2:
-	var x := rect.position.x + rect.size.x * lerpf(-0.12, 1.15, pow(u, 1.15))
-	var dive := smoothstep(0.0, 0.5, u)
-	var pull := smoothstep(0.55, 0.85, u)
-	var y := lerpf(rect.position.y + rect.size.y * 0.2, ground_y - rect.size.y * 0.3, dive) - pull * rect.size.y * 0.42
-	return Vector2(x, y)
+# --- the flight ----------------------------------------------------------------------------------------------
+
+## Screen position and nose-down angle (radians, positive = nose down) of jet `j` at clip share `u`.
+func jet_state(rect: Rect2, j: int, u: float) -> Dictionary:
+	var lu := u - LAG[j]
+	var x := rect.position.x + rect.size.x * (lerpf(0.1, 1.35, pow(maxf(lu, 0.0), 1.6)) + minf(lu, 0.0) * 0.6)
+	var y := rect.size.y * (lerpf(0.26, 0.42, smoothstep(0.28, 0.46, lu)) - 0.4 * smoothstep(0.55, 0.95, lu) + ALT[j])
+	var angle := 0.46 * smoothstep(0.24, 0.38, lu) * (1.0 - smoothstep(0.46, 0.6, lu)) - 0.34 * smoothstep(0.52, 0.88, lu)
+	return {"pos": Vector2(x, rect.position.y + y), "angle": angle}
 
 
-func _jet_angle(u: float) -> float:
-	var dive := smoothstep(0.0, 0.35, u) * (1.0 - smoothstep(0.45, 0.62, u))
-	var pull := smoothstep(0.55, 0.85, u)
-	return 0.2 * dive - 0.3 * pull
+func _jet(ci: CanvasItem, rect: Rect2, j: int, u: float, t: float, s: float) -> void:
+	var st := jet_state(rect, j, u)
+	var pos: Vector2 = st["pos"]
+	var angle: float = st["angle"]
+	var sc := 4.2 * s * SIZE[j]
+	# a faint vapour trail behind the airframe, from where it was a moment ago
+	var trail := PackedVector2Array()
+	for i in 10:
+		trail.append((jet_state(rect, j, u - 0.014 * float(i))["pos"] as Vector2) + Vector2(-JET_CENTRE.x * sc * 0.9, 4.0 * sc))
+	for i in 9:
+		ci.draw_line(trail[i], trail[i + 1], Color(1.0, 1.0, 1.0, 0.22 * (1.0 - float(i) / 9.0)), 3.0 * sc)
+	ci.draw_set_transform(pos + _shake, angle, Vector2(sc, sc))
+	# the missiles still hanging on the pylons, until each is released
+	for k in HARDPOINTS.size():
+		if u < release_at(j, k):
+			_draw_missile_shape(ci, HARDPOINTS[k] - JET_CENTRE, MISSILE_LEN, false)
+	ci.draw_texture(JET, -JET_CENTRE)
+	# the afterburner flame behind the nozzles
+	var flicker := 0.75 + 0.25 * sin(t * 70.0 + float(j))
+	var flame := NOZZLES - JET_CENTRE + Vector2(-1.0, 0.0)
+	ci.draw_colored_polygon(PackedVector2Array([flame + Vector2(0.0, -3.5), flame + Vector2(-16.0 * flicker, 0.0), flame + Vector2(0.0, 3.5)]), Color(1.0, 0.6, 0.2, 0.85))
+	ci.draw_colored_polygon(PackedVector2Array([flame + Vector2(0.0, -2.0), flame + Vector2(-9.0 * flicker, 0.0), flame + Vector2(0.0, 2.0)]), Color(1.0, 0.95, 0.7, 0.95))
+	ci.draw_set_transform(_shake, 0.0, Vector2.ONE)
 
 
-# --- backdrop and targets -------------------------------------------------------------------------------------
+# --- missiles ------------------------------------------------------------------------------------------------
+
+## The point of a missile's path at share `f` (0 release .. 1 impact): a curve that carries on along the jet's heading and
+## bends down onto the target.
+func _path(start: Vector2, heading: float, target: Vector2, reach: float, f: float) -> Vector2:
+	var ctrl := start + Vector2(cos(heading), sin(heading)) * reach
+	var a := start.lerp(ctrl, f)
+	var b := ctrl.lerp(target, f)
+	return a.lerp(b, f)
+
+
+func _missile_geometry(rect: Rect2, j: int, k: int, targets: Array[Dictionary], s: float) -> Dictionary:
+	var ur := release_at(j, k)
+	var st := jet_state(rect, j, ur)
+	var sc := 4.2 * s * SIZE[j]
+	var start: Vector2 = (st["pos"] as Vector2) + (HARDPOINTS[k] - JET_CENTRE).rotated(st["angle"]) * sc
+	var tg: Dictionary = targets[(j * HARDPOINTS.size() + k) % targets.size()]
+	return {"start": start, "heading": st["angle"], "target": Vector2(tg["x"], tg["y"]), "reach": rect.size.x * 0.2, "size": SIZE[j]}
+
+
+func _missile_at(g: Dictionary, f: float) -> Vector2:
+	return _path(g["start"], g["heading"], g["target"], g["reach"], f)
+
+
+func _missile_trail(ci: CanvasItem, rect: Rect2, j: int, k: int, targets: Array[Dictionary], u: float, s: float) -> void:
+	var ur := release_at(j, k)
+	if u < ur + 0.012 or u > land_at(j, k) + 0.12:
+		return
+	var g := _missile_geometry(rect, j, k, targets, s)
+	var f := clampf((u - ur) / FLIGHT, 0.0, 1.0)
+	var f0 := 0.06  # the motor lights a moment after release
+	var steps := 14
+	var fade_out := clampf(1.0 - (u - land_at(j, k)) / 0.12, 0.0, 1.0)
+	for i in steps:
+		var a := lerpf(f0, f, float(i) / steps)
+		var b := lerpf(f0, f, float(i + 1) / steps)
+		if b <= f0:
+			continue
+		var age := 1.0 - float(i) / steps
+		var w := (5.0 + 9.0 * (1.0 - age) * (1.0 - age)) * s * SIZE[j]
+		ci.draw_line(_missile_at(g, a), _missile_at(g, b), Color(0.9, 0.9, 0.92, 0.55 * (1.0 - age * 0.8) * fade_out), w)
+
+
+func _missile(ci: CanvasItem, rect: Rect2, j: int, k: int, targets: Array[Dictionary], u: float, s: float) -> void:
+	var ur := release_at(j, k)
+	if u < ur or u >= land_at(j, k):
+		return
+	var g := _missile_geometry(rect, j, k, targets, s)
+	var f := (u - ur) / FLIGHT
+	var p := _missile_at(g, f)
+	var q := _missile_at(g, minf(f + 0.01, 1.0))
+	var ang := (q - p).angle()
+	var size: float = 4.2 * s * float(g["size"]) * lerpf(1.0, 0.7, f)
+	# the launch: a flash and a puff at the pylon in the first moments
+	if f < 0.14:
+		var k2 := 1.0 - f / 0.14
+		ci.draw_circle(p, 16.0 * size * k2, Color(1.0, 0.75, 0.35, 0.5 * k2))
+		ci.draw_circle(p + Vector2(-10.0, 0.0) * size, 12.0 * size * (1.0 - k2 * 0.5), Color(0.9, 0.9, 0.9, 0.4 * k2))
+	ci.draw_set_transform(p + _shake, ang, Vector2(size, size))
+	_draw_missile_shape(ci, Vector2.ZERO, MISSILE_LEN, f > 0.06)
+	ci.draw_set_transform(_shake, 0.0, Vector2.ONE)
+
+
+## A Maverick-like missile centred at `at`, nose to the right, `len` long: a body, a dark nose, cropped fins and (when the
+## motor burns) a flame. Drawn in the current transform's units.
+func _draw_missile_shape(ci: CanvasItem, at: Vector2, len: float, burning: bool) -> void:
+	var r := len * 0.12
+	ci.draw_rect(Rect2(at.x - len * 0.5, at.y - r, len * 0.8, r * 2.0), Color("c9ced2"))
+	ci.draw_rect(Rect2(at.x - len * 0.5, at.y - r, len * 0.8, r * 0.7), Color("e6eaed"))
+	ci.draw_colored_polygon(PackedVector2Array([Vector2(at.x + len * 0.3, at.y - r), Vector2(at.x + len * 0.5, at.y), Vector2(at.x + len * 0.3, at.y + r)]), Color("3a4046"))
+	ci.draw_colored_polygon(PackedVector2Array([Vector2(at.x - len * 0.5, at.y - r), Vector2(at.x - len * 0.38, at.y - r), Vector2(at.x - len * 0.5, at.y - r * 2.4)]), Color("5a626a"))
+	ci.draw_colored_polygon(PackedVector2Array([Vector2(at.x - len * 0.5, at.y + r), Vector2(at.x - len * 0.38, at.y + r), Vector2(at.x - len * 0.5, at.y + r * 2.4)]), Color("5a626a"))
+	if burning:
+		ci.draw_colored_polygon(PackedVector2Array([Vector2(at.x - len * 0.5, at.y - r * 0.9), Vector2(at.x - len * 1.0, at.y), Vector2(at.x - len * 0.5, at.y + r * 0.9)]), Color(1.0, 0.7, 0.25, 0.95))
+		ci.draw_colored_polygon(PackedVector2Array([Vector2(at.x - len * 0.5, at.y - r * 0.5), Vector2(at.x - len * 0.78, at.y), Vector2(at.x - len * 0.5, at.y + r * 0.5)]), Color(1.0, 0.97, 0.8, 1.0))
+
+
+# --- the enemy base --------------------------------------------------------------------------------------------
+
+func _targets(rect: Rect2, s: float) -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+	for i in TARGETS:
+		var f := float(i) / float(TARGETS - 1)
+		var row := i % 2
+		out.append({
+			"x": rect.position.x + rect.size.x * (0.66 + 0.31 * f) + (hash01(i, 5) - 0.5) * 20.0 * s,
+			"y": rect.position.y + rect.size.y * lerpf(0.79, 0.9, float(row)),
+			"kind": 2 if i % 4 == 3 else (i % 2),
+			"w": (70.0 if i % 4 != 3 else 64.0) * s * lerpf(1.0, 1.35, float(row)),
+			"h": (30.0 if i % 4 != 3 else 40.0) * s * lerpf(1.0, 1.35, float(row)),
+		})
+	return out
+
+
+func _draw_targets(ci: CanvasItem, targets: Array[Dictionary], u: float, s: float) -> void:
+	for i in targets.size():
+		var tg: Dictionary = targets[i]
+		var j := (i / HARDPOINTS.size()) % LAG.size()
+		var k := i % HARDPOINTS.size()
+		var x: float = tg["x"]
+		var w: float = tg["w"]
+		var h: float = tg["h"]
+		var base := Vector2(x - w * 0.5, float(tg["y"]) + 6.0 * s)
+		var land := land_at(j, k)
+		if u >= land:
+			var flick := 0.7 + 0.3 * sin(u * 90.0 + float(i))
+			ci.draw_rect(Rect2(base.x, base.y - h * 0.45, w, h * 0.45), Color(0.07, 0.07, 0.07))
+			ci.draw_circle(base + Vector2(w * 0.5, -h * 0.6), h * 0.55 * flick, Color(1.0, 0.5, 0.15, 0.5))
+			ci.draw_circle(base + Vector2(w * 0.5, -h * 0.65), h * 0.3 * flick, Color(1.0, 0.85, 0.4, 0.75))
+			_explosion(ci, Vector2(x, float(tg["y"]) + 2.0 * s), (u - land) / 0.26, s, i)
+			continue
+		var body := Color(0.2, 0.25, 0.14)
+		var dark := Color(0.15, 0.19, 0.1)
+		match int(tg["kind"]):
+			0:  # a truck
+				ci.draw_rect(Rect2(base.x, base.y - h * 0.7, w, h * 0.5), body)
+				ci.draw_rect(Rect2(base.x + w * 0.62, base.y - h, w * 0.38, h * 0.5), dark)
+			1:  # a tank
+				ci.draw_rect(Rect2(base.x, base.y - h * 0.6, w, h * 0.4), body)
+				ci.draw_rect(Rect2(base.x + w * 0.2, base.y - h * 0.95, w * 0.5, h * 0.38), dark)
+				ci.draw_rect(Rect2(base.x + w * 0.65, base.y - h * 0.85, w * 0.45, 3.0 * s), Color(0.12, 0.15, 0.09))
+			_:  # a bunker
+				ci.draw_rect(Rect2(base.x, base.y - h, w, h), Color(0.3, 0.3, 0.27))
+				ci.draw_rect(Rect2(base.x, base.y - h, w, h * 0.2), Color(0.38, 0.38, 0.34))
+				ci.draw_rect(Rect2(base.x + w * 0.15, base.y - h * 0.62, w * 0.7, h * 0.14), Color(0.07, 0.07, 0.07))
+		if int(tg["kind"]) != 2:
+			for q in 3:
+				ci.draw_circle(Vector2(base.x + w * (0.18 + 0.32 * float(q)), base.y - h * 0.14), h * 0.19, Color(0.06, 0.06, 0.06))
+
+
+func _explosion(ci: CanvasItem, at: Vector2, age: float, s: float, seed_i: int) -> void:
+	if age > 1.0:
+		return
+	var k := 1.0 - age
+	ci.draw_circle(at + Vector2(0.0, -16.0 * s * age), (26.0 + 46.0 * age) * s, Color(1.0, 0.45, 0.12, 0.5 * k * k))
+	ci.draw_circle(at + Vector2(0.0, -26.0 * s * age), (18.0 + 28.0 * age) * s, Color(1.0, 0.75, 0.3, 0.75 * k))
+	if age < 0.25:
+		ci.draw_circle(at + Vector2(0.0, -10.0 * s), (24.0 + 34.0 * age) * s, Color(1.0, 0.97, 0.85, 1.0 - age * 3.0))
+	for i in 5:
+		var h := hash01(i + seed_i * 9, 71)
+		ci.draw_circle(at + Vector2((h - 0.5) * 60.0 * s * age, -(24.0 + 90.0 * age * (0.5 + h)) * s), (10.0 + 22.0 * age * (0.6 + h)) * s, Color(0.14, 0.12, 0.12, 0.55 * k))
+	for i in 6:
+		var h := hash01(i + seed_i * 5, 72)
+		var d := (h - 0.5) * 170.0 * s * age
+		ci.draw_circle(at + Vector2(d, -(80.0 * h * age - 110.0 * age * age) * s), 2.2 * s, Color(1.0, 0.8, 0.4, k))
+
+
+# --- backdrop ----------------------------------------------------------------------------------------------------
 
 func _backdrop(ci: CanvasItem, rect: Rect2, horizon: float, s: float) -> void:
 	var m := 40.0
@@ -93,8 +273,8 @@ func _backdrop(ci: CanvasItem, rect: Rect2, horizon: float, s: float) -> void:
 	for i in bands:
 		var f := float(i) / float(bands - 1)
 		ci.draw_rect(Rect2(rect.position.x - m, top + sky_h * float(i) / bands, rect.size.x + m * 2.0, sky_h / bands + 1.0), SKY_TOP.lerp(SKY_LOW, f * f))
-	for k in 6:
-		ci.draw_circle(Vector2(rect.position.x + rect.size.x * 0.82, horizon), (230.0 - 34.0 * float(k)) * s, Color(1.0, 0.75, 0.4, 0.05 + 0.03 * float(k)))
+	for q in 6:
+		ci.draw_circle(Vector2(rect.position.x + rect.size.x * 0.82, horizon), (230.0 - 34.0 * float(q)) * s, Color(1.0, 0.75, 0.4, 0.05 + 0.03 * float(q)))
 	var pts := PackedVector2Array()
 	var n := 30
 	for i in n + 1:
@@ -107,136 +287,10 @@ func _backdrop(ci: CanvasItem, rect: Rect2, horizon: float, s: float) -> void:
 	for i in bands:
 		var f := float(i) / float(bands - 1)
 		ci.draw_rect(Rect2(rect.position.x - m, horizon + h * float(i) / bands, rect.size.x + m * 2.0, h / bands + 1.0), GROUND_FAR.lerp(GROUND_NEAR, f))
-	# a dirt road the convoy drives along, and low scrub
-	var road_y := rect.position.y + rect.size.y * 0.84
-	ci.draw_rect(Rect2(rect.position.x - m, road_y - 4.0 * s, rect.size.x + m * 2.0, 16.0 * s), Color(0.28, 0.24, 0.17))
+	var road_y := rect.position.y + rect.size.y * 0.86
+	ci.draw_rect(Rect2(rect.position.x - m, road_y - 4.0 * s, rect.size.x + m * 2.0, 22.0 * s), Color(0.28, 0.24, 0.17))
 	ci.draw_rect(Rect2(rect.position.x - m, road_y - 4.0 * s, rect.size.x + m * 2.0, 2.0 * s), Color(0.4, 0.35, 0.25))
 	for i in 26:
 		var bx := rect.position.x + rect.size.x * hash01(i, 61)
 		var by := horizon + h * (0.1 + 0.55 * hash01(i, 62))
 		ci.draw_rect(Rect2(bx, by, (8.0 + 14.0 * hash01(i, 63)) * s, (3.0 + 4.0 * hash01(i, 64)) * s), Color(0.15, 0.2, 0.1, 0.85))
-
-
-## The enemy column on the road: x positions (screen px) and sizes of the vehicles.
-func _convoy(rect: Rect2, _ground_y: float, s: float) -> Array[Dictionary]:
-	var out: Array[Dictionary] = []
-	for i in 4:
-		out.append({"x": rect.position.x + rect.size.x * (0.58 + 0.095 * float(i)), "w": (74.0 - 6.0 * float(i % 2)) * s * 1.6, "h": 34.0 * s * 1.6, "kind": i % 2})
-	return out
-
-
-func _draw_convoy(ci: CanvasItem, convoy: Array[Dictionary], ground_y: float, s: float, u: float) -> void:
-	for i in convoy.size():
-		var v: Dictionary = convoy[i]
-		var x: float = v["x"]
-		var w: float = v["w"]
-		var h: float = v["h"]
-		var destroyed := u >= HIT_AT + 0.015 * float(i % 2) + (0.03 if i >= 2 else 0.0)
-		var base := Vector2(x, ground_y + 6.0 * s)
-		if destroyed:
-			# a burnt-out hulk with flames
-			ci.draw_rect(Rect2(base.x, base.y - h * 0.6, w, h * 0.6), Color(0.07, 0.07, 0.07))
-			var flick := 0.7 + 0.3 * sin(u * 90.0 + float(i))
-			ci.draw_circle(base + Vector2(w * 0.5, -h * 0.7), h * 0.5 * flick, Color(1.0, 0.5, 0.15, 0.55))
-			ci.draw_circle(base + Vector2(w * 0.5, -h * 0.75), h * 0.28 * flick, Color(1.0, 0.85, 0.4, 0.8))
-			continue
-		var body := Color(0.2, 0.25, 0.14)
-		ci.draw_rect(Rect2(base.x, base.y - h * 0.7, w, h * 0.5), body)  # the hull / box
-		if int(v["kind"]) == 0:
-			ci.draw_rect(Rect2(base.x + w * 0.62, base.y - h, w * 0.38, h * 0.5), Color(0.17, 0.21, 0.12))  # a truck cab
-		else:
-			ci.draw_rect(Rect2(base.x + w * 0.2, base.y - h * 0.98, w * 0.5, h * 0.3), Color(0.17, 0.21, 0.12))  # a turret
-			ci.draw_rect(Rect2(base.x + w * 0.65, base.y - h * 0.9, w * 0.4, 3.0 * s), Color(0.12, 0.15, 0.09))  # a gun
-		for k in 3:
-			ci.draw_circle(Vector2(base.x + w * (0.18 + 0.32 * float(k)), base.y - h * 0.14), h * 0.19, Color(0.06, 0.06, 0.06))
-
-
-# --- the jet and its weapons --------------------------------------------------------------------------------
-
-func _exhaust(ci: CanvasItem, pos: Vector2, angle: float, sc: float, t: float) -> void:
-	var back := pos + (Vector2(62.0, 12.0) - JET_CENTRE).rotated(angle) * sc
-	for i in 5:
-		var k := float(i)
-		var wob := sin(t * 40.0 + k) * 1.5 * sc
-		ci.draw_circle(back + Vector2(-k * 7.0 * sc, wob).rotated(angle), (3.2 + k * 1.2) * sc * 0.6, Color(1.0, 0.7, 0.35, 0.28 - k * 0.05))
-
-
-func _muzzle_fire(ci: CanvasItem, nose: Vector2, angle: float, sc: float, t: float) -> void:
-	var dir := Vector2.RIGHT.rotated(angle)
-	var side := Vector2(-dir.y, dir.x)
-	var pulse := 0.55 + 0.45 * sin(t * 190.0)
-	ci.draw_circle(nose, 9.0 * sc * pulse, Color(1.0, 0.6, 0.2, 0.4))
-	var tip := nose + dir * 16.0 * sc * pulse
-	ci.draw_colored_polygon(PackedVector2Array([tip, nose + side * 4.0 * sc, nose - dir * 2.0 * sc]), Color(1.0, 0.92, 0.6, 0.95))
-	ci.draw_colored_polygon(PackedVector2Array([tip, nose - dir * 2.0 * sc, nose - side * 4.0 * sc]), Color(1.0, 0.92, 0.6, 0.95))
-	# gun smoke streaming back along the airframe
-	for i in 6:
-		var k := float(i) / 5.0
-		ci.draw_circle(nose - dir * (14.0 + 40.0 * k) * sc + side * sin(t * 30.0 + float(i)) * 2.0 * sc, (4.0 + 7.0 * k) * sc, Color(0.78, 0.74, 0.7, 0.3 * (1.0 - k * 0.6)))
-
-
-func _gun_run(ci: CanvasItem, rect: Rect2, ground_y: float, nose: Vector2, angle: float, t: float, u: float, s: float) -> void:
-	# a stream of tracers from the nose to a point on the ground that sweeps toward the convoy
-	var f := clampf((u - GUN_FROM) / (GUN_TO - GUN_FROM), 0.0, 1.0)
-	var aim_x := lerpf(nose.x + rect.size.x * 0.22, rect.position.x + rect.size.x * 0.86, f)
-	var aim := Vector2(aim_x, ground_y + 4.0 * s)
-	var firing := u <= GUN_TO
-	if firing:
-		for i in 14:
-			var k := fposmod(float(i) / 14.0 + t * 7.0, 1.0)
-			var p0 := nose.lerp(aim, k)
-			var p1 := nose.lerp(aim, minf(k + 0.035, 1.0))
-			ci.draw_line(p0, p1, Color(1.0, 0.75, 0.35, 0.9 * (1.0 - k * 0.4)), 5.0 * s + 1.0)
-			ci.draw_line(p0, p1, Color(1.0, 0.97, 0.85, 0.95), 2.0)
-	# the strike on the ground: dirt thrown up in a line that trails behind the aim point
-	var trail := 7
-	for i in trail:
-		var k := float(i) / float(trail)
-		var x := aim_x - k * rect.size.x * 0.2 * minf(f * 3.0, 1.0)
-		var age := k
-		var fade := (1.0 - age) * (1.0 if firing else clampf(1.0 - (u - GUN_TO) / 0.06, 0.0, 1.0))
-		ci.draw_circle(Vector2(x, ground_y + 2.0 * s - 12.0 * s * age), (7.0 + 14.0 * age) * s, Color(0.55, 0.45, 0.3, 0.55 * fade))
-		ci.draw_circle(Vector2(x, ground_y - 4.0 * s - 18.0 * s * age), (4.0 + 7.0 * age) * s, Color(1.0, 0.8, 0.45, 0.5 * fade * (1.0 - age)))
-
-
-func _bombs(ci: CanvasItem, jet_pos: Vector2, angle: float, sc: float, ground_y: float, convoy: Array[Dictionary], u: float, s: float) -> void:
-	if u < DROP_AT:  # still hanging under the wing, nose forward
-		for i in BOMB_BAYS.size():
-			ci.draw_set_transform(jet_pos + (BOMB_BAYS[i] + Vector2(1.0, 0.0) - JET_CENTRE).rotated(angle) * sc + _shake, angle, Vector2(sc * 0.9, sc * 0.9))
-			ci.draw_rect(Rect2(-6.0, -2.5, 13.0, 5.0), Color("4a5a32"))
-			ci.draw_rect(Rect2(-9.0, -3.0, 4.0, 6.0), Color("2a3036"))
-		ci.draw_set_transform(_shake, 0.0, Vector2.ONE)
-		return
-	for i in BOMB_BAYS.size():
-		var land_at := HIT_AT + 0.03 * float(i)
-		var target_x: float = convoy[i * 2]["x"] + float(convoy[i * 2]["w"]) * 0.5
-		if u < land_at:
-			# falls from where it was released to the target, a little ahead of the jet
-			var f := (u - DROP_AT) / (land_at - DROP_AT)
-			var start := jet_pos + (BOMB_BAYS[i] - JET_CENTRE).rotated(0.2) * sc
-			var p := Vector2(lerpf(start.x, target_x, f), lerpf(start.y, ground_y + 4.0 * s, f * f))
-			var tilt := lerpf(0.1, 1.2, f)
-			ci.draw_set_transform(p + _shake, tilt, Vector2(sc * 0.9, sc * 0.9))
-			ci.draw_rect(Rect2(-7.0, -2.5, 14.0, 5.0), Color("4a5a32"))
-			ci.draw_rect(Rect2(-10.0, -3.0, 4.0, 6.0), Color("2a3036"))
-			ci.draw_set_transform(_shake, 0.0, Vector2.ONE)
-		else:
-			_explosion(ci, Vector2(target_x, ground_y + 2.0 * s), (u - land_at) / 0.3, s, i)
-
-
-func _explosion(ci: CanvasItem, at: Vector2, age: float, s: float, seed_i: int) -> void:
-	if age > 1.0:
-		return
-	var k := 1.0 - age
-	ci.draw_circle(at + Vector2(0.0, -16.0 * s * age), (54.0 + 90.0 * age) * s, Color(1.0, 0.45, 0.12, 0.5 * k * k))
-	ci.draw_circle(at + Vector2(0.0, -26.0 * s * age), (36.0 + 54.0 * age) * s, Color(1.0, 0.75, 0.3, 0.75 * k))
-	if age < 0.25:
-		ci.draw_circle(at + Vector2(0.0, -10.0 * s), (46.0 + 60.0 * age) * s, Color(1.0, 0.97, 0.85, 1.0 - age * 3.0))
-	# the column of smoke and the flying debris
-	for i in 6:
-		var h := hash01(i + seed_i * 9, 71)
-		ci.draw_circle(at + Vector2((h - 0.5) * 60.0 * s * age, -(40.0 + 120.0 * age * (0.5 + h)) * s), (18.0 + 36.0 * age * (0.6 + h)) * s, Color(0.14, 0.12, 0.12, 0.6 * k))
-	for i in 8:
-		var h := hash01(i + seed_i * 5, 72)
-		var d := (h - 0.5) * 200.0 * s * age
-		ci.draw_circle(at + Vector2(d, -(90.0 * h * age - 120.0 * age * age) * s), 2.5 * s, Color(1.0, 0.8, 0.4, k))
