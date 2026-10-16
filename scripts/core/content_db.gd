@@ -12,6 +12,7 @@ var missions: Dictionary = {}  # id -> MissionDefinition
 var cards: Dictionary = {}  # id -> CardDefinition
 var decks: Dictionary = {}  # id -> DeckDefinition
 var operations: Dictionary = {}  # id -> OperationDefinition (battle effects of Operation cards)
+var cutaways: Dictionary = {}  # id -> CutawayDefinition (full-screen clips of big supports)
 var scenery_defs: Dictionary = {}  # id -> SceneryDefinition (decorations placed by maps)
 var deck_rules: DeckRules  # data/config/deck_rules.tres; null if missing/invalid (reported in errors)
 var errors: PackedStringArray = PackedStringArray()
@@ -28,6 +29,7 @@ static func load_from(root: String = "res://data") -> ContentDb:
 	db._load_dir(root + "/cards", "card")
 	db._load_dir(root + "/decks", "deck")
 	db._load_dir(root + "/operations", "operation")
+	db._load_dir(root + "/cutaways", "cutaway")
 	db._load_dir(root + "/scenery", "scenery", false)
 	db._load_deck_rules(root + "/config/deck_rules.tres")
 	db.validate_references()
@@ -68,6 +70,14 @@ func deck(id: String) -> DeckDefinition:
 
 func operation(id: String) -> OperationDefinition:
 	return operations.get(id)
+
+
+func cutaway(id: String) -> CutawayDefinition:
+	return cutaways.get(id)
+
+
+func add_cutaway(def: CutawayDefinition) -> bool:
+	return _register(cutaways, def)
 
 
 func scenery(id: String) -> SceneryDefinition:
@@ -130,6 +140,14 @@ func validate_references() -> void:
 			errors.append("mission '%s': unknown core_scenery_id '%s'" % [id, m.core_scenery_id])
 		if not m.deck_id.is_empty() and not decks.has(m.deck_id):
 			errors.append("mission '%s': unknown deck_id '%s'" % [id, m.deck_id])
+	for id in operations:
+		var op: OperationDefinition = operations[id]
+		if not op.cutaway_id.is_empty() and not cutaways.has(op.cutaway_id):
+			errors.append("operation '%s': unknown cutaway_id '%s'" % [id, op.cutaway_id])
+	for id in cutaways:
+		var cd: CutawayDefinition = cutaways[id]
+		if not CutawayScenes.has(cd.scene):
+			errors.append("cutaway '%s': unknown scene '%s'" % [id, cd.scene])
 	_validate_card_units()
 	_validate_decks()
 	_validate_scenery()
@@ -186,6 +204,8 @@ func _validate_scenery() -> void:
 func _validate_card_units() -> void:
 	for id in cards:
 		var c: CardDefinition = cards[id]
+		if not c.cutaway_id.is_empty() and not cutaways.has(c.cutaway_id):
+			errors.append("card '%s': unknown cutaway_id '%s'" % [id, c.cutaway_id])
 		if c.card_kind == CardDefinition.CardKind.OPERATION:
 			if not operations.has(c.effect_id):
 				errors.append("card '%s': unknown effect_id '%s'" % [id, c.effect_id])
@@ -289,6 +309,11 @@ func _load_dir(path: String, kind: String, required: bool = true) -> void:
 					add_operation(res)
 				else:
 					errors.append("%s is not an OperationDefinition" % full)
+			"cutaway":
+				if res is CutawayDefinition:
+					add_cutaway(res)
+				else:
+					errors.append("%s is not a CutawayDefinition" % full)
 			"scenery":
 				if res is SceneryDefinition:
 					add_scenery(res)

@@ -22,6 +22,8 @@ const MAX_COPIES_LIMIT: int = 3  # hard ceiling from the deck rules; Legendary c
 @export var station_time_s: float = 0.0
 ## OPERATION: the battle effect to run (e.g. "artillery_strike").
 @export var effect_id: String = ""
+## Optional full-screen clip shown when a SORTIE card is played (a CutawayDefinition id; operations name theirs on the OperationDefinition).
+@export var cutaway_id: String = ""
 
 
 func kind() -> String:

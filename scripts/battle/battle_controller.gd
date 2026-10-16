@@ -25,6 +25,8 @@ signal card_played(card: CardDefinition, cell: Vector2i)
 signal strike_called(center: Vector2, reach: float, duration: float)
 ## A unit launched a projectile weapon (missile) at `target_ground`; the projectile flies and explodes later.
 signal projectile_launched(shooter: BattleUnit, weapon: WeaponDefinition, from_ground: Vector2, target_ground: Vector2)
+## A played card has a full-screen clip (a CutawayDefinition id). The CutawayPlayer freezes the battle while it runs.
+signal cutaway_requested(cutaway_id: String)
 ## A play was refused (no CP, locked, bad cell...). `slot` is the hand slot; the result says why.
 signal card_rejected(slot: int, result: CardPlayService.Result)
 
@@ -83,6 +85,8 @@ class Hit:
 
 ## Tests set this false so the controller only advances when `step` is called.
 var auto_step: bool = true
+## True while a cutaway clip plays: no simulation ticks and no card input (set by the CutawayPlayer, cleared by setup).
+var frozen: bool = false
 
 var db: ContentDb
 var mission: MissionDefinition
@@ -139,8 +143,8 @@ var _preview_node: CardPreview
 var _camera: IsoCamera
 
 
-## Parses launch options given after `--`, e.g. `godot --path . -- --mission=s1_stress_horde --seed=5`.
-## Unknown or malformed options are ignored. Returns {"mission": String?, "seed": int?} with only the keys given.
+## Parses launch options given after `--`, e.g. `godot --path . -- --mission=s1_stress_horde --seed=5 --cutaways=off`.
+## Unknown or malformed options are ignored. Returns {"mission": String?, "seed": int?, "cutaways": bool?} with only the keys given.
 static func parse_user_args(args: PackedStringArray) -> Dictionary:
 	var out: Dictionary = {}
 	for a in args:
@@ -152,6 +156,8 @@ static func parse_user_args(args: PackedStringArray) -> Dictionary:
 			var v := a.trim_prefix("--seed=")
 			if v.is_valid_int():
 				out["seed"] = v.to_int()
+		elif a == "--cutaways=off" or a == "--cutaways=on":
+			out["cutaways"] = a.ends_with("on")
 	return out
 
 
@@ -187,6 +193,10 @@ func _ready() -> void:
 	feedback.name = "Feedback"
 	add_child(feedback)
 	feedback.bind(self)
+	var cutaways := CutawayPlayer.new()
+	add_child(cutaways)
+	cutaways.bind(self, feedback.sfx)
+	cutaways.plan.enabled = bool(cli.get("cutaways", true))
 	var atmosphere := Atmosphere.new()
 	atmosphere.name = "Atmosphere"
 	add_child(atmosphere)
@@ -207,6 +217,7 @@ func setup(p_db: ContentDb, p_mission: MissionDefinition, p_seed: int) -> void:
 	strikes.clear()
 	sorties.clear()
 	elapsed = 0.0
+	frozen = false
 	stats = {"spawned": 0, "kills": 0, "shots": 0, "units_lost": 0}
 	_next_uid = 1
 	_pending.clear()
@@ -274,7 +285,7 @@ func _physics_process(delta: float) -> void:
 
 
 func step(delta: float) -> void:
-	if _rules == null or _rules.is_ended() or delta <= 0.0:
+	if frozen or _rules == null or _rules.is_ended() or delta <= 0.0:
 		return
 	# 1. clock + card economy + spawns
 	elapsed += delta
@@ -664,7 +675,18 @@ func play_card(hand_index: int, cell: Vector2i) -> CardPlayService.Result:
 		for off in PlacementRules.formation_offsets(card.unit_count):
 			_spawn_unit_at(card.unit_id, centre + off)
 	card_played.emit(card, cell)
+	var clip := cutaway_for(card)
+	if not clip.is_empty():
+		cutaway_requested.emit(clip)
 	return res
+
+
+## The cutaway clip id for a card: the operation's own for an Operation card, the card's for a Sortie ('' = none).
+func cutaway_for(card: CardDefinition) -> String:
+	if card.card_kind == CardDefinition.CardKind.OPERATION:
+		var op := db.operation(card.effect_id)
+		return op.cutaway_id if op != null else ""
+	return card.cutaway_id
 
 
 ## Sends the card's aircraft in from the nearest map edge to hold station over `center`, then out the other side.
@@ -691,7 +713,7 @@ func _start_strike(op: OperationDefinition, center: Vector2) -> void:
 
 ## Selects (or deselects, if already selected) a hand slot for placement.
 func select_slot(slot: int) -> void:
-	if deck == null or is_ended():
+	if deck == null or is_ended() or frozen:
 		return
 	targeting.select(deck, slot)
 
@@ -703,7 +725,7 @@ func cancel_selection() -> void:
 ## Plays the selected card on `cell`. A success clears the selection; a refusal keeps it (so the player can try
 ## another cell) and emits `card_rejected`. Returns null when no card is selected.
 func confirm_at(cell: Vector2i) -> CardPlayService.Result:
-	if deck == null or not targeting.is_selecting():
+	if deck == null or frozen or not targeting.is_selecting():
 		return null
 	var slot := targeting.selected_slot
 	var res := play_card(slot, cell)

@@ -22,6 +22,8 @@ const GOLDEN_ANGLE: float = 2.399963229728653
 @export var blast_radius: float = 1.8
 ## Ground offset from an impact point to where its shell is fired from (the battery is off to one side).
 @export var launch_offset: Vector2 = Vector2(-10.0, 10.0)
+## Optional full-screen clip shown when the card is played (a CutawayDefinition id; empty = none).
+@export var cutaway_id: String = ""
 
 
 func kind() -> String:

@@ -1,6 +1,6 @@
 # Spec: Strike cutaways (call-in clips for big support cards)
 
-Status: **v0.2, approved by the user on 2026-10-16 (interview decisions, tiers confirmed with "this is good now").** Nothing is built. Origin: "When a missile strikes, an artillery barrage, close air support from a fighter jet or bomber ... it would feel cool and epic to show a close-up with a bit of animation for 1-2 seconds before the damage hits. Like a battleship gun naval support: a small clip of a battleship near the shore firing barrages, then the damage animation or effect on the area."
+Status: **v0.2, approved by the user on 2026-10-16 (interview decisions, tiers confirmed with "this is good now").** Built so far (branch `m3-3.8-cutaways`, worktree `../Modern Zombie Warfare 3.8`): slice 1, the machinery (definition and tiers, `CutawayPlan`, ContentDb validation, freeze hook, player with letterbox and banner, skip, `C`, `--cutaways=off`, a plain `title_card` scene, the artillery clip data); see "Progress" at the end. Not built: the seven scene recipes and their art, sounds, the new cards, the line strike. Origin: "When a missile strikes, an artillery barrage, close air support from a fighter jet or bomber ... it would feel cool and epic to show a close-up with a bit of animation for 1-2 seconds before the damage hits. Like a battleship gun naval support: a small clip of a battleship near the shore firing barrages, then the damage animation or effect on the area."
 
 Part of the Milestone 3 re-order in [unit-autonomy-and-card-types.md](unit-autonomy-and-card-types.md) (new increment 3.8).
 
@@ -81,3 +81,7 @@ Video playback, voice lines, camera cinematics during normal play, clips for non
 - **Flow:** a freeze on every strike interrupts a real-time game. Mitigations already chosen: short repeat clips, skip, off switch. If testing shows it still hurts, the fallback is the non-freezing cutaway window (the alternative offered in the interview).
 - **Art quality:** code-generated pixel art may look rough next to hand-made art; clips are isolated, so each can be redrawn later without touching rules.
 - **Scope:** the Close Air Support line-strike is new simulation code; if it grows, ship the clip with the existing artillery-style effect first.
+
+## Progress
+- **Slice 1 (machinery), done:** `CutawayDefinition` (tiers, caps, validation), `CutawayPlan` (pure), `CutawayScene` / `CutawayScenes` (recipe registry), `CutawayPlayer` (freeze, bars, banner, skip, `C`), `BattleController.frozen` / `cutaway_requested` / `cutaway_for` / `--cutaways=`, `ContentDb` cutaways, `cutaway_id` on `OperationDefinition` and `CardDefinition`, data `artillery_barrage` (small) with the plain `title_card` scene, `tests/test_cutaways.gd` (21 tests incl. same-result-with-and-without-clips), `tools/cutaway_shots.gd`.
+- **Next slices:** (2) artillery barrage scene + art generator `tools/gen_cutaway_art.gd`; (3) naval gunfire; (4) close air support + line strike; (5) missile strike; (6) epic clips and cards; (7) sounds, mutation check, docs.
