@@ -1,0 +1,37 @@
+[gd_resource type="Resource" script_class="UnitDefinition" load_steps=11 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/unit_definition.gd" id="1_def"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_sheet"]
+[ext_resource type="Texture2D" path="res://assets/sprites/rpg_soldier/e.png" id="3_e"]
+[ext_resource type="Texture2D" path="res://assets/sprites/rpg_soldier/se.png" id="4_se"]
+[ext_resource type="Texture2D" path="res://assets/sprites/rpg_soldier/s.png" id="5_s"]
+[ext_resource type="Texture2D" path="res://assets/sprites/rpg_soldier/sw.png" id="6_sw"]
+[ext_resource type="Texture2D" path="res://assets/sprites/rpg_soldier/w.png" id="7_w"]
+[ext_resource type="Texture2D" path="res://assets/sprites/rpg_soldier/nw.png" id="8_nw"]
+[ext_resource type="Texture2D" path="res://assets/sprites/rpg_soldier/n.png" id="9_n"]
+[ext_resource type="Texture2D" path="res://assets/sprites/rpg_soldier/ne.png" id="10_ne"]
+
+[sub_resource type="Resource" id="Resource_sheet"]
+script = ExtResource("2_sheet")
+textures = {"E": ExtResource("3_e"), "SE": ExtResource("4_se"), "S": ExtResource("5_s"), "SW": ExtResource("6_sw"), "W": ExtResource("7_w"), "NW": ExtResource("8_nw"), "N": ExtResource("9_n"), "NE": ExtResource("10_ne")}
+frame_size = Vector2i(124, 76)
+origin = Vector2(62, 46)
+chest_px = 17.0
+height_px = 30.0
+walk_fps = 8.0
+stride_tiles = 0.64
+fire_frame = 9
+death_first = 5
+death_count = 4
+
+[resource]
+script = ExtResource("1_def")
+id = "rpg_soldier"
+display_name = "RPG Soldier"
+max_health = 70.0
+move_speed = 2.6
+footprint_radius = 0.3
+height_class = 0
+weapon_id = "rpg"
+placeholder_color = Color(0.7, 0.5, 0.2, 1)
+sprite = SubResource("Resource_sheet")

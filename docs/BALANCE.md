@@ -107,6 +107,16 @@ Artillery and the helicopter are crowd cards (weak against a thin stream, strong
 
 **Performance, card mission (`tools/perf_cards.gd`, windowed, 1920x1061, MX330, 120 s, scripted plays: 6 artillery strikes, 6 helicopter sorties, 2 tanks, 1 Gatling; the tool's placement refused about half its plays, so only 5 units stood at once):** 204 FPS average, 1 % low 100, 0.1 % low 75, worst frame 37.9 ms, worst 1-second average 93 FPS, 2 frames over 20 ms of 24,457; peaks: 204 enemies, 8 shells in flight. Not covered: 500 enemies at once together with strikes and sorties (M1 measured 500 enemies at 98-119 FPS without effects).
 
+## Content pass: Runner, Brute, RPG team, Howitzer, mission `m3_combined_arms` (first guesses + one sweep)
+| Entity | Key stats |
+|---|---|
+| Runner | HP 35, speed 2.6 (Shambler 1.2), 6 dmg per 0.6 s, footprint 0.25 |
+| Brute | HP 320, armor 4 (a rifle bullet does 8 instead of 12), speed 0.7, 30 dmg per 1.4 s, range 1.0, footprint 0.45 |
+| RPG soldier (card `rpg_team`, 2 per card, cost 4) | HP 70, speed 2.6; rocket 70 dmg, blast 1.2, range 7, speed 11, 0.35 shots/s |
+| Howitzer (card `howitzer_battery`, cost 5, lockout 12 s) | HP 140, fixed; shell 80 dmg, blast 2.0, range 16, arc 5, speed 9, 0.2 shots/s. No minimum range |
+| Mission `m3_combined_arms` | 120 s, core 500, deck `combined_arms`; shambler 48 @4 s, runner 40 @20 s, shambler 100 @38 s, brute 6 @48 s, runner 80 @72 s, shambler 160 @76 s, brute 12 @95 s = 446 enemies |
+Sweep (`tools/tune_cards.gd --mission=m3_combined_arms --seeds=8`, the economy values in the current data): do nothing **0/8** (core falls at ~27 s); spam (cheapest card first) **8/8**, core 91 % left; mix **7/8**, core 69 % left, 96 % killed, one loss at 32 s (runner rush before the defence was up). Wave counts were raised from a first draft (116 enemies) after it turned out to be won at 100 % core with no losses; the 446 figure is in line with the current `m2_card_defense` wave sizes. Only ~8 seeds, so read it as a rough band. The Howitzer and RPG were not measured one card at a time (`--bench`/`only=` is the tool for that).
+
 ## Performance: projectiles (measured, M2.4)
 `ProjectileSystem` with the 256-shell cap full: 0.46 ms per tick including per-shell position/altitude queries (headless, same laptop). A strike uses 5 shells. Rendering of shells/telegraphs under a 500-zombie horde is measured in 2.6.
 

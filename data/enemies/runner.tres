@@ -1,0 +1,39 @@
+[gd_resource type="Resource" script_class="EnemyDefinition" load_steps=11 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/enemy_definition.gd" id="1_def"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_sheet"]
+[ext_resource type="Texture2D" path="res://assets/sprites/runner/e.png" id="3_e"]
+[ext_resource type="Texture2D" path="res://assets/sprites/runner/se.png" id="4_se"]
+[ext_resource type="Texture2D" path="res://assets/sprites/runner/s.png" id="5_s"]
+[ext_resource type="Texture2D" path="res://assets/sprites/runner/sw.png" id="6_sw"]
+[ext_resource type="Texture2D" path="res://assets/sprites/runner/w.png" id="7_w"]
+[ext_resource type="Texture2D" path="res://assets/sprites/runner/nw.png" id="8_nw"]
+[ext_resource type="Texture2D" path="res://assets/sprites/runner/n.png" id="9_n"]
+[ext_resource type="Texture2D" path="res://assets/sprites/runner/ne.png" id="10_ne"]
+
+[sub_resource type="Resource" id="Resource_sheet"]
+script = ExtResource("2_sheet")
+textures = {"E": ExtResource("3_e"), "SE": ExtResource("4_se"), "S": ExtResource("5_s"), "SW": ExtResource("6_sw"), "W": ExtResource("7_w"), "NW": ExtResource("8_nw"), "N": ExtResource("9_n"), "NE": ExtResource("10_ne")}
+frame_size = Vector2i(72, 72)
+origin = Vector2(36, 44)
+chest_px = 14.0
+height_px = 27.0
+walk_fps = 10.0
+stride_tiles = 1.0
+attack_frame = 5
+death_first = 6
+death_count = 4
+
+[resource]
+script = ExtResource("1_def")
+id = "runner"
+display_name = "Runner"
+max_health = 35.0
+armor = 0.0
+move_speed = 2.6
+attack_damage = 6.0
+attack_interval_s = 0.6
+attack_range = 0.7
+footprint_radius = 0.25
+placeholder_color = Color(0.75, 0.3, 0.25, 1)
+sprite = SubResource("Resource_sheet")

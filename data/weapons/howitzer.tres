@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="WeaponDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/weapon_definition.gd" id="1_weapon"]
+
+[resource]
+script = ExtResource("1_weapon")
+id = "howitzer"
+damage = 80.0
+shots_per_second = 0.2
+range_tiles = 16.0
+delivery = 1
+blast_radius = 2.0
+projectile_speed = 9.0
+projectile_arc = 5.0
+projectile_accel = 0.0
+projectile_drop = 0.0
+sfx_id = "missile"
