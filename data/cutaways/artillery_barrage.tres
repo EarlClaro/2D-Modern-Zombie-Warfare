@@ -8,4 +8,4 @@ id = "artillery_barrage"
 display_name = "Artillery Barrage"
 tier = 2
 scene = "artillery_barrage"
-sound = "blast"
+sound = "strike_artillery"

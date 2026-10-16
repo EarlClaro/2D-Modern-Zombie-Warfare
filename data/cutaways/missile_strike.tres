@@ -8,4 +8,4 @@ id = "missile_strike"
 display_name = "Missile Strike"
 tier = 1
 scene = "missile_strike"
-sound = "missile"
+sound = "strike_missile"

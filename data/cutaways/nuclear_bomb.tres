@@ -8,4 +8,4 @@ id = "nuclear_bomb"
 display_name = "Nuclear Bomb"
 tier = 0
 scene = "nuclear_bomb"
-sound = "explosion"
+sound = "strike_nuclear"

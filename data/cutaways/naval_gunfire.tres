@@ -8,4 +8,4 @@ id = "naval_gunfire"
 display_name = "Naval Gunfire"
 tier = 1
 scene = "naval_gunfire"
-sound = "explosion"
+sound = "strike_naval"

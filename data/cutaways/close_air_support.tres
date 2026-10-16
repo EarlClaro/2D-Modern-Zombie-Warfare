@@ -8,4 +8,4 @@ id = "close_air_support"
 display_name = "Close Air Support"
 tier = 1
 scene = "close_air_support"
-sound = "shot_mg"
+sound = "strike_air"

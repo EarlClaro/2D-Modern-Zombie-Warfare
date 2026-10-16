@@ -8,4 +8,4 @@ id = "satellite_laser"
 display_name = "Satellite Laser"
 tier = 0
 scene = "satellite_laser"
-sound = "blast"
+sound = "strike_laser"

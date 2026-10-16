@@ -8,4 +8,4 @@ id = "hypersonic_missile"
 display_name = "Hypersonic Missile"
 tier = 0
 scene = "hypersonic_missile"
-sound = "missile"
+sound = "strike_hypersonic"
