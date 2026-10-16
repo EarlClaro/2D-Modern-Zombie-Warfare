@@ -96,7 +96,7 @@ func _on_unit_died(unit: BattleUnit) -> void:
 			_explosion_bang()
 		return
 	DeathPuff.spawn(_fx, unit.position)
-	sfx.play("death")
+	sfx.play("impact" if unit.def.structure else "death")
 
 
 func _explosion_bang() -> void:

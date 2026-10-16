@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CardDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/cards/card_definition.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = "barrier"
+display_name = "Barrier"
+description = "Concrete barrier with armor. Soaks up a long time."
+card_kind = 0
+cost = 2
+lockout_s = 0.0
+max_copies = 3
+unit_id = "concrete_barrier"
+unit_count = 1
+effect_id = ""

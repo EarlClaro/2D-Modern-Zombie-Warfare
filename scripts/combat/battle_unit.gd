@@ -28,7 +28,7 @@ func setup(p_uid: int, p_def: UnitDefinition, p_weapon: WeaponDefinition, cell: 
 	uid = p_uid
 	def = p_def
 	weapon = p_weapon
-	weapon_state = WeaponState.from_definition(p_weapon)
+	weapon_state = WeaponState.from_definition(p_weapon) if p_weapon != null else null  # structures have no weapon
 	health = Health.new(p_def.max_health)
 	ground_pos = IsoProjection.cell_center(cell)
 	queue_redraw()

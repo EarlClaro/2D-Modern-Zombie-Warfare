@@ -327,6 +327,8 @@ func _unit_phase(delta: float) -> void:
 	for u in units:
 		if not u.is_alive():
 			continue
+		if u.weapon == null:  # a structure: nothing to move or fire
+			continue
 		u.advance_move(delta)
 		var tid := TargetingService.NO_TARGET
 		if not u.is_moving():  # units must stand still to fire
@@ -442,13 +444,20 @@ func _apply_damage() -> void:
 			stats["kills"] += 1
 			enemy_died.emit(e)
 			_dispose(e, e.shadow)
+	var blasts: Array[Array] = []  # volatile structures that just died: [ground_pos, damage, radius]
 	for i in range(units.size() - 1, -1, -1):
 		var u := units[i]
 		if not u.is_alive():
 			units.remove_at(i)
 			stats["units_lost"] += 1
+			if u.def.has_death_blast():
+				blasts.append([u.ground_pos, u.def.death_blast_damage, u.def.death_blast_radius])
 			unit_died.emit(u)
 			_dispose(u, u.shadow)
+	for b in blasts:
+		_queue_blast(b[0], b[1], b[2])
+	if not _pending.is_empty():  # the blasts' hits (they may kill more enemies, or are not applied until now)
+		_apply_damage()
 
 
 func _on_rules_ended(res: MissionRules.Result) -> void:
@@ -727,6 +736,8 @@ func _spawn_unit_at(unit_id: String, ground: Vector2) -> BattleUnit:
 	u.name = "Unit%d" % _next_uid
 	u.setup(_next_uid, def, db.weapon(def.weapon_id), IsoProjection.cell_of(ground))
 	u.ground_pos = ground
+	if def.structure and not mission.spawn_cells.is_empty():
+		u.face_toward(IsoProjection.cell_center(mission.spawn_cells[0]))  # its long side lies across the approach
 	if u is BattleAircraft:
 		(u as BattleAircraft).lift()
 	_next_uid += 1

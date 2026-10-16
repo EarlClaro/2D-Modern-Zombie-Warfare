@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CardDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/cards/card_definition.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = "crates"
+display_name = "Crates"
+description = "Cheapest decoy. Anything that reaches it stops to smash it."
+card_kind = 0
+cost = 1
+lockout_s = 0.0
+max_copies = 3
+unit_id = "crate_stack"
+unit_count = 1
+effect_id = ""

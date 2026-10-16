@@ -117,6 +117,18 @@ Artillery and the helicopter are crowd cards (weak against a thin stream, strong
 | Mission `m3_combined_arms` | 120 s, core 500, deck `combined_arms`; shambler 48 @4 s, runner 40 @20 s, shambler 100 @38 s, brute 6 @48 s, runner 80 @72 s, shambler 160 @76 s, brute 12 @95 s = 446 enemies |
 Sweep (`tools/tune_cards.gd --mission=m3_combined_arms --seeds=8`, the economy values in the current data): do nothing **0/8** (core falls at ~27 s); spam (cheapest card first) **8/8**, core 91 % left; mix **7/8**, core 69 % left, 96 % killed, one loss at 32 s (runner rush before the defence was up). Wave counts were raised from a first draft (116 enemies) after it turned out to be won at 100 % core with no losses; the 446 figure is in line with the current `m2_card_defense` wave sizes. Only ~8 seeds, so read it as a rough band. The Howitzer and RPG were not measured one card at a time (`--bench`/`only=` is the tool for that).
 
+## Structures and mission `x1_fortified_crossing` (spec: [props-and-cover.md](specs/props-and-cover.md); first guesses + one sweep)
+| Structure | HP | Armor | Death blast | Card cost |
+|---|---|---|---|---|
+| Sandbag wall (`sandbags`) | 220 | 0 | none | 1 |
+| Concrete barrier (`barrier`) | 500 | 3 | none | 2 |
+| Crate stack (`crates`) | 110 | 0 | none | 1 |
+| Oil drums (`fuel_drums`) | 70 | 0 | 70 dmg, radius 1.8 | 2 |
+| Jeep (pre-placed at cell 8,14) | 160 | 0 | none | – |
+| Supply truck (pre-placed at cell 6,16) | 320 | 1 | 90 dmg, radius 2.4 | – |
+Mission: the `m3_combined_arms` waves (446 enemies), deck `fortified` (18 cards, 11 designs), jeep and truck beside the road. Enemies path along the line x+y=24 and stop to attack anything within reach, so the useful wall cells are the grass cells whose x+y is 22 (0.7 tiles from the line); the cells on the other side are 1.4 tiles away, which only the Brute can reach.
+Sweep (`tools/tune_cards.gd --mission=x1_fortified_crossing --seeds=8`): do nothing **0/8** (core falls at ~29 s; the pre-placed truck and jeep still kill 22 % of the zombies when they blow up); spam (cheapest card first, so many walls) **3/8**, core 25 % left, i.e. walls alone do not win; mix **6/8**, core 63 % left, 91 % killed, 1.5 units lost. For comparison `m3_combined_arms` with the old deck: mix 7/8. The wall cards were not measured one at a time (`--bench`, `only=`), the bots place walls like riflemen (about 4.5 tiles from the core, as near the lane as the terrain allows, spread apart) and know nothing about the best cells, so treat the numbers as a floor for a player who aims them.
+
 ## Performance: projectiles (measured, M2.4)
 `ProjectileSystem` with the 256-shell cap full: 0.46 ms per tick including per-shell position/altitude queries (headless, same laptop). A strike uses 5 shells. Rendering of shells/telegraphs under a 500-zombie horde is measured in 2.6.
 

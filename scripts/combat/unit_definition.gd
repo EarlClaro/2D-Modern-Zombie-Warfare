@@ -16,6 +16,12 @@ const HIGH_AIR_ALTITUDE: float = 6.0
 @export var footprint_radius: float = 0.3  # tiles, ground plane
 @export var height_class: HeightClass = HeightClass.GROUND
 @export var weapon_id: String = ""
+## A structure is a fixed player entity with hit points and no weapon (wall, barricade, scenery). Enemies attack it
+## like any unit, so it stalls them; it never moves or shoots. `weapon_id` may be empty only for a structure.
+@export var structure: bool = false
+## Area blast that goes off where this entity dies (explosive barrels, a fuel truck); both 0 = none.
+@export var death_blast_damage: float = 0.0
+@export var death_blast_radius: float = 0.0
 ## Optional second weapon (aircraft only for now), fired independently of the first.
 @export var secondary_weapon_id: String = ""
 @export var placeholder_color: Color = Color.WHITE
@@ -39,8 +45,19 @@ func validate() -> PackedStringArray:
 		errs.append(_err("move_speed must be >= 0 (0 = fixed)"))
 	if footprint_radius <= 0.0:
 		errs.append(_err("footprint_radius must be > 0"))
-	if weapon_id.is_empty():
-		errs.append(_err("weapon_id is empty"))
+	if weapon_id.is_empty() and not structure:
+		errs.append(_err("weapon_id is empty (only a structure may have no weapon)"))
+	if structure:
+		if move_speed != 0.0:
+			errs.append(_err("a structure must be fixed (move_speed 0)"))
+		if not weapon_id.is_empty() or not secondary_weapon_id.is_empty():
+			errs.append(_err("a structure must not have a weapon"))
+		if is_air():
+			errs.append(_err("a structure must be a ground entity"))
+	if death_blast_damage < 0.0 or death_blast_radius < 0.0:
+		errs.append(_err("death_blast_damage and death_blast_radius must be >= 0"))
+	if (death_blast_damage > 0.0) != (death_blast_radius > 0.0):
+		errs.append(_err("death_blast_damage and death_blast_radius must be set together"))
 	return errs
 
 
@@ -55,6 +72,10 @@ func flight_altitude() -> float:
 		HeightClass.HIGH_AIR:
 			return HIGH_AIR_ALTITUDE
 	return 0.0
+
+
+func has_death_blast() -> bool:
+	return death_blast_damage > 0.0 and death_blast_radius > 0.0
 
 
 func is_fixed() -> bool:

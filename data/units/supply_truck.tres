@@ -1,0 +1,43 @@
+[gd_resource type="Resource" script_class="UnitDefinition" load_steps=11 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/unit_definition.gd" id="1_unit"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_sheet"]
+[ext_resource type="Texture2D" path="res://assets/sprites/supply_truck/e.png" id="3_e"]
+[ext_resource type="Texture2D" path="res://assets/sprites/supply_truck/se.png" id="4_se"]
+[ext_resource type="Texture2D" path="res://assets/sprites/supply_truck/s.png" id="5_s"]
+[ext_resource type="Texture2D" path="res://assets/sprites/supply_truck/sw.png" id="6_sw"]
+[ext_resource type="Texture2D" path="res://assets/sprites/supply_truck/w.png" id="7_w"]
+[ext_resource type="Texture2D" path="res://assets/sprites/supply_truck/nw.png" id="8_nw"]
+[ext_resource type="Texture2D" path="res://assets/sprites/supply_truck/n.png" id="9_n"]
+[ext_resource type="Texture2D" path="res://assets/sprites/supply_truck/ne.png" id="10_ne"]
+
+[sub_resource type="Resource" id="Resource_sheet"]
+script = ExtResource("2_sheet")
+textures = {"E": ExtResource("3_e"), "SE": ExtResource("4_se"), "S": ExtResource("5_s"), "SW": ExtResource("6_sw"), "W": ExtResource("7_w"), "NW": ExtResource("8_nw"), "N": ExtResource("9_n"), "NE": ExtResource("10_ne")}
+frame_size = Vector2i(112, 76)
+columns = 3
+origin = Vector2(56, 52)
+chest_px = 14.0
+height_px = 34.0
+walk_count = 1
+death_first = 1
+death_count = 4
+death_fps = 6.0
+death_hold_s = 4.0
+death_fade_s = 1.0
+explosion_px = 0.0
+
+[resource]
+script = ExtResource("1_unit")
+id = "supply_truck"
+display_name = "Supply Truck"
+max_health = 320.0
+move_speed = 0.0
+footprint_radius = 0.7
+height_class = 0
+structure = true
+armor = 1.0
+death_blast_damage = 90.0
+death_blast_radius = 2.4
+placeholder_color = Color(0.4, 0.4, 0.28, 1)
+sprite = SubResource("Resource_sheet")

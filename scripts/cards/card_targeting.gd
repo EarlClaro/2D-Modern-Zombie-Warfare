@@ -96,6 +96,8 @@ func preview(battle: BattleController, cell: Vector2i) -> Preview:
 		if weapon != null:
 			p.range_tiles = weapon.range_tiles
 			p.blast_radius = weapon.blast_radius
+		elif unit != null and unit.has_death_blast():
+			p.blast_radius = unit.death_blast_radius  # explosive structure: show what it will hit when it goes up
 		var centre := IsoProjection.cell_center(cell)
 		for off in PlacementRules.formation_offsets(res.card.unit_count):
 			p.ground_points.append(centre + off)

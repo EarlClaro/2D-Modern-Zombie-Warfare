@@ -1,0 +1,41 @@
+[gd_resource type="Resource" script_class="UnitDefinition" load_steps=11 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/unit_definition.gd" id="1_unit"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_sheet"]
+[ext_resource type="Texture2D" path="res://assets/sprites/concrete_barrier/e.png" id="3_e"]
+[ext_resource type="Texture2D" path="res://assets/sprites/concrete_barrier/se.png" id="4_se"]
+[ext_resource type="Texture2D" path="res://assets/sprites/concrete_barrier/s.png" id="5_s"]
+[ext_resource type="Texture2D" path="res://assets/sprites/concrete_barrier/sw.png" id="6_sw"]
+[ext_resource type="Texture2D" path="res://assets/sprites/concrete_barrier/w.png" id="7_w"]
+[ext_resource type="Texture2D" path="res://assets/sprites/concrete_barrier/nw.png" id="8_nw"]
+[ext_resource type="Texture2D" path="res://assets/sprites/concrete_barrier/n.png" id="9_n"]
+[ext_resource type="Texture2D" path="res://assets/sprites/concrete_barrier/ne.png" id="10_ne"]
+
+[sub_resource type="Resource" id="Resource_sheet"]
+script = ExtResource("2_sheet")
+textures = {"E": ExtResource("3_e"), "SE": ExtResource("4_se"), "S": ExtResource("5_s"), "SW": ExtResource("6_sw"), "W": ExtResource("7_w"), "NW": ExtResource("8_nw"), "N": ExtResource("9_n"), "NE": ExtResource("10_ne")}
+frame_size = Vector2i(80, 64)
+columns = 2
+origin = Vector2(40, 42)
+chest_px = 9.0
+height_px = 26.0
+walk_count = 1
+death_first = 1
+death_count = 3
+death_fps = 6.0
+death_hold_s = 4.0
+death_fade_s = 1.0
+explosion_px = 0.0
+
+[resource]
+script = ExtResource("1_unit")
+id = "concrete_barrier"
+display_name = "Concrete Barrier"
+max_health = 500.0
+move_speed = 0.0
+footprint_radius = 0.5
+height_class = 0
+structure = true
+armor = 3.0
+placeholder_color = Color(0.6, 0.6, 0.58, 1)
+sprite = SubResource("Resource_sheet")
