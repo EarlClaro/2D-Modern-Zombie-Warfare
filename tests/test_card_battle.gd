@@ -77,7 +77,7 @@ func test_economy_ticks_with_the_simulation() -> void:
 	var b := _battle()
 	b.points.cp = 0.0
 	_run_for(b, 3.0)
-	assert_near(b.points.cp, 2.0, 0.02, "3 s at 1 CP / 1.5 s")
+	assert_near(b.points.cp, 3.0 / b.db.deck_rules.cp_regen_interval_s, 0.02, "3 s of regeneration at the shipped rate")
 	assert_eq(b.deck.hand.size(), 4)
 	_run_for(b, 1.0)
 	assert_eq(b.deck.hand.size(), 5, "first periodic draw at 4 s")
@@ -98,7 +98,7 @@ func test_rifle_squad_spawns_three_soldiers_in_the_cell_and_spends_cp() -> void:
 		assert_eq(u.def.id, "rifle_soldier")
 		assert_eq(IsoProjection.cell_of(u.ground_pos), GOOD, "all three stand in the chosen cell")
 	assert_true(b.units[0].ground_pos != b.units[1].ground_pos and b.units[1].ground_pos != b.units[2].ground_pos and b.units[0].ground_pos != b.units[2].ground_pos, "squad members do not stack on one point")
-	assert_near(b.points.cp, 3.0, 1e-9)
+	assert_near(b.points.cp, 5.0 - float(b.db.card("rifle_squad").cost), 1e-9)
 	assert_eq(b.deck.hand, ["tank"] as Array[String])
 	assert_eq(b.deck.discard, ["rifle_squad"] as Array[String])
 	assert_eq(played, [["rifle_squad", GOOD]])

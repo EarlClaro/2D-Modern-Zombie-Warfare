@@ -1,6 +1,6 @@
 # Spec: Milestone 2 — First Card Loop
 
-Status: **v0.2 approved 2026-10-15 (D1–D7 as recommended).** Increments 2.1-2.5 done; 2.6 next. D3 applied: starter deck is 15. Builds on [combat-vertical-slice.md](combat-vertical-slice.md) (M1) and refines [deck-and-economy.md](deck-and-economy.md) (rules stay as written there except where D3 says otherwise).
+Status: **v0.2 approved 2026-10-15 (D1–D7 as recommended).** Increments 2.1-2.6 built; awaiting the user's go / tune / no-go. D3 applied: starter deck is 15. Builds on [combat-vertical-slice.md](combat-vertical-slice.md) (M1) and refines [deck-and-economy.md](deck-and-economy.md) (rules stay as written there except where D3 says otherwise).
 
 ## Purpose
 Prove pillar 2: **playing cards creates meaningful tactical choices.** The player no longer starts with pre-placed defenders; they build the defence in real time from a drawn hand, spending Command Points (CP), with every placement previewed on the ground plane.
@@ -95,3 +95,7 @@ Reward choice, deck editor, save, upgrades (M5); new enemy types and flow field 
 - Interim number: damage/ammo/rate values are first guesses for the 2.6 sweep. A single helicopter sortie lasts about 12 s on station plus about 6 s in and 6 s out.
 - Not verified by anyone: how it feels and sounds with real input; missile visibility at other zoom levels; whether 4 missiles are the right load once balance is swept.
 
+## As built (M2.6)
+- Sweep tool `tools/tune_cards.gd`, performance tool `tools/perf_cards.gd`; method, numbers and caveats are in [BALANCE.md](../BALANCE.md) ("Milestone 2 balance sweep").
+- Data changed: CP regen 3.0 s (the economy spec's 1.5 s was ~25x too generous for this mission), Rifle Squad cost 3, artillery 6 x 110 with warning 1.2 s / flight 0.7 s (first shell after 1.9 s), helicopter 6 missiles, waves 30/100/220/360.
+- Not decided: tank dominance, weak artillery/helicopter value, the regen change itself (all listed for the user).

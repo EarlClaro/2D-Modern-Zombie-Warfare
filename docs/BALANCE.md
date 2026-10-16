@@ -9,13 +9,13 @@ All values are **initial guesses, unmeasured**. Tune after playtests; keep in da
 | max_copies (Legendary) | 3 (1) |
 | initial_hand / hand_cap | 4 / 5 |
 | draw_interval_s | 4 |
-| cp_start / cp_cap / cp_regen_s | 5 / 10 / 1.5 per CP |
+| cp_start / cp_cap / cp_regen_s | 5 / 10 / **3.0** per CP (was 1.5; changed in 2.6, see the sweep) |
 
 ## MVP card costs (CP) — A10
 Shipped in `data/cards/` (M2.1) per the M2 spec; **unmeasured**, to be swept in 2.6. Ammo Resupply is not in M2.
 | Card | Kind | Cost | Identity |
 |---|---|---|---|
-| Rifle Squad | Deployment | 2 | cheap, flexible, fragile |
+| Rifle Squad | Deployment | 3 (was 2) | cheap, flexible, fragile |
 | Gatling Gun | Deployment | 3 | crowd shred (overheat not in M2) |
 | Tank | Deployment | 6 (lockout 20 s) | durable, slow, expensive |
 | Artillery Strike | Operation | 4 (lockout 15 s) | telegraphed AoE, delayed |
@@ -72,10 +72,40 @@ Open tuning questions for your playtest: is "50–70 % to hold by default" the r
 |---|---|
 | Gatling gun | HP 90, fixed, 5 dmg x 18 shots/s, range 7 |
 | Tank | HP 400, armor 5, speed 1.0, cannon 45 dmg x 0.5 shots/s, range 9, blast radius 1.6 (falloff 1.0 to 0.25) |
-| Helicopter (cost 5, lockout 25 s) | HP 200, speed 3, altitude 3; 12 s on station; machine gun 6 dmg x 12/s range 8 (hover only); **4 missiles**: 50 dmg, blast 1.8 (falloff 1.0 to 0.25), range 14, 1.5/s, fired while flying in. Unmeasured |
-| Rifle squad | 3 x rifle soldier |
-| Artillery strike (`data/operations/artillery_strike.tres`) | 5 shells, scatter radius 3, warning 2.0 s, one shell per 0.35 s, flight 0.9 s (first impact 2.9 s after the card), 90 dmg, blast 1.8 (falloff 1.0 to 0.25), card cost 4, lockout 15 s. Walking zombies leave the circle during the delay: tune warning/flight in 2.6 |
-| Mission `m2_card_defense` | 120 s, core 500 HP, deploy radius 10; waves 6 @ 4 s (0.9 s), 14 @ 25 s (0.7), 24 @ 55 s (0.5), 36 @ 85 s (0.4) = 80 Shamblers. **Not yet tuned.** A screenshot run with a 5-zombie probe says nothing about the real waves |
+| Helicopter (cost 5, lockout 25 s) | HP 200, speed 3, altitude 3; 12 s on station; machine gun 6 dmg x 12/s range 8 (hover only); **6 missiles** (was 4; the user asked for at least 4): 50 dmg, blast 1.8 (falloff 1.0 to 0.25), range 14, 1.5/s, fired while flying in |
+| Rifle squad (cost 3) | 3 x rifle soldier |
+| Artillery strike (`data/operations/artillery_strike.tres`) | **6 shells**, scatter radius 3, **warning 1.2 s**, one shell per 0.35 s, **flight 0.7 s** (first impact 1.9 s after the card, was 2.9), **110 dmg**, blast 1.8 (falloff 1.0 to 0.25), card cost 4, lockout 15 s |
+| Mission `m2_card_defense` | 120 s, core 500 HP, deploy radius 10; waves **30 @ 4 s (every 0.2 s), 100 @ 25 s (0.1), 220 @ 55 s (0.07), 360 @ 85 s (0.05) = 710 Shamblers**. Tuned in 2.6 (below) |
+
+## Milestone 2 balance sweep (2.6)
+**Tool:** `tools/tune_cards.gd` (usage in its header). Scripted players use the same public API as a human (hand, CP, place on a cell) and look at the table four times a second: `idle` plays nothing; `spam` plays the cheapest playable card at once, aimed at the horde where it is now; `cheap` is the same but placed and aimed well (units on the lane, artillery aimed ahead of the walking horde, only at crowds of 8+); `mix` also saves up to 16 s for the most expensive card it could play, unless the horde is at the core. `--set=kind.id.field=value` changes a definition for one run, `--drop=card` removes a card from the deck, `--bench` plays one card against a fixed stream. Seeded; 20 seeds per row unless noted.
+
+**What the first run found:** with the data as first written (80 Shamblers in 120 s, regen 1.5 s) *every* bot won 10/10 with no unit lost, and so did hordes up to 960 Shamblers. Scaling the counts did nothing, because the spawn *interval* limits how many arrive; scaling the spawn rate as well, the defence only broke at about 25 times the shipped pressure (1,600-2,400 Shamblers). So the sweep tuned the economy first, not the horde.
+
+**Tuning applied (all in data):** CP regen 1.5 s to 3.0 s, Rifle Squad cost 2 to 3 (one squad killed 59 of 60 sparse Shamblers alone: 29 kills per CP), artillery faster and heavier (first shell after 1.9 s, 6 x 110), helicopter 6 missiles, waves 30/100/220/360. Result on the shipped data:
+| Player | Wins | Core left (avg) | Units lost (avg) | Falls at |
+|---|---|---|---|---|
+| idle (plays nothing) | 0/20 | 0 % | 0 | 28 s |
+| spam (cheapest first, naive aim) | 8/20 | 30 % | 3.2 | 105 s |
+| cheap (cheapest first, good aim) | 8/20 | 32 % | 4.7 | 110 s |
+| mix (saves for heavy cards, leads artillery) | 18/20 | 90 % | 0.5 | 115 s |
+Target I set (not given by the spec): do nothing always loses, naive play loses more often than it wins, good play wins most of the time. The economy change is the biggest lever: with regen 4.0 s (original cards, an earlier, non-saving bot, 10 seeds) 6x the first pressure already gave 5/10 (spam) and 8/10 (mix); at regen 1.5 s it took about 25x. **It changes the economy spec's numbers (1.5 s per CP), so it needs the user's call.**
+
+**One-card bench** (`--bench`, kills of 60 Shamblers, one card played once, core unbreakable; per CP in brackets) at stream gaps 0.5 / 0.2 / 0.1 / 0.05 s between zombies:
+| Card (cost) | 0.5 s | 0.2 s | 0.1 s | 0.05 s |
+|---|---|---|---|---|
+| Rifle squad (3) | 57 (19) | 21 (7) | 15 (5.1) | 13 (4.3) |
+| Gatling (3) | 36 (12) | 15 (5.0) | 12 (3.8) | 10 (3.2) |
+| Tank (6) | 54 (9.0) | 60 (10) | 60 (10) | 60 (10) |
+| Artillery (4) | 8 (2.0) | 14 (3.5) | 24 (5.9) | 44 (11) |
+| Helicopter (5) | 16 (3.3) | 20 (4.0) | 27 (5.4) | 45 (9.1) |
+Artillery and the helicopter are crowd cards (weak against a thin stream, strong against a dense one); the Gatling and Rifle squad fade as the crowd thickens; **the tank kills the whole 60-Shambler stream alone at any density.**
+
+**Does every card earn its slot?** (deck with one card removed, 10 seeds) For `mix`: removing the tank drops it from 18/20 to **0/10**; removing artillery, helicopter, Gatling or Rifle squad changes nothing measurable (9-10/10). For `cheap`: removing the tank or the artillery/helicopter *raises* it (7/10, 6/10, 8/10 vs 8/20), removing the Gatling or Rifle squad lowers it to 2/10. So the tank is the carry card; artillery and helicopter are CP sinks for a player who spends greedily and about neutral for a good one. Nerfing the tank (damage 35 to 45, blast 1.3 to 1.5) swings `mix` between 1/20 and 12/20: a cliff, so I left it, and these are the open questions for the user.
+
+**Caveats:** bots are not humans (perfect aim, no misclicks, no reading the screen); only one enemy type exists, and Shamblers are melee-only, so ranged hitscan with no overheat or ammo is strong against them; units never expire, so defence accumulates. The numbers are for this build only.
+
+**Performance, card mission (`tools/perf_cards.gd`, windowed, 1920x1061, MX330, 120 s, scripted plays: 6 artillery strikes, 6 helicopter sorties, 2 tanks, 1 Gatling; the tool's placement refused about half its plays, so only 5 units stood at once):** 204 FPS average, 1 % low 100, 0.1 % low 75, worst frame 37.9 ms, worst 1-second average 93 FPS, 2 frames over 20 ms of 24,457; peaks: 204 enemies, 8 shells in flight. Not covered: 500 enemies at once together with strikes and sorties (M1 measured 500 enemies at 98-119 FPS without effects).
 
 ## Performance: projectiles (measured, M2.4)
 `ProjectileSystem` with the 256-shell cap full: 0.46 ms per tick including per-shell position/altitude queries (headless, same laptop). A strike uses 5 shells. Rendering of shells/telegraphs under a 500-zombie horde is measured in 2.6.

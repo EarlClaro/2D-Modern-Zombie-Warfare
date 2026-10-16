@@ -73,7 +73,7 @@ func test_shipped_operation_is_valid_and_the_card_points_at_it() -> void:
 	assert_true(db.is_valid(), "\n".join(db.errors))
 	assert_true(_op() != null)
 	assert_eq(db.card("artillery_strike").effect_id, _op().id)
-	assert_eq(_op().shell_count, 5)
+	assert_eq(_op().shell_count, 6)
 
 
 func test_operation_field_validation() -> void:
