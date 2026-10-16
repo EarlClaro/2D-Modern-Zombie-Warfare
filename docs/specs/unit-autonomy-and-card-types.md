@@ -71,6 +71,7 @@ Flanking, formations, squad roles, adaptive AI; a rally point; a pre-mission scr
 ## Effect on the M3 plan
 Increments 3.1 and 3.2 are done. The rest is re-ordered and renumbered; each ends with tests, a mutation check, docs and an automatic commit as agreed (push only when told):
 - **3.3 Unit behaviours:** `UnitBrain` (Hold / Guard / Advance / Support), `UnitDefinition` fields, removal of click-to-move, data for the existing units, tests for each behaviour and for determinism, re-run of the whole-battle digest tool to see what changed.
+- **3.3 as built (2026-10-16):** `UnitBrain` (pure), `UnitDefinition` fields and `effective_behavior()`, `BattleUnit.anchor/stop/move_target`, `_think_and_move`/`_carry_out`/`_walk_is_clear` in the controller, `order_move_all`, the click handler, the hover highlight and the HUD move hints removed, the tank set to ADVANCE (rifle and RPG soldiers are GUARD by default, fixed units HOLD); 28 new tests; see ARCHITECTURE.md "Unit behaviours" and BALANCE.md for what changed in battles.
 - **3.4 Habits:** cover, retreat, focus fire, each with tests and a switch.
 - **3.5 Card framework and state cards:** new `CardKind`s, `CardEffect` base, ContentDb validation, modifiers, economy, deck and doctrine effects; examples Fortify, Supply Drop, Quick Draw, Hollow Points (doctrine through the mission/CLI).
 - **3.6 Entity cards:** mines, spawners (building and convoy), lure; examples Minefield, Barracks, Convoy, Noise Lure.

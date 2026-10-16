@@ -2,8 +2,8 @@ class_name BattleHud
 extends CanvasLayer
 ## Read-only presentation of battle state. Never changes rules.
 
-const HINT_BASIC := "LMB: move soldier   |   WASD / MMB: pan   |   wheel: zoom   |   R: restart"
-const HINT_CARDS := "1-5 or click a card: select   |   LMB: place   |   RMB / Esc: cancel   |   LMB with no card: move units   |   WASD / MMB: pan   |   wheel: zoom   |   R: restart"
+const HINT_BASIC := "WASD / MMB: pan   |   wheel: zoom   |   R: restart"
+const HINT_CARDS := "1-5 or click a card: select   |   LMB: place   |   RMB / Esc: cancel   |   WASD / MMB: pan   |   wheel: zoom   |   R: restart"
 
 var _battle: BattleController
 var _core_bar: ProgressBar

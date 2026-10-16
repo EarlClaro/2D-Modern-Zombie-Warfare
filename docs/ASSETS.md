@@ -50,3 +50,6 @@ Facings: every sprite now has all 8 (the 5-mirrored ADR-008 fallback in `SpriteS
 Missing: real (non-placeholder) art. Sprites are ~24 px tall against 64 px tiles: judge the on-screen size manually.
 
 PixelLab MCP tooling is available in the dev environment. Its AI generators cost credits; the workbench (`draw`/`edit`/`inspect`) is free. If AI generation is used, record prompts and license terms here.
+
+## Planned: strike cutaway art (ADR-014, increment 3.8)
+Battleship, jets, missile launcher, howitzer battery, hypersonic missile, bomber, satellite and effects for the freezing strike cutaways are to be generated for free by our own scripts (`tools/gen_cutaway_art.gd`, pixel art drawn in code, like the existing sprite and tile generators). Nothing exists yet. When built, record here: the script, its seed and parameters, that no external or copied assets were used, and where the output lives.
