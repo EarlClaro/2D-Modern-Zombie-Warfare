@@ -19,4 +19,5 @@ display_name = "Broad Oak"
 sprite = SubResource("Resource_cg4s7")
 fades = true
 height_units = 2.85
+sway = 1.0
 id = "oak_tree_b"

@@ -19,4 +19,5 @@ display_name = "Reeds"
 sprite = SubResource("Resource_8jkn7")
 fades = true
 height_units = 1.02
+sway = 1.0
 id = "reeds"

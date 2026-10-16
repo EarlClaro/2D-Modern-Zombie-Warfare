@@ -9,14 +9,14 @@ script = ExtResource("2_3ykxp")
 textures = {
 "SE": ExtResource("3_2hu1q")
 }
-frame_size = Vector2i(135, 77)
+frame_size = Vector2i(135, 94)
 columns = 1
-origin = Vector2(69, 46)
+origin = Vector2(67, 57)
 
 [resource]
 script = ExtResource("1_htfj1")
 display_name = "Sandbag Bastion"
 sprite = SubResource("Resource_0csuu")
 footprint = Vector2i(2, 2)
-height_units = 0.66
+height_units = 0.75
 id = "base_sandbag_corner"

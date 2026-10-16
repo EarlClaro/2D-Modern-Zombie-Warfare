@@ -9,14 +9,14 @@ script = ExtResource("2_vcluf")
 textures = {
 "SE": ExtResource("3_co17m")
 }
-frame_size = Vector2i(145, 95)
+frame_size = Vector2i(159, 94)
 columns = 1
-origin = Vector2(72, 56)
+origin = Vector2(79, 52)
 
 [resource]
 script = ExtResource("1_jtrcf")
 display_name = "Camouflage Net"
 sprite = SubResource("Resource_ayn0c")
 footprint = Vector2i(2, 2)
-height_units = 0.98
+height_units = 0.94
 id = "base_camo_net"

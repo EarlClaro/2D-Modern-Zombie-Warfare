@@ -19,4 +19,5 @@ display_name = "Cypress Tree"
 sprite = SubResource("Resource_3fgvu")
 fades = true
 height_units = 2.66
+sway = 0.6
 id = "cypress_tree"

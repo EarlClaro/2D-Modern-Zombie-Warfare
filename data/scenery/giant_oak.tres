@@ -20,4 +20,5 @@ sprite = SubResource("Resource_5wn4g")
 footprint = Vector2i(2, 2)
 fades = true
 height_units = 2.75
+sway = 0.8
 id = "giant_oak"

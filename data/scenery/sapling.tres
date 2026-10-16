@@ -18,4 +18,5 @@ script = ExtResource("1_qmac2")
 display_name = "Sapling"
 sprite = SubResource("Resource_pigag")
 height_units = 0.94
+sway = 1.2
 id = "sapling"

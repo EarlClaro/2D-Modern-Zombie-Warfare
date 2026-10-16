@@ -19,4 +19,5 @@ display_name = "Oak Tree"
 sprite = SubResource("Resource_svlri")
 fades = true
 height_units = 2.43
+sway = 1.0
 id = "oak_tree"

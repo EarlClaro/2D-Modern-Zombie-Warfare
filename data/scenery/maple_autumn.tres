@@ -19,4 +19,5 @@ display_name = "Autumn Maple"
 sprite = SubResource("Resource_1wmce")
 fades = true
 height_units = 2.5
+sway = 1.0
 id = "maple_autumn"

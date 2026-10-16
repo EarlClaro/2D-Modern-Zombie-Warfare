@@ -18,4 +18,5 @@ script = ExtResource("1_tobuv")
 display_name = "Grass Tuft"
 sprite = SubResource("Resource_ykmsv")
 height_units = 0.22
+sway = 0.5
 id = "grass_tuft"

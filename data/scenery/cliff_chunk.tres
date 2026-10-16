@@ -9,9 +9,9 @@ script = ExtResource("2_tyxop")
 textures = {
 "SE": ExtResource("3_lxusy")
 }
-frame_size = Vector2i(132, 113)
+frame_size = Vector2i(130, 106)
 columns = 1
-origin = Vector2(66, 76)
+origin = Vector2(64, 70)
 
 [resource]
 script = ExtResource("1_es34n")
@@ -19,5 +19,5 @@ display_name = "Cliff Chunk"
 sprite = SubResource("Resource_85r5n")
 footprint = Vector2i(2, 2)
 fades = true
-height_units = 1.42
+height_units = 1.4
 id = "cliff_chunk"

@@ -18,4 +18,5 @@ script = ExtResource("1_buvad")
 display_name = "Flower Patch"
 sprite = SubResource("Resource_yhwtb")
 height_units = 0.25
+sway = 0.5
 id = "flower_patch"

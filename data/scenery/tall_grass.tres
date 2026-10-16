@@ -18,4 +18,5 @@ script = ExtResource("1_rm6nx")
 display_name = "Tall Grass"
 sprite = SubResource("Resource_2mhln")
 height_units = 0.46
+sway = 0.8
 id = "tall_grass"

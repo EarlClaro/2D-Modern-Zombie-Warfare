@@ -19,4 +19,5 @@ display_name = "Snowy Pine"
 sprite = SubResource("Resource_bdwlc")
 fades = true
 height_units = 2.48
+sway = 0.7
 id = "snow_pine"

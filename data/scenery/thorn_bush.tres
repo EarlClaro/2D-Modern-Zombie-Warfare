@@ -18,4 +18,5 @@ script = ExtResource("1_t4i2l")
 display_name = "Thorn Bush"
 sprite = SubResource("Resource_wfk4e")
 height_units = 0.49
+sway = 0.4
 id = "thorn_bush"

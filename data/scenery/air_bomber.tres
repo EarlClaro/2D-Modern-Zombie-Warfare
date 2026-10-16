@@ -11,14 +11,14 @@ textures = {
 "NW": ExtResource("4_74q6m"),
 "SE": ExtResource("3_dgqpe")
 }
-frame_size = Vector2i(191, 102)
+frame_size = Vector2i(183, 96)
 columns = 1
-origin = Vector2(95, 60)
+origin = Vector2(91, 56)
 
 [resource]
 script = ExtResource("1_6ogu0")
 display_name = "Stealth Bomber"
 sprite = SubResource("Resource_4hpaq")
 footprint = Vector2i(5, 5)
-height_units = 0.52
+height_units = 0.41
 id = "air_bomber"

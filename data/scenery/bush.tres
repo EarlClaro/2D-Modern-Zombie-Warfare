@@ -18,4 +18,5 @@ script = ExtResource("1_h1fwj")
 display_name = "Bush"
 sprite = SubResource("Resource_2svm0")
 height_units = 0.53
+sway = 0.5
 id = "bush"

@@ -19,4 +19,5 @@ display_name = "Palm Tree"
 sprite = SubResource("Resource_6k7nm")
 fades = true
 height_units = 2.48
+sway = 1.2
 id = "palm_tree"

@@ -9,13 +9,13 @@ script = ExtResource("2_amcvo")
 textures = {
 "SE": ExtResource("3_qlanq")
 }
-frame_size = Vector2i(31, 37)
+frame_size = Vector2i(33, 39)
 columns = 1
-origin = Vector2(18, 27)
+origin = Vector2(16, 28)
 
 [resource]
 script = ExtResource("1_otkms")
 display_name = "Shopping Cart"
 sprite = SubResource("Resource_0hf5b")
-height_units = 0.52
+height_units = 0.5
 id = "shopping_cart"

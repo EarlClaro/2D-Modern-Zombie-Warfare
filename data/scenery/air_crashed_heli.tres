@@ -11,16 +11,16 @@ textures = {
 "NW": ExtResource("4_vgg0q"),
 "SE": ExtResource("3_rmqxu")
 }
-frame_size = Vector2i(96, 56)
+frame_size = Vector2i(105, 66)
 columns = 1
-origin = Vector2(47, 31)
+origin = Vector2(52, 37)
 
 [resource]
 script = ExtResource("1_8ar52")
 display_name = "Crashed Helicopter"
 sprite = SubResource("Resource_wjx8e")
 footprint = Vector2i(2, 2)
-height_units = 0.58
+height_units = 0.72
 glow_offset = Vector2(0, -6.4)
 glow_radius = 54.0
 glow_color = Color(1, 0.5, 0.15, 1)
