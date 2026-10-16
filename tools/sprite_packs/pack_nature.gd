@@ -68,11 +68,13 @@ const MATS := {
 	"n_slatel": ["485060", "667080", "8894a6"],
 	"n_cliff": ["483e34", "6c5e50", "927f6a"],
 	"n_cliffl": ["5c5044", "84725f", "a8957e"],
+	"n_cliffd": ["16110c", "241b14", "342920"],
 	"n_dune": ["b2924e", "d2b36c", "efd694"],
 	"n_dunel": ["c2a25c", "e4c680", "fbe8b0"],
 	"n_dunesh": ["8c6e38", "ac8c4c", "c8a866"],
 	"n_ice": ["5486b0", "98c6e8", "d6f0ff"],
 	"n_icel": ["80b4dc", "bce2f8", "f0fbff"],
+	"n_iced": ["2c5a8e", "4a82bc", "7ab2e0"],
 }
 
 
@@ -662,26 +664,60 @@ static func _slate(m: Array[Prim]) -> void:
 	Base._sp(m, Vector3(-0.3, 0.2, 0.01), Vector3(0.07, 0.06, 0.02), "n_tuft")
 
 
-## Cliff chunk: a 4x4 grid of rough rock columns rising toward the back, grassy top, scree at the foot.
+## Cliff chunk: a rock face of stacked strata (alternating brown, tan and grey beds) stepping back toward the rear, every bed
+## broken into bulging and recessed blocks on the faces the camera sees (+x, +y and -y), dark cracks, grassy ledges, talus below.
 static func _cliff(m: Array[Prim]) -> void:
-	var mats: Array = ["n_cliff", "n_cliffl", "stone", "n_cliff", "n_cliffl"]
-	for ix in 4:
-		for iy in 4:
-			var x: float = -0.45 + 0.3 * float(ix)
-			var y: float = -0.45 + 0.3 * float(iy)
-			var back: float = clampf((-x - y) / 0.9 * 0.5 + 0.5, 0.0, 1.0)
-			var seed_i: int = ix * 4 + iy
-			var h: float = 0.28 + 0.55 * back + 0.14 * Base._rnd(seed_i, 1)
-			var j := Vector3(0.04 * (Base._rnd(seed_i, 2) - 0.5), 0.04 * (Base._rnd(seed_i, 3) - 0.5), 0.0)
-			Base._bx(m, Vector3(x, y, h * 0.5) + j, Vector3(0.17, 0.17, h * 0.5), mats[(ix + iy * 2) % mats.size()], 0.3 * (Base._rnd(seed_i, 4) - 0.5))
-			if h > 0.78:
-				Base._bx(m, Vector3(x, y, h + 0.01) + j, Vector3(0.17, 0.17, 0.014), "n_tuft")
-	Base._sp(m, Vector3(-0.35, -0.38, 0.9), Vector3(0.14, 0.12, 0.05), "n_tuft")
-	Base._sp(m, Vector3(-0.1, -0.5, 0.82), Vector3(0.1, 0.08, 0.04), "n_tuftdry")
-	for i in 5:
-		var a: float = float(i) * 0.7 + 0.1
-		var rx: float = 0.66 + 0.08 * Base._rnd(i, 1)
-		Base._sp(m, Vector3(cos(a) * rx * 0.9 + 0.1, sin(a) * rx * 0.9 + 0.1, 0.05), Vector3(0.1, 0.09, 0.07), "stone" if i % 2 == 0 else "stonel")
+	var beds: Array = ["n_cliff", "stone", "n_cliffl", "n_cliff", "n_cliffl", "stone", "n_cliffl"]
+	var hs: Array = [0.15, 0.11, 0.15, 0.1, 0.14, 0.11, 0.12]
+	var exts_x: Array = [0.62, 0.6, 0.52, 0.56, 0.44, 0.4, 0.3]  # beds differ in reach: the odd overhang and ledge
+	var exts_y: Array = [0.58, 0.52, 0.54, 0.46, 0.48, 0.38, 0.32]
+	var offs_x: Array = [0.0, -0.04, -0.06, -0.1, -0.16, -0.2, -0.26]
+	var offs_y: Array = [0.0, 0.02, -0.03, 0.04, -0.02, 0.0, -0.05]
+	var z := 0.0
+	for L in 7:
+		var hz: float = hs[L] * 0.5
+		var hx: float = exts_x[L]
+		var hy: float = exts_y[L]
+		var ox: float = offs_x[L]
+		var oy: float = offs_y[L]
+		var mat: String = beds[L]
+		Base._bx(m, Vector3(ox, oy, z + hz), Vector3(hx - 0.07, hy - 0.07, hz), mat)
+		for k in 4:  # blocks along the three visible faces; protrusion varies per block
+			var t: float = (float(k) + 0.5) / 4.0 * 2.0 - 1.0
+			var seg: float = 0.5
+			var s1 := L * 12 + k
+			var px: float = 0.09 * (Base._rnd(s1, 1) - 0.3)
+			var py: float = 0.09 * (Base._rnd(s1, 2) - 0.3)
+			var qy: float = 0.09 * (Base._rnd(s1, 3) - 0.3)
+			var zj: float = 0.012 * (Base._rnd(s1, 4) - 0.5)
+			var m1: String = mat if Base._rnd(s1, 5) > 0.3 else beds[(L + 2) % 7]
+			var m2: String = mat if Base._rnd(s1, 6) > 0.3 else beds[(L + 3) % 7]
+			var m3: String = mat if Base._rnd(s1, 7) > 0.3 else beds[(L + 1) % 7]
+			Base._bx(m, Vector3(ox + hx - 0.07 + px * 0.5, oy + t * (hy - 0.05), z + hz + zj), Vector3(0.07 + px * 0.5, (hy - 0.05) * seg * 0.5 + 0.01, hz * (0.95 + 0.1 * Base._rnd(s1, 8))), m1, 0.1 * (Base._rnd(s1, 9) - 0.5))
+			if Base._rnd(s1, 20) < 0.55:  # crack on the +x face
+				Base._bx(m, Vector3(ox + hx + px + 0.004, oy + t * (hy - 0.05) + 0.05 * (Base._rnd(s1, 21) - 0.5), z + hz), Vector3(0.006, 0.008, hz * 0.8), "n_cliffd")
+			if Base._rnd(s1, 22) < 0.55:  # crack on the +y face
+				Base._bx(m, Vector3(ox + t * (hx - 0.05) + 0.05 * (Base._rnd(s1, 23) - 0.5), oy + hy + py + 0.004, z + hz), Vector3(0.008, 0.006, hz * 0.8), "n_cliffd")
+			Base._bx(m, Vector3(ox + t * (hx - 0.05), oy + hy - 0.07 + py * 0.5, z + hz - zj), Vector3((hx - 0.05) * seg * 0.5 + 0.01, 0.07 + py * 0.5, hz * (0.95 + 0.1 * Base._rnd(s1, 10))), m2, 0.1 * (Base._rnd(s1, 11) - 0.5))
+			Base._bx(m, Vector3(ox + t * (hx - 0.05), oy - hy + 0.07 - qy * 0.5, z + hz + zj), Vector3((hx - 0.05) * seg * 0.5 + 0.01, 0.07 + qy * 0.5, hz * (0.95 + 0.1 * Base._rnd(s1, 12))), m3, 0.1 * (Base._rnd(s1, 13) - 0.5))
+		if L > 0 and L < 6:  # grass and moss on some ledges
+			Base._sp(m, Vector3(ox + hx - 0.12, oy + hy - 0.16 - 0.1 * float(L % 2), z + hz * 2.0 + 0.005), Vector3(0.09, 0.07, 0.025), "n_tuft")
+		z += hs[L]
+	var top := z
+	Base._sp(m, Vector3(-0.3, -0.22, top + 0.01), Vector3(0.2, 0.17, 0.045), "n_tuft")  # grassy cap
+	Base._sp(m, Vector3(-0.15, -0.3, top + 0.01), Vector3(0.1, 0.07, 0.035), "n_tuftdry")
+	# talus: fallen rock around the foot
+	for i in 11:
+		var a: float = -0.4 + float(i) * 0.5
+		var rr: float = 0.72 + 0.1 * Base._rnd(i, 16)
+		var px: float = clampf(cos(a) * rr, -0.75, 0.78)
+		var py: float = clampf(sin(a) * rr, -0.75, 0.75)
+		var sz: float = 0.045 + 0.05 * Base._rnd(i, 17)
+		var rm: String = ["stone", "n_cliff", "stonel", "n_cliffl"][i % 4]
+		if i % 2 == 0:
+			Base._sp(m, Vector3(px, py, sz * 0.7), Vector3(sz * 1.2, sz, sz * 0.8), rm)
+		else:
+			Base._bx(m, Vector3(px, py, sz * 0.7), Vector3(sz, sz * 0.9, sz * 0.7), rm, Base._rnd(i, 18) * 1.5)
 
 
 ## Sand dune: one big smooth mound with wind ripples running along its length (dark lines hugging the surface).
@@ -720,20 +756,44 @@ static func _snow_mound(m: Array[Prim]) -> void:
 	_blades(m, Vector3(-0.3, -0.18, 0.1), 6, 0.04, 0.12, 0.22, 0.35, ["n_tuftdry"], 51, 0.01)
 
 
-## Ice chunk: jagged pale-blue blocks and leaning shards with bright top edges, a little snow at the base.
+## Ice chunk: a cluster of faceted crystal shards (square prisms with tapering, twisted tips) leaning out of a frozen block,
+## in light, mid and dark blue so the facets catch the light, with a drift of snow at the foot.
 static func _ice(m: Array[Prim]) -> void:
-	Base._sp(m, Vector3(0, 0, 0.0), Vector3(0.4, 0.34, 0.04), "n_snow")
-	Base._bx(m, Vector3(0.0, 0.0, 0.17), Vector3(0.24, 0.2, 0.17), "n_ice", 0.3)
-	Base._bx(m, Vector3(0.0, 0.0, 0.35), Vector3(0.17, 0.14, 0.014), "n_icel", 0.3)
-	Base._bx(m, Vector3(0.22, 0.16, 0.12), Vector3(0.14, 0.12, 0.12), "n_icel", -0.4)
-	Base._bx(m, Vector3(-0.2, -0.16, 0.14), Vector3(0.13, 0.12, 0.14), "n_ice", 0.8)
-	Base._bx(m, Vector3(-0.2, -0.16, 0.285), Vector3(0.1, 0.09, 0.012), "n_icel", 0.8)
-	Base._bone(m, Vector3(0.0, 0.0, 0.2), Vector3(0.05, 0.02, 0.62), 0.09, 0.06, "n_icel")
-	Base._bone(m, Vector3(0.05, 0.02, 0.5), Vector3(0.07, 0.03, 0.72), 0.04, 0.03, "n_ice")
-	Base._bone(m, Vector3(-0.1, 0.12, 0.1), Vector3(-0.16, 0.2, 0.46), 0.07, 0.045, "n_ice")
-	Base._bone(m, Vector3(0.18, -0.16, 0.08), Vector3(0.24, -0.22, 0.34), 0.06, 0.04, "n_icel")
-	Base._sp(m, Vector3(0.0, -0.3, 0.02), Vector3(0.12, 0.08, 0.04), "n_snow")
-	Base._bx(m, Vector3(0.32, -0.02, 0.04), Vector3(0.06, 0.05, 0.04), "n_ice", 0.5)
+	Base._sp(m, Vector3(0, 0, 0.0), Vector3(0.42, 0.36, 0.04), "n_snow")
+	Base._bx(m, Vector3(0.0, 0.0, 0.07), Vector3(0.24, 0.2, 0.07), "n_iced", 0.4)  # frozen block the shards grow from
+	Base._bx(m, Vector3(0.0, 0.0, 0.145), Vector3(0.2, 0.16, 0.012), "n_icel", 0.4)
+	_shard(m, Vector3(0.0, 0.0, 0.1), Vector3(0.07, 0.03, 0.78), 0.1, "n_ice", 0.3)
+	_shard(m, Vector3(-0.1, 0.06, 0.1), Vector3(-0.3, 0.15, 0.5), 0.082, "n_ice", 0.9)
+	_shard(m, Vector3(0.12, -0.06, 0.1), Vector3(0.3, -0.15, 0.46), 0.078, "n_icel", 0.1)
+	_shard(m, Vector3(0.1, 0.14, 0.06), Vector3(0.17, 0.26, 0.34), 0.058, "n_icel", 0.5)
+	_shard(m, Vector3(-0.08, -0.12, 0.08), Vector3(-0.16, -0.24, 0.38), 0.06, "n_iced", 0.2)
+	_shard(m, Vector3(-0.2, -0.04, 0.04), Vector3(-0.36, -0.1, 0.22), 0.045, "n_ice", 0.7)
+	_shard(m, Vector3(0.22, 0.05, 0.04), Vector3(0.36, 0.1, 0.2), 0.04, "n_iced", 0.4)
+	_shard(m, Vector3(0.0, 0.0, 0.1), Vector3(-0.08, 0.02, 0.58), 0.06, "n_icel", 0.6)
+	Base._sp(m, Vector3(0.02, -0.3, 0.02), Vector3(0.12, 0.07, 0.04), "n_snow")
+	Base._sp(m, Vector3(-0.3, 0.26, 0.02), Vector3(0.08, 0.06, 0.03), "n_snow")
+
+
+## One ice crystal: a square prism from p0 to p1 (half width hw, turned by `roll` about its axis) whose last quarter tapers
+## into a narrower, twisted tip ending in a small point.
+static func _shard(m: Array[Prim], p0: Vector3, p1: Vector3, hw: float, mat: String, roll: float) -> void:
+	var v := p1 - p0
+	var len_v := v.length()
+	var ax := v / len_v
+	var up := Vector3(0, 0, 1) if absf(ax.z) < 0.95 else Vector3(0, 1, 0)
+	var ay := up.cross(ax).normalized()
+	var az := ax.cross(ay)
+	var yr := ay * cos(roll) + az * sin(roll)
+	var zr := ax.cross(yr)
+	var body := Prim.new(Base.BOX, p0 + ax * len_v * 0.39, Vector3(len_v * 0.39, hw, hw * 0.92), mat)
+	body.basis = Basis(ax, yr, zr)
+	m.append(body)
+	var yt := yr * cos(0.7) + zr * sin(0.7)
+	var zt := ax.cross(yt)
+	var taper := Prim.new(Base.BOX, p0 + ax * len_v * 0.89, Vector3(len_v * 0.11, hw * 0.62, hw * 0.55), mat)
+	taper.basis = Basis(ax, yt, zt)
+	m.append(taper)
+	Base._sp(m, p1, Vector3(hw * 0.4, hw * 0.4, hw * 0.55), mat)
 
 
 ## Rock spire: tall twisting stack of shrinking slabs ending in a point, with leaning blades and scree.

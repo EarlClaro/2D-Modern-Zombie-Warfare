@@ -3,6 +3,8 @@ extends IsoEntity
 ## A decoration in the battle: draws one sprite frame, sorted with the other entities by its footprint centre.
 ## Tall pieces fade (alpha) while something stands behind them; the BattleController decides when.
 
+static var _sway_material: ShaderMaterial
+
 var def: SceneryDefinition
 var origin_cell: Vector2i = Vector2i.ZERO
 var facing: int = IsoProjection.Facing.SE
@@ -15,7 +17,20 @@ func setup_scenery(p_def: SceneryDefinition, cell: Vector2i, p_facing: int) -> v
 	origin_cell = cell
 	facing = p_facing
 	ground_pos = p_def.center_at(cell)
+	if p_def.sway > 0.0:
+		material = sway_material()
+		set_instance_shader_parameter("sway_amount", p_def.sway)
 	queue_redraw()
+
+
+## The one material every swaying piece shares (so they still batch): wind moves the top of the sprite.
+static func sway_material() -> ShaderMaterial:
+	if _sway_material == null:
+		_sway_material = ShaderMaterial.new()
+		_sway_material.shader = load("res://assets/shaders/sway.gdshader") as Shader
+		_sway_material.set_shader_parameter("amplitude", LightingConfig.SWAY_AMPLITUDE_PX)
+		_sway_material.set_shader_parameter("speed", LightingConfig.SWAY_SPEED)
+	return _sway_material
 
 
 func set_frame(f: int) -> void:

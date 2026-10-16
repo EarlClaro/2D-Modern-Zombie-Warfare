@@ -14,6 +14,7 @@ var _views := [
 	{"label": "base, zoom 1.5", "at": Vector2(12, 38), "zoom": 1.5},
 	{"label": "whole map, zoom 0.5", "at": Vector2(32, 24), "zoom": 0.5},
 ]
+var _off: PackedStringArray = PackedStringArray()  # lighting parts to switch off: post, ground, lights, rain, ambient
 var _view: int = -1
 var _t: float = 0.0
 var _frames: PackedFloat64Array = PackedFloat64Array()
@@ -24,6 +25,8 @@ func _initialize() -> void:
 	for a in OS.get_cmdline_user_args():
 		if a.begins_with("--enemies="):
 			_enemies = int(a.substr(10))
+		elif a.begins_with("--off="):
+			_off = a.substr(6).split(",")
 		elif a.begins_with("--mission="):
 			_mission_id = a.substr(10)
 	Engine.max_fps = 0
@@ -42,6 +45,7 @@ func _process(delta: float) -> bool:
 		for i in _enemies:
 			_b._spawn_enemy(w)
 			_b.enemies.back().ground_pos = IsoProjection.cell_center(Vector2i(24, 38)) + Vector2(randf_range(-4.0, 4.0), randf_range(-3.0, 3.0))
+		_switch_off()
 		_next_view()
 		return false
 	_t += delta
@@ -56,6 +60,22 @@ func _process(delta: float) -> bool:
 		_report(v["label"])
 		_next_view()
 	return false
+
+
+## `--off=post,ground,lights,rain,ambient` switches parts of the lighting pass off to see what each costs.
+func _switch_off() -> void:
+	var atm := _b.get_node("Atmosphere")
+	if _off.has("post"):
+		atm.get_node("PostFx").visible = false
+	if _off.has("ground"):
+		(_b.get_node("Ground") as TileMapLayer).material = null
+	if _off.has("lights"):
+		_b.get_node("Glows").set_process(false)
+		_b.get_node("Glows").visible = false
+	if _off.has("rain"):
+		atm.get_node("WeatherScreen").visible = false
+	if _off.has("ambient"):
+		_b.get_node("Ambient").set_process(false)
 
 
 func _next_view() -> void:

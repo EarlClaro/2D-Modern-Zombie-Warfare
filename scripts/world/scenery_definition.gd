@@ -11,6 +11,8 @@ extends ContentDefinition
 @export var fades: bool = false
 ## Height of the piece in tiles (from the rendered art): how long a shadow it casts. 0 = unknown, estimated from the art.
 @export var height_units: float = 0.0
+## How much the piece sways in the wind (0 = not at all, 1 = a tree; set for trees, bushes, reeds, grass).
+@export var sway: float = 0.0
 ## Optional night glow (lamp, searchlight, fire): offset from the piece's anchor in px, radius in px (0 = none)
 ## and colour. Drawn by Atmosphere when it is dark.
 @export var glow_offset: Vector2 = Vector2.ZERO
@@ -36,6 +38,8 @@ func validate() -> PackedStringArray:
 		errs.append(_err("glow_radius must be >= 0"))
 	if height_units < 0.0:
 		errs.append(_err("height_units must be >= 0"))
+	if sway < 0.0 or sway > 2.0:
+		errs.append(_err("sway must be within 0..2"))
 	return errs
 
 

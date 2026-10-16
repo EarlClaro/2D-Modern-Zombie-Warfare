@@ -82,6 +82,13 @@ const TABLE: Array = [
 ]
 
 
+## Pieces that sway in the wind (docs/specs/lighting-pass-2.md): id -> strength (1 = a tree).
+const SWAY: Dictionary = {
+	"berry_bush": 0.5, "birch_tree": 1.0, "bush": 0.5, "cypress_tree": 0.6, "dry_bush": 0.5, "fern": 0.4, "giant_oak": 0.8,
+	"grass_tuft": 0.5, "maple_autumn": 1.0, "oak_tree": 1.0, "oak_tree_b": 1.0, "palm_tree": 1.2, "pine_tree": 0.8, "reeds": 1.0,
+	"sapling": 1.2, "snow_pine": 0.7, "tall_grass": 0.8, "thorn_bush": 0.4, "willow_tree": 1.2, "flower_patch": 0.5,
+}
+
 # id -> [authored model point (x, y, z), spec scale k, glow radius px, colour]; the point is in the model's own
 # axes (+x forward), turned for the art that was rendered facing SW.
 const GLOWS: Dictionary = {
@@ -121,6 +128,7 @@ func _initialize() -> void:
 		def.footprint = Vector2i(row[4], row[5])
 		def.fades = row[6]
 		def.height_units = float(meta.get("height", 0.0))
+		def.sway = float(SWAY.get(def.id, 0.0))
 		if GLOWS.has(row[0]):
 			var g: Array = GLOWS[row[0]]
 			var p: Vector3 = g[0]
@@ -219,6 +227,7 @@ func _pack_set(spec: Dictionary) -> int:
 		def.footprint = Vector2i(foot.y, foot.x) if along_y else foot
 		def.fades = fades
 		def.height_units = float(meta.get("height", 0.0))
+		def.sway = float(SWAY.get(def.id, 0.0))
 		if spec.has("glow"):
 			var g: Array = spec["glow"]
 			var p: Vector3 = g[0]

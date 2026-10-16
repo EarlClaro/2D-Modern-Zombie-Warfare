@@ -33,4 +33,4 @@ func _draw() -> void:
 	var scale_by_height := 1.0 / (1.0 + target.altitude * 0.15)
 	var shift := LIGHT_SHIFT_DIR * (0.1 + 0.05 * target.altitude)
 	var poly := IsoProjection.ground_circle_polygon(shift, radius_tiles * scale_by_height, 24)
-	draw_colored_polygon(poly, Color(0, 0, 0, BASE_ALPHA * scale_by_height))
+	draw_colored_polygon(poly, Color(LightingConfig.UNIT_SHADOW_COLOR, BASE_ALPHA * scale_by_height))

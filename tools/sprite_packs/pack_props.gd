@@ -587,41 +587,71 @@ static func _bins(m: Array[Prim]) -> void:
 	_bin(m, Vector3(0.05, -0.14, 0.0), -0.3, "p_greend", "p_yellow")
 
 
-## Wire shopping cart leaning on one side: basket mesh, handle, small wheels (an abandoned cart).
+## Wire shopping cart standing upright: flared basket of crossed wire rods (thin boxes), rim bars, handle with a red grip,
+## a hinged child-seat flap at the back, a base frame and four small wheels (an abandoned cart).
 static func _cart(m: Array[Prim]) -> void:
 	var g: Array[Prim] = []
-	var w := 0.015
-	var bz := 0.17  # basket floor
-	var tz := 0.32  # basket rim
-	for z: float in [bz, 0.245, tz]:
-		for sy: float in [-1.0, 1.0]:
-			_bx(g, Vector3(0, 0.105 * sy, z), Vector3(0.16, w, w), "p_chrome")
-		for sx: float in [-1.0, 1.0]:
-			_bx(g, Vector3(0.16 * sx, 0, z), Vector3(w, 0.105, w), "p_chrome")
-	for i in 5:
-		var x := -0.14 + 0.07 * float(i)
-		for sy: float in [-1.0, 1.0]:
-			_bx(g, Vector3(x, 0.105 * sy, (bz + tz) * 0.5), Vector3(w, w, (tz - bz) * 0.5), "p_chrome")
-		_bx(g, Vector3(x, 0, bz), Vector3(w, 0.105, w), "p_chrome")
-	for i in 3:
-		var y := -0.07 + 0.07 * float(i)
-		for sx: float in [-1.0, 1.0]:
-			_bx(g, Vector3(0.16 * sx, y, (bz + tz) * 0.5), Vector3(w, w, (tz - bz) * 0.5), "p_chrome")
-		_bx(g, Vector3(0, y, bz), Vector3(0.16, w, w), "p_chrome")
+	var w := 0.012  # wire half thickness
+	var r := 0.013  # rim / frame half thickness
+	var bz := 0.15  # basket floor
+	var tz := 0.3  # basket rim
+	# basket corners: bottom (x, y) and the wider top
+	var b00 := Vector3(-0.15, -0.105, bz)  # back, -y
+	var b10 := Vector3(0.17, -0.105, bz)  # front, -y
+	var b01 := Vector3(-0.15, 0.105, bz)
+	var b11 := Vector3(0.17, 0.105, bz)
+	var t00 := Vector3(-0.2, -0.15, tz)
+	var t10 := Vector3(0.26, -0.15, tz)
+	var t01 := Vector3(-0.2, 0.15, tz)
+	var t11 := Vector3(0.26, 0.15, tz)
+	_mesh(g, b01, b11, t01, t11, 6, 2, w)  # +y side
+	_mesh(g, b00, b10, t00, t10, 6, 2, w)  # -y side
+	_mesh(g, b10, b11, t10, t11, 3, 2, w)  # front
+	_mesh(g, b00, b01, t00, t01, 3, 2, w)  # back
+	_mesh(g, b00, b10, b01, b11, 4, 3, w)  # floor
+	for pr: Array in [[t00, t10], [t01, t11], [t00, t01], [t10, t11]]:  # rim
+		_bn(g, pr[0], pr[1], r, r, "p_chrome")
+	# dark liner just inside the far walls and floor, so the gaps in the wire read as gaps
+	_bx(g, Vector3(0.01, 0.0, bz + 0.004), Vector3(0.15, 0.1, 0.004), "p_conebase")
+	for j in 3:
+		var t: float = (0.025 + 0.05 * float(j)) / 0.15
+		var zc: float = bz + 0.025 + 0.05 * float(j)
+		_bn(g, Vector3(-0.15 - 0.05 * t + 0.01, -0.105 - 0.045 * t + 0.006, zc), Vector3(0.17 + 0.09 * t - 0.01, -0.105 - 0.045 * t + 0.006, zc), 0.003, 0.028, "p_conebase")
+		_bn(g, Vector3(-0.15 - 0.05 * t + 0.006, -0.105 - 0.045 * t + 0.01, zc), Vector3(-0.15 - 0.05 * t + 0.006, 0.105 + 0.045 * t - 0.01, zc), 0.003, 0.028, "p_conebase")
+	# base frame and wheels
+	var wx: Array = [-0.12, 0.15]
 	for sy: float in [-1.0, 1.0]:
-		_bx(g, Vector3(0, 0.09 * sy, 0.1), Vector3(0.17, w, w), "p_chrome")
-		_bn(g, Vector3(0.14, 0.09 * sy, 0.1), Vector3(0.14, 0.1 * sy, bz), w, w, "p_chrome")
-		_bn(g, Vector3(-0.14, 0.09 * sy, 0.1), Vector3(-0.14, 0.1 * sy, bz), w, w, "p_chrome")
-		_bn(g, Vector3(-0.16, 0.105 * sy, tz), Vector3(-0.27, 0.105 * sy, 0.4), w, w, "p_chrome")
-		_sp(g, Vector3(0.14, 0.09 * sy, 0.04), Vector3(0.04, 0.014, 0.04), "track")
-		_sp(g, Vector3(-0.14, 0.09 * sy, 0.04), Vector3(0.04, 0.014, 0.04), "track")
-		_bn(g, Vector3(0.14, 0.09 * sy, 0.1), Vector3(0.14, 0.09 * sy, 0.05), w, w, "steel")
-		_bn(g, Vector3(-0.14, 0.09 * sy, 0.1), Vector3(-0.14, 0.09 * sy, 0.05), w, w, "steel")
-	_bx(g, Vector3(-0.27, 0, 0.4), Vector3(0.018, 0.105, 0.018), "red")  # handle grip
-	_bx(g, Vector3(-0.16, 0, 0.27), Vector3(0.008, 0.09, 0.03), "p_chrome")  # child flap
-	Base._xform_about(g, Vector3.ZERO, Basis(Vector3(1, 0, 0), -0.25), Vector3.ZERO)
+		_bn(g, Vector3(wx[0], 0.1 * sy, 0.075), Vector3(wx[1], 0.1 * sy, 0.075), r, r, "steel")
+		for x: float in wx:
+			_bn(g, Vector3(x, 0.1 * sy, bz), Vector3(x, 0.1 * sy, 0.075), r, r, "steel")
+			_sp(g, Vector3(x, 0.115 * sy, 0.042), Vector3(0.042, 0.014, 0.042), "p_conebase")
+			_sp(g, Vector3(x, 0.115 * sy, 0.042), Vector3(0.02, 0.016, 0.02), "p_chrome")
+	_bn(g, Vector3(wx[0], -0.1, 0.075), Vector3(wx[0], 0.1, 0.075), r, r, "steel")
+	_bn(g, Vector3(wx[1], -0.1, 0.075), Vector3(wx[1], 0.1, 0.075), r, r, "steel")
+	# handle: two posts rising from the back rim, grip across the top
+	for sy: float in [-1.0, 1.0]:
+		_bn(g, Vector3(-0.2, 0.15 * sy, tz), Vector3(-0.3, 0.14 * sy, 0.42), r, r, "p_chrome")
+	_bn(g, Vector3(-0.3, -0.14, 0.42), Vector3(-0.3, 0.14, 0.42), r, r, "p_chrome")
+	_bx(g, Vector3(-0.3, 0, 0.42), Vector3(0.02, 0.1, 0.02), "red")  # grip
+	# child-seat flap folded down inside the back, with a plastic seat
+	var flap := Prim.new(Base.BOX, Vector3(-0.16, 0, 0.25), Vector3(0.006, 0.12, 0.055), "p_chrome")
+	flap.basis = Basis(Vector3(0, 1, 0), 0.5)
+	g.append(flap)
+	var seat := Prim.new(Base.BOX, Vector3(-0.145, 0, 0.215), Vector3(0.055, 0.1, 0.007), "p_blue")
+	seat.basis = Basis(Vector3(0, 1, 0), -0.35)
+	g.append(seat)
 	Base._xform_about(g, Vector3.ZERO, Basis(Vector3(0, 0, 1), 0.5), Vector3(0, 0, -_lowest(g)))
 	m.append_array(g)
+
+
+## Wire mesh over a quad: p00-p10 is the bottom edge, p01-p11 the top edge; `nu` vertical rods and `nv` crossing rails.
+static func _mesh(m: Array[Prim], p00: Vector3, p10: Vector3, p01: Vector3, p11: Vector3, nu: int, nv: int, w: float) -> void:
+	for i in nu + 1:
+		var t := float(i) / float(nu)
+		_bn(m, p00.lerp(p10, t), p01.lerp(p11, t), w, w, "p_chrome")
+	for j in nv + 1:
+		var t := float(j) / float(nv)
+		_bn(m, p00.lerp(p01, t), p10.lerp(p11, t), w, w, "p_chrome")
 
 
 ## One fuel pump: red body, white display head with a screen on the +y face, hose and holster on the +x face.

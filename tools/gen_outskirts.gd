@@ -250,7 +250,7 @@ func _road_surface() -> void:
 		for x in W:
 			if _getc(x, y) == "=":
 				var r := _rng.randf()
-				_setc(x, y, "a" if r < 0.75 else ("k" if r < 0.9 else "="))
+				_setc(x, y, "a" if r < 0.8 else ("k" if r < 0.97 else "="))  # almost all dark: the lighter plain road tile made a checker
 	for y in range(4, 21):
 		if _getc(45, y) in ["a", "k", "="]:
 			_setc(45, y, "L")

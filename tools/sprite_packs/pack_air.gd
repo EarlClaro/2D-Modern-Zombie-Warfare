@@ -325,46 +325,58 @@ static func _attack_jet(m: Array[Prim]) -> void:
 
 # ---- bomber -------------------------------------------------------------------------------------------------
 
-## Stealth flying wing, 3.6 long x 4.2 span: built as chord-wise strips so the planform (swept leading edge, W trailing
-## edge) is exact. Lighter leading-edge band, dark intakes and exhausts on top, glazed nose.
+## Stealth flying wing, 2.3 long x 4.4 span (B-2 planform: 35 degree swept leading edge, pointed tail lobe and a sawtooth
+## trailing edge): chord-wise strips so the planform is exact, a lighter leading-edge band, a blended centre hump with
+## V-shaped cockpit glazing, top-mounted intake scoops and exhaust slots, panel lines, tricycle gear.
 static func _bomber(m: Array[Prim]) -> void:
-	var dy := 0.07
-	var zw := 0.3
-	for j in 30:
-		var y0 := dy * float(j)
-		var y1 := y0 + dy
-		var ym := (y0 + y1) * 0.5
-		var lead := 1.8 - 1.024 * maxf(ym, 0.12)
-		var trail: float
-		if ym < 0.5:
-			trail = -1.8 + 1.1 * ym
-		elif ym < 1.4:
-			trail = -1.3 + 0.35 * (ym - 0.5)
-		else:
-			trail = -1.15 + 0.6 * (ym - 1.4)
-		var ht := 0.035 + 0.06 * maxf(0.0, 1.0 - ym / 1.6)
-		var band := 0.2
+	var dy := 0.055
+	var zw := 0.27
+	for j in 40:
+		var ym := dy * (float(j) + 0.5)
+		var lead := 1.2 - 0.7 * maxf(ym, 0.04)
+		var trail := _bomber_trail(ym)
+		var ht := 0.013 + 0.066 * pow(maxf(0.0, 1.0 - ym / 1.5), 1.5)
+		var band := minf(0.13, (lead - trail) * 0.4)
 		for s: float in [1.0, -1.0]:
-			Base._bx(m, Vector3((lead - band + trail) * 0.5, s * ym, zw), Vector3((lead - band - trail) * 0.5, dy * 0.5 + 0.003, ht), "a_char")
-			Base._bx(m, Vector3(lead - band * 0.5, s * ym, zw), Vector3(band * 0.5, dy * 0.5 + 0.003, ht * 0.9), "a_charl")
-	Base._sp(m, Vector3(0.1, 0, zw + 0.02), Vector3(1.5, 0.3, 0.2), "a_char")  # centre hump
-	Base._sp(m, Vector3(1.25, 0, zw + 0.01), Vector3(0.4, 0.14, 0.12), "a_charl")
+			Base._bx(m, Vector3((lead - band + trail) * 0.5, s * ym, zw), Vector3((lead - band - trail) * 0.5 + 0.004, dy * 0.5 + 0.002, ht), "a_char")
+			Base._bx(m, Vector3(lead - band * 0.5, s * ym, zw + ht * 0.15), Vector3(band * 0.5, dy * 0.5 + 0.002, ht * 0.85), "a_charl")
+	# blended centre body, nose and tail lobe
+	Base._sp(m, Vector3(0.2, 0, zw + 0.02), Vector3(1.0, 0.3, 0.12), "a_char")
+	Base._sp(m, Vector3(1.0, 0, zw + 0.0), Vector3(0.28, 0.12, 0.07), "a_charl")
+	Base._sp(m, Vector3(-0.7, 0, zw + 0.0), Vector3(0.36, 0.2, 0.06), "a_char")
+	# V of cockpit windows
 	for s: float in [1.0, -1.0]:
-		Base._bx(m, Vector3(1.28, s * 0.09, zw + 0.1), Vector3(0.1, 0.045, 0.014), "a_canopy", s * 0.15)  # cockpit glass
-		Base._bx(m, Vector3(0.62, s * 0.46, zw + 0.07), Vector3(0.14, 0.1, 0.012), "a_dark")  # intakes
-		Base._bx(m, Vector3(0.62, s * 0.46, zw + 0.062), Vector3(0.16, 0.115, 0.005), "a_greyd")
-		Base._bx(m, Vector3(-0.95, s * 0.32, zw + 0.075), Vector3(0.22, 0.13, 0.008), "a_nozzle")  # exhaust troughs
-		Base._bx(m, Vector3(-1.0, s * 0.32, zw + 0.084), Vector3(0.15, 0.09, 0.004), "a_dark")
-		Base._bx(m, Vector3(-0.35, s * 1.15, zw + 0.045), Vector3(0.09, 0.09, 0.003), "a_blue")
-		Base._bx(m, Vector3(-0.35, s * 1.15, zw + 0.051), Vector3(0.045, 0.045, 0.003), "a_yellow")
-		_slab(m, Vector3(-0.75, s * 0.6, zw + 0.05), Vector3(-0.55, s * 1.8, zw + 0.03), 0.012, 0.004, "a_greyd")  # elevon seam
-		_slab(m, Vector3(0.4, s * 0.3, zw + 0.085), Vector3(-0.2, s * 1.6, zw + 0.04), 0.01, 0.004, "a_greyd")  # spar panel line
-		# main gear bogies and doors
-		_leg(m, Vector3(-0.3, s * 0.62, 0.26), -0.3, s * 0.62, 0.07)
-		Base._sp(m, Vector3(-0.3, s * 0.62 + s * 0.05, 0.07), Vector3(0.07, 0.03, 0.07), "a_black")
-	Base._bx(m, Vector3(-1.55, 0, zw + 0.02), Vector3(0.2, 0.2, 0.05), "a_char")  # centre tail lobe
-	_leg(m, Vector3(1.0, 0, 0.28), 1.0, 0.0, 0.055)
-	Base._bx(m, Vector3(0.3, 0, zw + 0.205), Vector3(0.55, 0.014, 0.004), "a_greyd")  # spine seam
+		Base._bx(m, Vector3(0.9, s * 0.1, zw + 0.092), Vector3(0.06, 0.04, 0.007), "a_canopy", -s * 0.55)
+		Base._bx(m, Vector3(0.74, s * 0.19, zw + 0.108), Vector3(0.05, 0.035, 0.007), "a_canopy", -s * 0.45)
+		# intake scoops: a raised hump on top of the wing with a dark mouth facing forward and a lighter lip
+		Base._sp(m, Vector3(0.22, s * 0.4, zw + 0.04), Vector3(0.24, 0.13, 0.075), "a_charl")
+		Base._bx(m, Vector3(0.43, s * 0.4, zw + 0.075), Vector3(0.012, 0.1, 0.03), "a_dark")
+		# exhaust slots near the trailing edge
+		Base._bx(m, Vector3(-0.6, s * 0.46, zw + 0.062), Vector3(0.17, 0.11, 0.008), "a_nozzle")
+		Base._bx(m, Vector3(-0.66, s * 0.46, zw + 0.07), Vector3(0.12, 0.085, 0.004), "a_dark")
+		# panel lines and wing-tip lights
+		_slab(m, Vector3(0.5, s * 0.5, zw + 0.08), Vector3(-0.1, s * 2.0, zw + 0.03), 0.008, 0.004, "a_greyd")
+		_slab(m, Vector3(-0.35, s * 0.55, zw + 0.075), Vector3(-0.5, s * 1.9, zw + 0.025), 0.008, 0.004, "a_greyd")
+		Base._bx(m, Vector3(-0.45, s * 1.25, zw + 0.04), Vector3(0.08, 0.08, 0.004), "a_blue")
+		Base._bx(m, Vector3(-0.45, s * 1.25, zw + 0.045), Vector3(0.04, 0.04, 0.004), "a_yellow")
+		Base._sp(m, Vector3(-0.38, s * 2.12, zw + 0.0), Vector3(0.025, 0.025, 0.02), "a_missile")
+		_leg(m, Vector3(-0.15, s * 0.7, zw - 0.02), -0.15, s * 0.7, 0.06)
+		Base._sp(m, Vector3(-0.15, s * 0.7 + s * 0.045, 0.06), Vector3(0.06, 0.025, 0.06), "a_black")
+		Base._bx(m, Vector3(-0.18, s * 0.12, zw + 0.131), Vector3(0.45, 0.004, 0.004), "a_greyd")  # bomb-bay seams
+	Base._bx(m, Vector3(-0.18, 0, zw + 0.133), Vector3(0.012, 0.12, 0.004), "a_greyd")
+	_leg(m, Vector3(0.75, 0, zw - 0.02), 0.75, 0.0, 0.05)
+
+
+## Trailing edge x of the bomber wing at spanwise position y (0 = centre line): pointed tail lobe, forward-swept notch,
+## outer aft point, then a swept run to the wing tip.
+static func _bomber_trail(y: float) -> float:
+	var pts: Array = [Vector2(0.0, -1.1), Vector2(0.62, -0.72), Vector2(1.2, -0.97), Vector2(2.2, -0.5)]
+	for i in pts.size() - 1:
+		var a: Vector2 = pts[i]
+		var b: Vector2 = pts[i + 1]
+		if y <= b.x:
+			return lerpf(a.y, b.y, (y - a.x) / (b.x - a.x))
+	return -0.5
 
 
 # ---- cargo plane --------------------------------------------------------------------------------------------
@@ -679,55 +691,92 @@ static func _crashed_jet(m: Array[Prim]) -> void:
 	_smoke(m, Vector3(-0.15, 0.05, 0.45), 4, 0.07, 71)
 
 
-## Helicopter on its side after a hard landing: body rolled over, tail boom snapped off and lying apart, rotor bent
-## down to stubs with two blades thrown clear, smoke and a small fire.
+## Helicopter downed in a hard landing: the fuselage canted over onto one flank and nose-down, canopy cracked, a skid
+## folded under it, the tail boom snapped off and lying apart (fin and tail rotor still on it), main-rotor blades bent down
+## and splayed over the ground round the mast stub, patchy char, a small fire, smoke and scattered wreckage.
 static func _crashed_heli(m: Array[Prim]) -> void:
 	var body: Array[Prim] = []
 	var tail: Array[Prim] = []
-	var rotor: Array[Prim] = []
 	var b := "a_olive"
-	Base._bx(body, Vector3(-0.05, 0, 0.3), Vector3(0.3, 0.16, 0.14), b)
-	Base._bx(body, Vector3(-0.05, 0, 0.46), Vector3(0.28, 0.13, 0.03), b)
-	Base._sp(body, Vector3(-0.1, 0, 0.52), Vector3(0.25, 0.1, 0.08), "a_olived")
-	Base._sp(body, Vector3(0.32, 0, 0.3), Vector3(0.27, 0.15, 0.14), "a_canopy")
-	Base._bx(body, Vector3(0.45, 0, 0.3), Vector3(0.015, 0.135, 0.012), b)
+	# fuselage (nose +x)
+	Base._sp(body, Vector3(0.0, 0, 0.22), Vector3(0.4, 0.17, 0.17), b)
+	Base._sp(body, Vector3(0.38, 0, 0.2), Vector3(0.2, 0.15, 0.14), b)
+	Base._sp(body, Vector3(0.5, 0, 0.19), Vector3(0.16, 0.13, 0.12), "a_canopy")  # canopy
+	Base._bx(body, Vector3(0.58, 0, 0.19), Vector3(0.01, 0.1, 0.02), "a_dark")  # cracks across the glass
+	Base._bx(body, Vector3(0.52, 0.03, 0.24), Vector3(0.015, 0.012, 0.08), "a_dark", 0.5)
+	Base._sp(body, Vector3(-0.08, 0, 0.4), Vector3(0.26, 0.13, 0.09), "a_olived")  # engine deck
+	Base._bx(body, Vector3(-0.35, 0, 0.37), Vector3(0.03, 0.07, 0.04), "a_dark")  # exhaust
+	Base._bx(body, Vector3(-0.05, 0, 0.2), Vector3(0.3, 0.172, 0.012), "a_drab")  # belt line
 	for s: float in [1.0, -1.0]:
-		Base._bx(body, Vector3(-0.05, s * 0.163, 0.3), Vector3(0.15, 0.004, 0.105), "a_drab")
-		Base._bx(body, Vector3(0.0, s * 0.168, 0.34), Vector3(0.07, 0.004, 0.04), "a_canopy")
-		_slab(body, Vector3(-0.38, s * 0.2, 0.05), Vector3(0.38, s * 0.2, 0.05), 0.02, 0.02, "a_greyd", Vector3(0, 1, 0))
-		_slab(body, Vector3(0.38, s * 0.2, 0.05), Vector3(0.5, s * 0.2, 0.13), 0.02, 0.02, "a_greyd", Vector3(0, 1, 0))
-		_slab(body, Vector3(-0.15, s * 0.14, 0.2), Vector3(-0.15, s * 0.2, 0.06), 0.014, 0.014, "a_greyd")
-		_slab(body, Vector3(0.2, s * 0.14, 0.2), Vector3(0.2, s * 0.2, 0.06), 0.014, 0.014, "a_greyd")
-	Base._cy(rotor, Vector3(-0.05, 0, 0.6), 0.04, 0.06, "a_greyd")  # bent mast stub
-	for i in 2:  # blade stubs, bent down
-		var a := 0.5 + PI * float(i)
-		var d := Vector3(cos(a), sin(a), 0.0)
-		_slab(rotor, Vector3(-0.05, 0, 0.67), Vector3(-0.05, 0, 0.67) + d * 0.28 + Vector3(0, 0, -0.12), 0.05, 0.016, "rotor", Vector3(-d.y, d.x, 0.0))
-	# tail boom, snapped
-	_slab(tail, Vector3(-0.62, 0, 0.38), Vector3(-1.0, 0, 0.41), 0.042, 0.04, b, Vector3(0, 1, 0))
-	_wing(tail, Vector3(-0.94, 0, 0.42), Vector3(-1.02, 0, 0.66), 0.24, 0.13, 0.018, b, 2)
-	_slab(tail, Vector3(-0.78, -0.15, 0.4), Vector3(-0.78, 0.15, 0.4), 0.05, 0.012, b)
-	_slab(tail, Vector3(-1.14, 0.06, 0.55), Vector3(-0.9, 0.06, 0.55), 0.026, 0.012, "rotor", Vector3(0, 0, 1))
-	_slab(tail, Vector3(-1.02, 0.06, 0.43), Vector3(-1.02, 0.06, 0.67), 0.026, 0.012, "rotor", Vector3(1, 0, 0))
-	Base._bx(tail, Vector3(-0.7, 0, 0.41), Vector3(0.11, 0.045, 0.004), "a_white")
-	_scorch_ground(m, Vector3(0.0, 0.0, 0.0), 0.62, 0.48)
+		Base._bx(body, Vector3(-0.02, s * 0.168, 0.25), Vector3(0.16, 0.005, 0.07), "a_drab")  # cabin door
+		Base._bx(body, Vector3(0.0, s * 0.172, 0.27), Vector3(0.07, 0.004, 0.035), "a_canopy")
+		_slab(body, Vector3(-0.3, s * 0.22, 0.04), Vector3(0.4, s * 0.22, 0.04), 0.02, 0.02, "a_greyd", Vector3(0, 1, 0))  # skid
+		_slab(body, Vector3(0.4, s * 0.22, 0.04), Vector3(0.52, s * 0.22, 0.12), 0.02, 0.02, "a_greyd", Vector3(0, 1, 0))
+		_slab(body, Vector3(-0.12, s * 0.15, 0.2), Vector3(-0.12, s * 0.22, 0.05), 0.014, 0.014, "a_greyd")  # struts
+		_slab(body, Vector3(0.2, s * 0.15, 0.2), Vector3(0.2, s * 0.22, 0.05), 0.014, 0.014, "a_greyd")
+	# mast stub with a sheared hub
+	Base._bx(body, Vector3(-0.05, 0, 0.52), Vector3(0.035, 0.035, 0.07), "a_greyd")
+	Base._bx(body, Vector3(-0.05, 0, 0.6), Vector3(0.06, 0.06, 0.02), "a_charm")
+	var hub_prim: Prim = body[body.size() - 1]
+	# stub of the tail boom with a torn end
+	_slab(body, Vector3(-0.38, 0, 0.3), Vector3(-0.6, 0, 0.33), 0.06, 0.055, b, Vector3(0, 1, 0))
+	for i in 4:
+		var a := float(i) * 1.6
+		_slab(body, Vector3(-0.58, sin(a) * 0.03, 0.33 + cos(a) * 0.03), Vector3(-0.67, sin(a) * 0.07, 0.33 + cos(a) * 0.07 + 0.02), 0.012, 0.012, "a_alu", Vector3(0, 1, 0))
+	# broken-off tail boom with fin and tail rotor
+	_slab(tail, Vector3(0.3, 0, 0.0), Vector3(-0.3, 0, 0.0), 0.04, 0.04, b, Vector3(0, 1, 0))
+	_wing(tail, Vector3(-0.26, 0, 0.02), Vector3(-0.34, 0, 0.24), 0.2, 0.1, 0.016, b, 2)
+	_slab(tail, Vector3(-0.2, -0.12, 0.0), Vector3(-0.2, 0.12, 0.0), 0.04, 0.012, b)
+	_slab(tail, Vector3(-0.4, 0.045, 0.14), Vector3(-0.28, 0.045, 0.14), 0.02, 0.01, "rotor", Vector3(0, 0, 1))
+	_slab(tail, Vector3(-0.34, 0.045, 0.06), Vector3(-0.34, 0.045, 0.22), 0.02, 0.01, "rotor", Vector3(1, 0, 0))
+	Base._bx(tail, Vector3(0.1, 0, 0.0), Vector3(0.1, 0.042, 0.042), "a_white")
 	_burn(body, 0.4, 31)
-	_burn(tail, 0.4, 32)
-	# body on its side (the +y flank up), a little nose-down
-	Base._xform_about(body, Vector3(0, 0, 0.3), Basis(Vector3(0, 0, 1), -0.25) * Basis(Vector3(1, 0, 0), 1.42), Vector3(0.0, 0.0, -0.1))
-	Base._xform_about(rotor, Vector3(0, 0, 0.3), Basis(Vector3(0, 0, 1), -0.25) * Basis(Vector3(1, 0, 0), 1.42), Vector3(0.0, 0.0, -0.1))
-	# tail lying on the ground, rolled onto its side and yawed away from the body
-	Base._xform_about(tail, Vector3(-0.62, 0, 0.38), Basis(Vector3(0, 0, 1), 0.5) * Basis(Vector3(1, 0, 0), 1.2), Vector3(-0.15, 0.18, -0.34))
+	_burn(tail, 0.5, 32)
+	# fuselage canted onto its +y flank and nose-down, resting on the ground
+	var g_body := Basis(Vector3(0, 0, 1), -0.35) * Basis(Vector3(0, 1, 0), 0.22) * Basis(Vector3(1, 0, 0), 0.95)
+	Base._xform_about(body, Vector3(0, 0, 0.2), g_body, Vector3.ZERO)
+	Base._xform_about(body, Vector3.ZERO, Basis.IDENTITY, Vector3(0.0, 0.0, -_floor_z(body)))
+	# tail boom lying on the ground, rolled on its side and yawed away from the fuselage
+	Base._xform_about(tail, Vector3.ZERO, Basis(Vector3(0, 0, 1), 2.55) * Basis(Vector3(1, 0, 0), 1.25), Vector3.ZERO)
+	Base._xform_about(tail, Vector3.ZERO, Basis.IDENTITY, Vector3(-0.35, 0.62, -_floor_z(tail)))
+	_scorch_ground(m, Vector3(0.0, 0.0, 0.0), 0.44, 0.32)
 	m.append_array(body)
-	m.append_array(rotor)
 	m.append_array(tail)
-	# blades thrown clear (flat on the ground)
-	_slab(m, Vector3(0.1, -0.5, 0.025), Vector3(0.62, -0.62, 0.03), 0.05, 0.016, "a_charm", Vector3(0, 1, 0))
-	_slab(m, Vector3(-0.5, 0.6, 0.025), Vector3(-0.12, 0.75, 0.03), 0.05, 0.016, "a_charm", Vector3(0, 1, 0))
-	_debris(m, 0.0, 0.0, 0.8, 6, 41)
-	Base._sp(m, Vector3(0.0, 0.0, 0.18), Vector3(0.1, 0.1, 0.09), "fire")
-	Base._sp(m, Vector3(-0.08, 0.04, 0.22), Vector3(0.05, 0.05, 0.06), "flash")
-	_smoke(m, Vector3(0.0, 0.0, 0.36), 3, 0.06, 72)
+	# main-rotor blades: bent down from the hub and splayed over the ground (one sheared off short)
+	var hub := Vector3(hub_prim.c.x - 0.05, hub_prim.c.y - 0.14, 0.05)  # the sheared rotor head lying on the ground
+	Base._bx(m, hub, Vector3(0.06, 0.06, 0.04), "a_charm")
+	var angs: Array = [3.5, 4.35, 5.2, 0.35]
+	var lens: Array = [0.62, 0.66, 0.38, 0.6]
+	for i in 4:
+		var d := Vector3(cos(angs[i]), sin(angs[i]), 0.0)
+		var l: float = lens[i]
+		var a2: float = angs[i] + (0.28 if i % 2 == 0 else -0.28)  # bent partway along
+		var d2 := Vector3(cos(a2), sin(a2), 0.0)
+		var mid := hub + d * l * 0.5
+		mid.z = 0.06
+		var tip := mid + d2 * l * 0.5
+		tip.z = 0.03
+		_slab(m, hub, mid, 0.05, 0.014, "a_greyd", Vector3(-d.y, d.x, 0.0))
+		_slab(m, mid, tip, 0.047, 0.014, "a_greyd" if i != 2 else "a_charl", Vector3(-d2.y, d2.x, 0.0))
+	_slab(m, Vector3(-0.65, -0.5, 0.025), Vector3(-0.4, -0.38, 0.03), 0.05, 0.014, "a_charm", Vector3(0, 1, 0))  # the sheared tip
+	_debris(m, 0.0, 0.0, 0.75, 6, 41)
+	Base._sp(m, Vector3(-0.05, 0.0, 0.16), Vector3(0.1, 0.1, 0.09), "fire")
+	Base._sp(m, Vector3(-0.08, 0.03, 0.2), Vector3(0.05, 0.05, 0.06), "flash")
+	_smoke(m, Vector3(-0.05, 0.0, 0.34), 3, 0.06, 72)
+
+
+## Lowest z of a group of parts (so a rotated wreck can be set down on the ground).
+static func _floor_z(g: Array[Prim]) -> float:
+	var lo := INF
+	for p in g:
+		var ext := p.h
+		if p.kind == Base.CYL:
+			ext = Vector3(p.h.x, p.h.x, p.h.z)
+		for sx: float in [-1.0, 1.0]:
+			for sy: float in [-1.0, 1.0]:
+				for sz: float in [-1.0, 1.0]:
+					lo = minf(lo, (p.c + p.basis * Vector3(ext.x * sx, ext.y * sy, ext.z * sz)).z)
+	return lo
 
 
 ## Cargo plane belly-landed: nose tipped down and dug in, fuselage cracked in two with the rear half twisted, left wing

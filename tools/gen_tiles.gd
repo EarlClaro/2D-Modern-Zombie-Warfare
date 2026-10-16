@@ -89,7 +89,7 @@ func _pixel(terrain: String, v: int, x: int, y: int, s: int) -> Color:
 			var t2 := n1 * 0.3 + n2 * 0.3 + n3 * 0.4
 			var c2 := _ramp(t2, Color("5f5e5c"), Color("6e6d6a"), Color("807f7a"))
 			if v == 3:  # oil stain
-				c2 = c2.lerp(Color("3d3c3c"), smoothstep(0.55, 0.75, _vn(fx, fy, 12.0, s + 4)) * 0.8)
+				c2 = c2.lerp(Color("4a4949"), smoothstep(0.55, 0.75, _vn(fx, fy, 12.0, s + 4)) * 0.5)
 			return c2
 		"rock":
 			var t3 := n1 * 0.5 + n2 * 0.3 + n3 * 0.2
@@ -104,7 +104,7 @@ func _pixel(terrain: String, v: int, x: int, y: int, s: int) -> Color:
 			var t5 := n1 * 0.2 + n2 * 0.2 + n3 * 0.6
 			var c5 := _ramp(t5, Color("85857f"), Color("92928b"), Color("a2a29a"))
 			if v == 3:  # stained slab
-				c5 = c5.lerp(Color("6c6a60"), smoothstep(0.55, 0.75, _vn(fx, fy, 13.0, s + 8)) * 0.7)
+				c5 = c5.lerp(Color("7a786f"), smoothstep(0.55, 0.75, _vn(fx, fy, 13.0, s + 8)) * 0.5)
 			return c5
 		"rubble":
 			var t6 := n1 * 0.3 + n2 * 0.3 + n3 * 0.4
@@ -284,11 +284,11 @@ func _pixel_new(t: String, v: int, x: int, y: int, s: int, n1: float, n2: float,
 		"asphalt", "lane_x", "lane_y", "cracked_asphalt":
 			var c := _ramp(n1 * 0.2 + n2 * 0.2 + n3 * 0.6, Color("3d3d40"), Color("48484c"), Color("57575b"))
 			if t == "cracked_asphalt":
-				c = c.lerp(Color("5a5a5e"), smoothstep(0.55, 0.75, _vn(fx, fy, 12.0, s + 2)) * 0.5)
+				c = c.lerp(Color("525256"), smoothstep(0.55, 0.75, _vn(fx, fy, 12.0, s + 2)) * 0.4)
 			elif v == 2 and t == "asphalt":
-				c = c.lerp(Color("2a2a2d"), smoothstep(0.55, 0.72, _vn(fx, fy, 13.0, s + 4)) * 0.8)
+				c = c.lerp(Color("37373a"), smoothstep(0.55, 0.72, _vn(fx, fy, 13.0, s + 4)) * 0.55)
 			elif v == 3 and t == "asphalt":
-				c = c.lerp(Color("66666a"), smoothstep(0.5, 0.7, _vn(fx, fy, 12.0, s + 5)) * 0.55)
+				c = c.lerp(Color("5c5c60"), smoothstep(0.5, 0.7, _vn(fx, fy, 12.0, s + 5)) * 0.4)
 			if t == "lane_x" or t == "lane_y":
 				var along := u if t == "lane_x" else g
 				var across := absf(g - 0.5) if t == "lane_x" else absf(u - 0.5)

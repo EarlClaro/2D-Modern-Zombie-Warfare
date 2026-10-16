@@ -25,6 +25,7 @@ const MATS := {
 	"b_camo1": ["2a361f", "3e502d", "566c3e"],
 	"b_camo2": ["4a4226", "675a36", "86784c"],
 	"b_camo3": ["24281f", "353b2f", "485142"],
+	"b_camo4": ["3c4a22", "5c7034", "7a9448"],
 	"b_tarp": ["2a382a", "3f5339", "567250"],
 	"b_wrap": ["86909a", "b2bec8", "dce6ee"],
 	"b_paper": ["a29a74", "d2caa4", "f0e8c8"],
@@ -37,6 +38,8 @@ const MATS := {
 	"b_cable": ["131315", "232327", "38383e"],
 	"b_sack": ["6a5c3c", "8b7c54", "ae9f72"],
 	"b_pad": ["2c3034", "3c4248", "4e565e"],
+	"b_sandd": ["6a5636", "8a7344", "a88f58"],
+	"b_sandl": ["a38c58", "c4aa72", "dcc78e"],
 }
 
 
@@ -800,24 +803,43 @@ static func _razor_fence(m: Array[Prim]) -> void:
 	_b(m, Vector3(0, 0, 0.92), Vector3(0.5, 0.004, 0.004), "b_wire")
 
 
-## Sandbag bastion: an L of double-width sandbag walls stepped up toward the corner, a crate and a helmet inside.
+## Sandbag bastion: an interlocking L of sandbag walls (alternate courses swap which arm runs through the corner), every bag a
+## separate rounded ellipsoid laid in running bond, stepped up toward the corner, a few darker bags, ammo box and helmet inside.
 static func _sandbag_corner(m: Array[Prim]) -> void:
-	var c := -0.35
-	_b(m, Vector3(0.05, 0.05, 0.01), Vector3(0.5, 0.5, 0.01), "dirt")
-	for layer in 5:
-		var z: float = 0.045 + 0.085 * float(layer) + 0.012
-		var n: int = 5 - int(float(layer) * 0.6)
-		var off: float = 0.11 if layer % 2 == 1 else 0.0
-		for row in 2:
-			for i in n:
-				var d: float = float(i) * 0.24 + off
-				var jit: float = (Base._rnd(i + row * 9, layer + 80) - 0.5) * 0.06
-				_b(m, Vector3(c + d, c + float(row) * 0.19, z), Vector3(0.11, 0.075, 0.045), "sand", jit)
-				if i > 0 or layer % 2 == 0:
-					_b(m, Vector3(c + float(row) * 0.19, c + d + 0.12, z), Vector3(0.075, 0.11, 0.045), "sand", jit)
-	_b(m, Vector3(0.12, 0.12, 0.08), Vector3(0.09, 0.075, 0.07), "ammo")  # ammo box inside
-	_b(m, Vector3(0.12, 0.12, 0.155), Vector3(0.092, 0.077, 0.008), "gun")
-	_s(m, Vector3(0.0, 0.25, 0.04), Vector3(0.05, 0.05, 0.035), "helm")
+	var cx := -0.62  # outer corner
+	var bl := 0.3  # bag length; its depth is half of that
+	var bd := 0.15
+	_b(m, Vector3(0.0, 0.0, 0.01), Vector3(0.66, 0.66, 0.01), "dirt")
+	var ext: Array = [3, 3, 3, 2, 1, 1]  # bags per arm in each course
+	var rows: Array = [2, 2, 2, 2, 1, 1]  # bag rows thick, per course
+	var bi := 0
+	for layer in 6:
+		var z: float = 0.055 + 0.075 * float(layer)
+		var nr: int = rows[layer]
+		var odd: bool = layer % 2 == 1
+		for arm in 2:  # arm 0 runs along +x, arm 1 along +y (its bags are turned 90 degrees)
+			var through: bool = (arm == 0) != odd  # this arm's bags run through the corner block in this course
+			var t0: float = 0.0 if through else float(nr) * bd
+			var count: int = ext[layer] + (1 if through else 0)
+			for row in nr:
+				var t: float = t0
+				for k in count:
+					var len_k: float = bl * 0.5 if (not through and k == 0) else bl  # running bond: half bag first
+					var across: float = cx + bd * (float(row) + 0.5)
+					var along: float = cx + t + len_k * 0.5
+					var dz: float = (Base._rnd(bi, 82) - 0.5) * 0.012
+					var rr: float = Base._rnd(bi, 83)
+					var mat := "sand" if rr > 0.3 else ("b_sandd" if rr > 0.1 else "b_sandl")
+					var r := Vector3(len_k * 0.5 - 0.004, bd * 0.5 + 0.004, 0.062)
+					if arm == 0:
+						Base._sp(m, Vector3(along, across, z + dz), r, mat)
+					else:
+						Base._sp(m, Vector3(across, along, z + dz), Vector3(r.y, r.x, r.z), mat)
+					t += len_k
+					bi += 1
+	_b(m, Vector3(0.05, 0.05, 0.09), Vector3(0.1, 0.075, 0.07), "ammo")  # ammo box inside
+	_b(m, Vector3(0.05, 0.05, 0.165), Vector3(0.102, 0.077, 0.008), "gun")
+	_s(m, Vector3(0.28, -0.2, 0.05), Vector3(0.05, 0.05, 0.035), "helm")
 
 
 ## Brick perimeter wall: brick panels between piers, mortar courses, concrete capping and footing.
@@ -920,28 +942,72 @@ static func _gate_post(m: Array[Prim]) -> void:
 
 # ---------------------------------------------------------------- props
 
-## Camouflage net: a patchwork of net patches in three tones on corner poles with a raised centre, over a parked hull.
+## Camouflage net: a draped canopy of irregular net patches in four tones, peaked over a centre pole and sagging to ragged,
+## drooping edges held up by corner poles with guy lines; a parked hull shows under the low side.
 static func _camo_net(m: Array[Prim]) -> void:
-	_b(m, Vector3(0.0, 0.0, 0.16), Vector3(0.42, 0.22, 0.12), "hull")  # something under the net
-	_b(m, Vector3(0.1, 0.0, 0.32), Vector3(0.2, 0.17, 0.05), "hull")
-	var mats: Array[String] = ["b_camo1", "b_camo2", "b_camo3", "b_camo1"]
-	for gx in 7:
-		for gy in 7:
-			var seed_i: int = gx * 7 + gy
-			var edge: bool = gx == 0 or gy == 0 or gx == 6 or gy == 6
-			if Base._rnd(seed_i, 31) < 0.14 and not edge:
+	_b(m, Vector3(0.0, 0.0, 0.12), Vector3(0.4, 0.2, 0.1), "hull")  # something under the net
+	_b(m, Vector3(0.08, 0.0, 0.25), Vector3(0.2, 0.15, 0.05), "hull")
+	var mats: Array[String] = ["b_camo1", "b_camo2", "b_camo3", "b_camo4", "b_camo1", "b_camo2", "b_camo4"]
+	var n := 9
+	var span := 0.72
+	for gx in n:
+		for gy in n:
+			var seed_i: int = gx * n + gy
+			var edge: bool = gx == 0 or gy == 0 or gx == n - 1 or gy == n - 1
+			if edge and Base._rnd(seed_i, 31) < 0.2:  # ragged border: gaps
 				continue
-			var x: float = -0.6 + 0.2 * float(gx)
-			var y: float = -0.6 + 0.2 * float(gy)
-			var r: float = maxf(absf(x), absf(y)) / 0.6
-			var z: float = 0.46 + 0.17 * (1.0 - r * r)
-			var sz: float = 0.092 + 0.02 * Base._rnd(seed_i, 32)
-			var mi: int = int(Base._rnd(seed_i, 33) * 3.99)
-			_b(m, Vector3(x, y, z), Vector3(sz, sz, 0.008), mats[mi], (Base._rnd(seed_i, 34) - 0.5) * 0.5)
-	for p: Vector2 in [Vector2(-0.64, -0.64), Vector2(0.64, -0.64), Vector2(0.64, 0.64), Vector2(-0.64, 0.64)]:
-		_c(m, Vector3(p.x, p.y, 0.25), 0.02, 0.25, "woodd")
-		_l(m, Vector3(p.x * 1.18, p.y * 1.18, 0.0), Vector3(p.x, p.y, 0.48), 0.006, "b_cable")
-	_c(m, Vector3(0, 0, 0.35), 0.02, 0.35, "woodd")
+			if not edge and Base._rnd(seed_i, 35) < 0.04:
+				continue
+			var x: float = -0.64 + 0.16 * float(gx) + (Base._rnd(seed_i, 36) - 0.5) * 0.05
+			var y: float = -0.64 + 0.16 * float(gy) + (Base._rnd(seed_i, 37) - 0.5) * 0.05
+			var e := 0.02
+			var nrm := Vector3(_net_z(x - e, y) - _net_z(x + e, y), _net_z(x, y - e) - _net_z(x, y + e), 2.0 * e).normalized()
+			var yaw: float = (Base._rnd(seed_i, 34) - 0.5) * 1.2
+			var ax := Vector3(cos(yaw), sin(yaw), 0.0)
+			ax = (ax - nrm * ax.dot(nrm)).normalized()
+			var ay := nrm.cross(ax)
+			var sz: float = 0.092 + 0.035 * Base._rnd(seed_i, 32)
+			if edge:
+				sz += 0.02 * Base._rnd(seed_i, 38)
+			var p := Prim.new(Base.BOX, Vector3(x, y, _net_z(x, y)), Vector3(sz, sz * (0.8 + 0.4 * Base._rnd(seed_i, 39)), 0.007), mats[int(Base._rnd(seed_i, 33) * 6.99)])
+			p.basis = Basis(ax, ay, nrm)
+			m.append(p)
+	# drooping strips hanging from the edges
+	for i in 10:
+		var t: float = -0.62 + 0.138 * float(i)
+		for side in 4:
+			if Base._rnd(i + side * 10, 41) < 0.25:
+				continue
+			var len_h: float = 0.05 + 0.13 * Base._rnd(i + side * 10, 42)
+			var mat: String = mats[int(Base._rnd(i + side * 10, 43) * 6.99)]
+			var wd: float = 0.04 + 0.025 * Base._rnd(i + side * 10, 44)
+			var ex: float = span - 0.01
+			var pos := Vector2.ZERO
+			var hx := 0.006
+			var hy := wd
+			match side:
+				0: pos = Vector2(ex, t)
+				1: pos = Vector2(-ex, t)
+				2:
+					pos = Vector2(t, ex)
+					hx = wd
+					hy = 0.006
+				3:
+					pos = Vector2(t, -ex)
+					hx = wd
+					hy = 0.006
+			var zt: float = _net_z(pos.x, pos.y)
+			Base._bx(m, Vector3(pos.x, pos.y, zt - len_h * 0.5), Vector3(hx, hy, len_h * 0.5), mat)
+	for p: Vector2 in [Vector2(-0.62, -0.62), Vector2(0.62, -0.62), Vector2(0.62, 0.62), Vector2(-0.62, 0.62)]:
+		_l(m, Vector3(p.x, p.y, 0.0), Vector3(p.x, p.y, _net_z(p.x, p.y) - 0.01), 0.02, "woodd")
+		_l(m, Vector3(p.x * 1.35, p.y * 1.35, 0.0), Vector3(p.x * 1.08, p.y * 1.08, _net_z(p.x, p.y) - 0.03), 0.006, "b_cable")
+	_l(m, Vector3(0, 0, 0.0), Vector3(0, 0, _net_z(0, 0) + 0.05), 0.022, "woodd")
+
+
+## Height of the net surface at (x, y): a low pyramid peaked over the centre pole, sagging towards the edges.
+static func _net_z(x: float, y: float) -> float:
+	var r: float = clampf(maxf(absf(x), absf(y)) / 0.72, 0.0, 1.0)
+	return 0.36 + 0.26 * pow(1.0 - r, 1.3) - 0.04 * r * r
 
 
 ## Antenna array: lattice mast with a yagi and a beacon, four whips, an equipment cabinet and guy wires.
