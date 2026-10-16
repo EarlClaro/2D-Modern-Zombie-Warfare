@@ -84,4 +84,5 @@ Video playback, voice lines, camera cinematics during normal play, clips for non
 
 ## Progress
 - **Slice 1 (machinery), done:** `CutawayDefinition` (tiers, caps, validation), `CutawayPlan` (pure), `CutawayScene` / `CutawayScenes` (recipe registry), `CutawayPlayer` (freeze, bars, banner, skip, `C`), `BattleController.frozen` / `cutaway_requested` / `cutaway_for` / `--cutaways=`, `ContentDb` cutaways, `cutaway_id` on `OperationDefinition` and `CardDefinition`, data `artillery_barrage` (small) with the plain `title_card` scene, `tests/test_cutaways.gd` (21 tests incl. same-result-with-and-without-clips), `tools/cutaway_shots.gd`.
-- **Next slices:** (2) artillery barrage scene + art generator `tools/gen_cutaway_art.gd`; (3) naval gunfire; (4) close air support + line strike; (5) missile strike; (6) epic clips and cards; (7) sounds, mutation check, docs.
+- **Slice 2 (artillery barrage scene), done:** six howitzers lined up in perspective on a dusk ridge, all firing in one volley (recoiling barrels, flashes, shell streaks, smoke, dust, shake), sprites from `tools/gen_cutaway_art.gd`, scene `ArtilleryBarrageScene`; looked at in screenshots at 20, 34, 42 and 70 % of the clip; sound and feel are manual checks.
+- **Next slices:** (3) naval gunfire; (4) close air support + line strike; (5) missile strike; (6) epic clips and cards; (7) sounds, mutation check, docs.

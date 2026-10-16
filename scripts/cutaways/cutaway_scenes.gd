@@ -5,6 +5,7 @@ extends RefCounted
 
 const RECIPES: Dictionary = {
 	"title_card": preload("res://scripts/cutaways/scenes/title_card_scene.gd"),
+	"artillery_barrage": preload("res://scripts/cutaways/scenes/artillery_barrage_scene.gd"),
 }
 
 

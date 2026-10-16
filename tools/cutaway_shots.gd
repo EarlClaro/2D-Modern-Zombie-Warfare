@@ -1,14 +1,14 @@
 extends SceneTree
 ## Dev tool (not a test). Screenshots of one cutaway clip at several moments, for eyeballing it.
 ## Run (NOT headless): godot --path . --resolution 1600x900 --audio-driver Dummy --script tools/cutaway_shots.gd -- --clip=artillery_barrage --out=<dir> [--mission=m2_card_defense]
-## Takes frames at 10 %, 35 %, 60 % and 90 % of the clip's full length (the clip is advanced by the tool, not by real time).
+## Takes frames at 20 %, 34 %, 42 % and 70 % of the clip's full length (the clip is advanced by the tool, not by real time).
 
 var _b: BattleController
 var _player: CutawayPlayer
 var _clip: String = "artillery_barrage"
 var _out: String = ""
 var _mission: String = "m2_card_defense"
-var _marks: Array[float] = [0.1, 0.35, 0.6, 0.9]
+var _marks: Array[float] = [0.2, 0.34, 0.42, 0.7]
 var _index: int = 0
 var _frames: int = 0
 var _started: bool = false
@@ -43,6 +43,7 @@ func _process(_delta: float) -> bool:
 			return false
 		_started = true
 		_player.play(_clip)
+		_player.set_process(false)  # the tool drives the clip's clock itself
 		return false
 	if not _player.is_playing():
 		quit()

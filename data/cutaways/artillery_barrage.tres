@@ -7,5 +7,5 @@ script = ExtResource("1_cut")
 id = "artillery_barrage"
 display_name = "Artillery Barrage"
 tier = 2
-scene = "title_card"
+scene = "artillery_barrage"
 sound = "blast"
