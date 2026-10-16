@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="OperationDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/cards/operation_definition.gd" id="1_op"]
+
+[resource]
+script = ExtResource("1_op")
+id = "satellite_laser"
+display_name = "Satellite Laser"
+pattern = 1
+shell_count = 36
+target_radius = 0.5
+line_length = 18.0
+line_direction = Vector2(1, -1)
+projectile = 2
+warning_s = 2.8
+shell_interval_s = 0.05
+flight_time_s = 0.12
+arc_height = 0.0
+shell_damage = 55.0
+blast_radius = 1.5
+launch_offset = Vector2(0, 0)
+cutaway_id = "satellite_laser"

@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="CutawayDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/cutaways/cutaway_definition.gd" id="1_cut"]
+
+[resource]
+script = ExtResource("1_cut")
+id = "artillery_barrage"
+display_name = "Artillery Barrage"
+tier = 2
+scene = "artillery_barrage"
+sound = "strike_artillery"

@@ -15,3 +15,4 @@ arc_height = 6.0
 shell_damage = 110.0
 blast_radius = 1.8
 launch_offset = Vector2(-10, 10)
+cutaway_id = "artillery_barrage"

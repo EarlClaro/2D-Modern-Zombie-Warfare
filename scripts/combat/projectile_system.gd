@@ -8,6 +8,7 @@ extends RefCounted
 const MAX_PROJECTILES: int = 256
 const KIND_SHELL: int = 0  # artillery shell (drawn big, high arc)
 const KIND_MISSILE: int = 1  # fired by units (drawn small and bright)
+const KIND_BEAM: int = 2  # a vertical bolt of light from above (satellite laser): drawn as a flash, flies nowhere
 ## Missiles drop off the pylon during the first part of the flight, then the motor takes over.
 const DROP_SPAN: float = 0.3  # fraction of the flight the launch dip lasts
 const EPS: float = 1e-6  # a 0.9 s flight ticked in 1/60 s steps must land on the 54th tick, not the 55th

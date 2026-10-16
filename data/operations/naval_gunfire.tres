@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="OperationDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/cards/operation_definition.gd" id="1_op"]
+
+[resource]
+script = ExtResource("1_op")
+id = "naval_gunfire"
+display_name = "Naval Gunfire"
+shell_count = 9
+target_radius = 4.2
+warning_s = 2.4
+shell_interval_s = 0.12
+flight_time_s = 1.4
+arc_height = 9.0
+shell_damage = 150.0
+blast_radius = 2.2
+launch_offset = Vector2(-16, 16)
+cutaway_id = "naval_gunfire"

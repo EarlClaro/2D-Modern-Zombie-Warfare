@@ -24,6 +24,8 @@ const MAX_COPIES_LIMIT: int = 3  # hard ceiling from the deck rules; Legendary c
 ## OPERATION: the battle effect to run (e.g. "artillery_strike"). ORDER / SUPPLY / DECK / DOCTRINE: the id of a
 ## StateEffectDefinition.
 @export var effect_id: String = ""
+## Optional full-screen clip shown when a SORTIE card is played (a CutawayDefinition id; operations name theirs on the OperationDefinition).
+@export var cutaway_id: String = ""
 
 
 func kind() -> String:

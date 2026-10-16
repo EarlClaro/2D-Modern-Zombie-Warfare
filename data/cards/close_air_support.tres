@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CardDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/cards/card_definition.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = "close_air_support"
+display_name = "Close Air Support"
+description = "Three F-15E Strike Eagles dive on a line and release twelve missiles along it, left to right, after a short warning."
+card_kind = 1
+cost = 6
+lockout_s = 40.0
+max_copies = 1
+unit_id = ""
+unit_count = 1
+effect_id = "close_air_support"

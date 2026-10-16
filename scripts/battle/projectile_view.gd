@@ -8,6 +8,7 @@ extends Node2D
 const TRAIL_STEPS: int = 4
 const TRAIL_SPAN: float = 0.07  # fraction of the flight covered by a shell's trail
 
+const BEAM_HEIGHT: float = 40.0  # altitude units a laser bolt reaches up to
 const MISSILE_LEN_PX: float = 14.0
 const MISSILE_IGNITION: float = 0.12  # flight fraction at which the motor lights (before that: coasting off the pylon)
 const SMOKE_BACK_S: float = 0.45  # how far behind the missile the live smoke trail reaches
@@ -70,12 +71,25 @@ func _draw() -> void:
 			continue
 		var g := sys.ground_pos_of(i)
 		var head := IsoProjection.ground_to_screen_z(g, sys.altitude_of(i))
-		if sys.kind_of(i) == ProjectileSystem.KIND_MISSILE:
+		if sys.kind_of(i) == ProjectileSystem.KIND_BEAM:
+			_draw_beam(g, sys.progress_of(i))
+		elif sys.kind_of(i) == ProjectileSystem.KIND_MISSILE:
 			draw_circle(IsoProjection.ground_to_screen(g), 2.5, Color(0, 0, 0, 0.3))  # small ground shadow
 			_draw_missile(sys, i, head)
 		else:
 			draw_colored_polygon(IsoProjection.ground_circle_polygon(g, 0.22, 16), Color(0, 0, 0, 0.35))
 			_draw_shell(sys, i, head)
+
+
+## A bolt of light from high above onto the impact point: it swells and fades over its short life, with a hot spot on the ground.
+func _draw_beam(g: Vector2, progress: float) -> void:
+	var a := sin(PI * clampf(progress, 0.0, 1.0))
+	var base := IsoProjection.ground_to_screen(g)
+	var top := IsoProjection.ground_to_screen_z(g, BEAM_HEIGHT)
+	draw_line(base, top, Color(0.45, 0.8, 1.0, 0.25 * a), 16.0)
+	draw_line(base, top, Color(0.75, 0.95, 1.0, 0.7 * a), 7.0)
+	draw_line(base, top, Color(1.0, 1.0, 1.0, a), 2.5)
+	draw_circle(base, 11.0 * a, Color(1.0, 0.9, 0.7, 0.8 * a))
 
 
 func _draw_shell(sys: ProjectileSystem, i: int, head: Vector2) -> void:

@@ -43,7 +43,11 @@ func _draw() -> void:
 	var is_deploy := _info.card != null and _info.card.card_kind == CardDefinition.CardKind.DEPLOYMENT
 	if is_deploy and _zone_radius > 0.0:
 		_ring(_zone_center, _zone_radius, ZONE, 0.08, 0.35)
-	if _info.area_radius > 0.0:
+	if _info.line_half_len > 0.0:
+		var blast := _info.area_radius - Vector2(_info.line_half_len, _info.scatter_radius).length()
+		_strip(centre, _info.line_dir, _info.line_half_len + blast, _info.scatter_radius + blast, BLAST, 0.12, 0.8)
+		_strip(centre, _info.line_dir, _info.line_half_len, _info.scatter_radius, ZONE, 0.0, 0.5)
+	elif _info.area_radius > 0.0:
 		_ring(centre, _info.area_radius, BLAST, 0.12, 0.8)
 		_ring(centre, _info.scatter_radius, ZONE, 0.0, 0.5)
 	if _info.range_tiles > 0.0:
@@ -79,6 +83,13 @@ func _draw() -> void:
 
 func _ring(ground_center: Vector2, radius: float, col: Color, fill_alpha: float, edge_alpha: float) -> void:
 	var poly := IsoProjection.ground_circle_polygon(ground_center, radius, 64)
+	draw_colored_polygon(poly, Color(col.r, col.g, col.b, fill_alpha))
+	poly.append(poly[0])
+	draw_polyline(poly, Color(col.r, col.g, col.b, edge_alpha), 2.0)
+
+
+func _strip(ground_center: Vector2, dir: Vector2, half_len: float, half_width: float, col: Color, fill_alpha: float, edge_alpha: float) -> void:
+	var poly := IsoProjection.ground_strip_polygon(ground_center, dir, half_len, half_width)
 	draw_colored_polygon(poly, Color(col.r, col.g, col.b, fill_alpha))
 	poly.append(poly[0])
 	draw_polyline(poly, Color(col.r, col.g, col.b, edge_alpha), 2.0)

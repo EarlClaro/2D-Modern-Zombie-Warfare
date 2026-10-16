@@ -93,3 +93,37 @@ func test_explosion_is_a_long_deep_sound_in_the_blast_category() -> void:
 	assert_eq(Factory.SETTINGS["explosion"]["category"], "blast")
 	assert_true(not Factory.is_shot_sound("explosion"), "weapons cannot use it as a shot sound")
 
+
+func test_every_strike_clip_has_its_own_sound_and_it_is_long_enough_to_cover_the_clip() -> void:
+	var lib := Factory.build_library()
+	for name in Factory.STRIKE_SOUNDS:
+		assert_true(lib.has(name), name)
+		assert_eq(Factory.SETTINGS[name]["category"], "strike", name)
+		assert_true(_peak(lib[name]) > 8000, "%s is audible" % name)
+	assert_true((lib["strike_artillery"] as AudioStreamWAV).get_length() >= 0.8, "covers the small clip")
+	for name in ["strike_naval", "strike_air", "strike_missile"]:
+		assert_true((lib[name] as AudioStreamWAV).get_length() >= 1.5, "%s covers a large clip" % name)
+	for name in ["strike_hypersonic", "strike_nuclear", "strike_laser"]:
+		assert_true((lib[name] as AudioStreamWAV).get_length() >= 2.0, "%s covers an epic clip" % name)
+
+
+func test_the_strike_sounds_are_all_different_and_deterministic() -> void:
+	var a := Factory.build_library()
+	var b := Factory.build_library()
+	for i in Factory.STRIKE_SOUNDS.size():
+		var name: String = Factory.STRIKE_SOUNDS[i]
+		assert_true((a[name] as AudioStreamWAV).data == (b[name] as AudioStreamWAV).data, "%s is identical on every run" % name)
+		for j in range(i + 1, Factory.STRIKE_SOUNDS.size()):
+			assert_true((a[name] as AudioStreamWAV).data != (a[Factory.STRIKE_SOUNDS[j]] as AudioStreamWAV).data, "%s differs from %s" % [name, Factory.STRIKE_SOUNDS[j]])
+
+
+func test_the_nuclear_bomb_is_quiet_just_before_the_blast_then_loud() -> void:
+	var wav: AudioStreamWAV = Factory.build_library()["strike_nuclear"]
+	var rate := float(Factory.MIX_RATE)
+	var before := 0
+	var after := 0
+	for i in range(int(0.97 * rate), int(0.995 * rate)):
+		before = maxi(before, absi(wav.data.decode_s16(i * 2)))
+	for i in range(int(1.0 * rate), int(1.06 * rate)):
+		after = maxi(after, absi(wav.data.decode_s16(i * 2)))
+	assert_true(after > before * 4, "the boom (%d) dwarfs the breath before it (%d)" % [after, before])

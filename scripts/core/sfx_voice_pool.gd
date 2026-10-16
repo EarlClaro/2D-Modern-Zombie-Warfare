@@ -7,8 +7,8 @@ extends RefCounted
 ##  - a free voice is used if there is one; otherwise a playing voice of strictly lower priority is
 ##    stolen (oldest first); otherwise the sound is dropped.
 
-const CAPS: Dictionary = {"shot": 4, "impact": 4, "death": 3, "alert": 1, "blast": 3}
-const PRIORITY: Dictionary = {"shot": 1, "impact": 1, "death": 2, "alert": 3, "blast": 2}
+const CAPS: Dictionary = {"shot": 4, "impact": 4, "death": 3, "alert": 1, "blast": 3, "strike": 1}
+const PRIORITY: Dictionary = {"shot": 1, "impact": 1, "death": 2, "alert": 3, "blast": 2, "strike": 2}
 const DEFAULT_CAP: int = 4
 const DEFAULT_PRIORITY: int = 1
 

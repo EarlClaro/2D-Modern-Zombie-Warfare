@@ -63,6 +63,17 @@ static func ground_circle_polygon(center: Vector2, r: float, segments: int = 32)
 	return pts
 
 
+## Screen-space polygon of a ground-space strip: `half_len` along the unit direction `dir`, `half_width` across.
+static func ground_strip_polygon(center: Vector2, dir: Vector2, half_len: float, half_width: float) -> PackedVector2Array:
+	var side := Vector2(-dir.y, dir.x)
+	return PackedVector2Array([
+		ground_to_screen(center - dir * half_len - side * half_width),
+		ground_to_screen(center + dir * half_len - side * half_width),
+		ground_to_screen(center + dir * half_len + side * half_width),
+		ground_to_screen(center - dir * half_len + side * half_width),
+	])
+
+
 ## Unit ground-space direction for a facing (inverse of facing_from_ground_dir).
 static func ground_dir_of_facing(f: int) -> Vector2:
 	const DIRS: Array[Vector2] = [

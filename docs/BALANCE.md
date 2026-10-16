@@ -257,3 +257,15 @@ First guesses, not swept (the sweep is 3.10): Fortify 2 CP, +4 armour for 20 s, 
 Add per synergy: intended counterplay and balance risk (post-MVP).
 
 **Lighting pass 2 performance (2026-10-16, `tools/perf_world.gd`, windowed 1920x1080, vsync off, MX330, 400-enemy horde, night rain, 413 pieces; the machine was NOT quiet: four stale Godot processes from 14 Oct were running, and the same scene with every lighting part switched off measured anywhere from 45 to 77 FPS between runs).** With the whole pass on: base view (zoom 1.5) 43 to 50 FPS average, 1 % low 23 to 33; whole map (zoom 0.5) 30 to 50 FPS. Switched off (`--off=ground,post,lights,rain,ambient`): base 71 to 77 in the quiet runs. Cost by part in the quiet runs: ground shader about 5 ms (it was 21 ms before the noise went into a texture and the heavy wet effects were limited to the slick terrains and 4 reflecting lights), light field + rain + smoke about 3 ms, finishing overlay about 1 to 2 ms. Two dead ends are recorded: (1) a finishing pass that reads the screen (`hint_screen_texture`) costs about 14 ms per frame on this GPU even when it does nothing else; (2) per-pixel noise in the post and ground shaders cost tens of ms; one shared 256x256 noise texture replaced it. The acceptance target of 60 FPS at the base view is met only on a quiet machine; repeat on one before quoting.
+
+## Strike cards of increment 3.8 (first guesses, 2026-10-16; none is in a deck, so nothing is balanced yet)
+| Card | CP | Lockout | Shape | Damage | Blast | Warning |
+|---|---|---|---|---|---|---|
+| Artillery Strike (existing) | 3 | 15 s | 6-shell scatter circle | 110 | 1.8 | 1.2 s |
+| Naval Gunfire | 7 | 45 s | 9 shells, 4.2-tile circle | 150 | 2.2 | 2.4 s |
+| Close Air Support | 6 | 40 s | 12 missiles on a 14 x 3.2 line, tail to head | 70 | 1.7 | 2.2 s |
+| Missile Strike | 6 | 35 s | 3 missiles on a 1.3-tile circle | 260 | 2.6 | 2.6 s |
+| Hypersonic Missile | 8 | 70 s | 2 missiles, 0.45 s flight | 420 | 3.2 | 2.2 s |
+| Satellite Laser | 9 | 100 s | 36 beams on an 18-tile line, 0.05 s apart | 55 | 1.5 | 2.8 s |
+| Nuclear Bomb | 10 | 150 s | 1 bomb | 2500 | 9.0 | 4.0 s |
+Intent: the more a strike costs and the longer it is locked out, the bigger and later it lands. Needs a sweep with real decks (and the cards need to enter a deck first) before any number is trusted.

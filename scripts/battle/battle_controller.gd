@@ -25,6 +25,8 @@ signal card_played(card: CardDefinition, cell: Vector2i)
 signal strike_called(center: Vector2, reach: float, duration: float)
 ## A unit launched a projectile weapon (missile) at `target_ground`; the projectile flies and explodes later.
 signal projectile_launched(shooter: BattleUnit, weapon: WeaponDefinition, from_ground: Vector2, target_ground: Vector2)
+## A played card has a full-screen clip (a CutawayDefinition id). The CutawayPlayer freezes the battle while it runs.
+signal cutaway_requested(cutaway_id: String)
 ## A play was refused (no CP, locked, bad cell...). `slot` is the hand slot; the result says why.
 signal card_rejected(slot: int, result: CardPlayService.Result)
 
@@ -45,6 +47,10 @@ class Strike:
 	var duration: float
 	var time_left: float
 	var warning_s: float
+	## A line strike (close air support) is a strip, not a circle: its unit direction, half length and half width
+	## (tiles). `line_half_len` is 0 for a circular strike.
+	var line_dir: Vector2 = Vector2.ZERO
+	var line_half_len: float = 0.0
 
 	func _init(p_center: Vector2, p_reach: float, p_scatter: float, p_duration: float, p_warning: float) -> void:
 		center = p_center
@@ -83,6 +89,8 @@ class Hit:
 
 ## Tests set this false so the controller only advances when `step` is called.
 var auto_step: bool = true
+## True while a cutaway clip plays: no simulation ticks and no card input (set by the CutawayPlayer, cleared by setup).
+var frozen: bool = false
 
 var db: ContentDb
 var mission: MissionDefinition
@@ -145,8 +153,8 @@ var _preview_node: CardPreview
 var _camera: IsoCamera
 
 
-## Parses launch options given after `--`, e.g. `godot --path . -- --mission=s1_stress_horde --seed=5 --doctrine=hollow_points`.
-## Unknown or malformed options are ignored. Returns {"mission": String?, "seed": int?, "doctrine": PackedStringArray?}
+## Parses launch options given after `--`, e.g. `godot --path . -- --mission=s1_stress_horde --seed=5 --doctrine=hollow_points --cutaways=off`.
+## Unknown or malformed options are ignored. Returns {"mission": String?, "seed": int?, "doctrine": PackedStringArray?, "cutaways": bool?}
 ## with only the keys given (doctrine ids are comma separated).
 static func parse_user_args(args: PackedStringArray) -> Dictionary:
 	var out: Dictionary = {}
@@ -165,6 +173,8 @@ static func parse_user_args(args: PackedStringArray) -> Dictionary:
 				ids.append(part.strip_edges())
 			if not ids.is_empty():
 				out["doctrine"] = ids
+		elif a == "--cutaways=off" or a == "--cutaways=on":
+			out["cutaways"] = a.ends_with("on")
 	return out
 
 
@@ -181,7 +191,8 @@ func apply_launch_options(cli: Dictionary) -> void:
 func _ready() -> void:
 	if mission != null:
 		return  # already set up by a test or caller
-	apply_launch_options(parse_user_args(OS.get_cmdline_user_args()))
+	var cli := parse_user_args(OS.get_cmdline_user_args())
+	apply_launch_options(cli)
 	var loaded := ContentDb.load_from()
 	if not loaded.is_valid():
 		_show_fatal("Content errors:\n" + "\n".join(loaded.errors))
@@ -206,6 +217,10 @@ func _ready() -> void:
 	feedback.name = "Feedback"
 	add_child(feedback)
 	feedback.bind(self)
+	var cutaways := CutawayPlayer.new()
+	add_child(cutaways)
+	cutaways.bind(self, feedback.sfx)
+	cutaways.plan.enabled = bool(cli.get("cutaways", true))
 	var atmosphere := Atmosphere.new()
 	atmosphere.name = "Atmosphere"
 	add_child(atmosphere)
@@ -226,6 +241,7 @@ func setup(p_db: ContentDb, p_mission: MissionDefinition, p_seed: int) -> void:
 	strikes.clear()
 	sorties.clear()
 	elapsed = 0.0
+	frozen = false
 	stats = {"spawned": 0, "kills": 0, "shots": 0, "units_lost": 0}
 	_next_uid = 1
 	_pending.clear()
@@ -294,7 +310,7 @@ func _physics_process(delta: float) -> void:
 
 
 func step(delta: float) -> void:
-	if _rules == null or _rules.is_ended() or delta <= 0.0:
+	if frozen or _rules == null or _rules.is_ended() or delta <= 0.0:
 		return
 	# 1. clock + card economy + spawns
 	elapsed += delta
@@ -775,6 +791,9 @@ func play_card(hand_index: int, cell: Vector2i) -> CardPlayService.Result:
 		for off in PlacementRules.formation_offsets(card.unit_count):
 			_spawn_unit_at(card.unit_id, centre + off)
 	card_played.emit(card, cell)
+	var clip := cutaway_for(card)
+	if not clip.is_empty():
+		cutaway_requested.emit(clip)
 	return res
 
 
@@ -804,6 +823,14 @@ func _apply_doctrines() -> void:
 			modifiers.apply(db.effect(card.effect_id))
 
 
+## The cutaway clip id for a card: the operation's own for an Operation card, the card's for a Sortie ('' = none).
+func cutaway_for(card: CardDefinition) -> String:
+	if card.card_kind == CardDefinition.CardKind.OPERATION:
+		var op := db.operation(card.effect_id)
+		return op.cutaway_id if op != null else ""
+	return card.cutaway_id
+
+
 ## Sends the card's aircraft in from the nearest map edge to hold station over `center`, then out the other side.
 func _launch_sortie(card: CardDefinition, center: Vector2) -> void:
 	var plan := SortiePlan.plan(float(mission.map.width()), float(mission.map.height()), center, SORTIE_MARGIN)
@@ -818,18 +845,27 @@ func _launch_sortie(card: CardDefinition, center: Vector2) -> void:
 ## Calls in a barrage: picks the impact points now (seeded) and queues every shell with its launch delay.
 func _start_strike(op: OperationDefinition, center: Vector2) -> void:
 	var targets := op.shell_targets(center, _ops_rng)
+	var kind := ProjectileSystem.KIND_SHELL
+	if op.projectile == OperationDefinition.Projectile.MISSILE:
+		kind = ProjectileSystem.KIND_MISSILE
+	elif op.projectile == OperationDefinition.Projectile.BEAM:
+		kind = ProjectileSystem.KIND_BEAM
 	for i in targets.size():
 		var delay := op.warning_s + float(i) * op.shell_interval_s
-		projectiles.spawn(targets[i] + op.launch_offset, targets[i], op.flight_time_s, op.arc_height, op.shell_damage, op.blast_radius, delay)
+		projectiles.spawn(targets[i] + op.launch_offset, targets[i], op.flight_time_s, op.arc_height, op.shell_damage, op.blast_radius, delay, op.launch_altitude, kind, op.accel, op.drop)
 	var duration := op.total_duration_s()
-	strikes.append(Strike.new(center, op.reach_radius(), op.target_radius, duration, op.warning_s))
+	var strike := Strike.new(center, op.reach_radius(), op.target_radius, duration, op.warning_s)
+	if op.pattern == OperationDefinition.Pattern.LINE:
+		strike.line_dir = op.line_dir()
+		strike.line_half_len = op.line_length * 0.5
+	strikes.append(strike)
 	strike_called.emit(center, op.reach_radius(), duration)
 
 
 ## Selects (or deselects, if already selected) a hand slot for placement. An instant card (order, supply, deck trick)
 ## has no target, so it is played at once; a refusal shows like any other (`card_rejected`).
 func select_slot(slot: int) -> void:
-	if deck == null or is_ended():
+	if deck == null or is_ended() or frozen:
 		return
 	var def: CardDefinition = cards_by_id().get(deck.card_at(slot))
 	if def != null and def.is_instant():
@@ -849,7 +885,7 @@ func cancel_selection() -> void:
 ## Plays the selected card on `cell`. A success clears the selection; a refusal keeps it (so the player can try
 ## another cell) and emits `card_rejected`. Returns null when no card is selected.
 func confirm_at(cell: Vector2i) -> CardPlayService.Result:
-	if deck == null or not targeting.is_selecting():
+	if deck == null or frozen or not targeting.is_selecting():
 		return null
 	var slot := targeting.selected_slot
 	var res := play_card(slot, cell)

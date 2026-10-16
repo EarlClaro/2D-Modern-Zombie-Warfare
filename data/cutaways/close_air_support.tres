@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="CutawayDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/cutaways/cutaway_definition.gd" id="1_cut"]
+
+[resource]
+script = ExtResource("1_cut")
+id = "close_air_support"
+display_name = "Close Air Support"
+tier = 1
+scene = "close_air_support"
+sound = "strike_air"
