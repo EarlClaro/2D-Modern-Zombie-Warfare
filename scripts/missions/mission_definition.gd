@@ -17,6 +17,8 @@ extends ContentDefinition
 @export var deck_id: String = ""
 ## Deployment cards may only be placed within this many tiles of the core.
 @export var deploy_radius: float = 10.0
+## Optional: ids of DOCTRINE cards in force for the whole mission (until the pre-mission picker exists, M5).
+@export var doctrines: PackedStringArray = PackedStringArray()
 ## Optional: scenery id of the command-bunker art drawn for the core (empty = the plain box), and how far
 ## its walls reach from the core's centre in tiles (enemies attack from that far out).
 @export var core_scenery_id: String = ""

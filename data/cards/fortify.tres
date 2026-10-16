@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CardDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/cards/card_definition.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = "fortify"
+display_name = "Fortify"
+description = "Order: all your ground units take less damage from every hit for 20 s. Plays at once."
+card_kind = 3
+cost = 2
+lockout_s = 30.0
+max_copies = 2
+unit_id = ""
+unit_count = 1
+effect_id = "fortify"

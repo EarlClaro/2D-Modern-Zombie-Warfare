@@ -54,6 +54,16 @@ func draw_one() -> bool:
 	return true
 
 
+## Draws up to `count` cards (stops at a full hand or when nothing is left); returns how many were drawn.
+func draw(count: int) -> int:
+	var drawn := 0
+	for i in maxi(count, 0):
+		if not draw_one():
+			break
+		drawn += 1
+	return drawn
+
+
 func tick(delta: float) -> void:
 	_tick_lockouts(delta)
 	if hand.size() >= rules.hand_cap:

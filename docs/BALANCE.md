@@ -250,6 +250,9 @@ Same whole-battle digest tool as in M3.2 (6 missions x 2 seeds x 100 s with scri
 ## Habits (M3.4, 2026-10-16)
 Defaults: cover on, retreat below 35 % health, focus fire on. Data: `threat` spitter 2, brute 1; `anti_armor` on the RPG and the tank cannon. Not swept: like the behaviours, the habits change every battle, so the numbers wait for the 3.10 sweep. Expected effects to check there: cover (a wall next to a soldier now matters, so Sandbags and Barrier cards gain value); retreat (hurt soldiers and tanks stop fighting and cluster near the core, which protects them but also removes damage from the front; with no healing yet it may lower win rates); focus fire (rifles open on Spitters, rockets and tank shells on Brutes). Honest limits: cover is a position habit only (no damage bonus); the retreat point is the core, not the nearest friendly structure.
 
+## State cards (M3.5, 2026-10-16)
+First guesses, not swept (the sweep is 3.10): Fortify 2 CP, +4 armour for 20 s, lockout 30 s (against a Shambler's 10 damage a hit becomes 6, against a Runner's 6 it becomes 2, the 10 % floor is 0.6, against a Brute's 30 it becomes 26 and a Tank's 5 armour makes it 21); Supply Drop 1 CP for +3 CP, lockout 15 s (a net gain of 2 CP, so it is a tempo card, not free money; at the 10 CP cap the gain is wasted); Quick Draw 1 CP for 2 cards (a hand-cap-limited bonus, the hand is 5); Hollow Points +15 % rifle damage for a whole mission with no cost, which is why it is a doctrine to be chosen before the mission rather than a card. Things to check in the sweep: whether Fortify at a flat +4 is too strong against many weak hits (it nearly halves Shambler damage and cuts Runner damage by two thirds) and too weak against Brutes; whether Supply Drop makes the CP cap a real limit.
+
 ## Synergy notes
 Add per synergy: intended counterplay and balance risk (post-MVP).
 

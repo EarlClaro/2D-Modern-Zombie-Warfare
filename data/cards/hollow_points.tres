@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CardDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/cards/card_definition.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = "hollow_points"
+display_name = "Hollow Points"
+description = "Doctrine: rifle weapons deal 15% more damage for the whole mission. Named by the mission, never drawn."
+card_kind = 6
+cost = 0
+lockout_s = 0.0
+max_copies = 1
+unit_id = ""
+unit_count = 1
+effect_id = "hollow_points"

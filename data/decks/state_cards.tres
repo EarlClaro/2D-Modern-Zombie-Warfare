@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="DeckDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/cards/deck_definition.gd" id="1_deck"]
+
+[resource]
+script = ExtResource("1_deck")
+id = "state_cards"
+display_name = "Field Orders"
+card_ids = PackedStringArray("rifle_squad", "gatling_gun", "tank", "artillery_strike", "fortify", "supply_drop", "quick_draw", "rifle_squad", "gatling_gun", "tank", "artillery_strike", "fortify", "supply_drop", "quick_draw", "rifle_squad", "gatling_gun")

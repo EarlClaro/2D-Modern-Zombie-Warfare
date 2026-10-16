@@ -30,6 +30,12 @@ func setup_secondary(p_weapon: WeaponDefinition) -> void:
 	secondary_ammo = p_weapon.ammo if p_weapon.ammo > 0 else -1
 
 
+## Refills the limited second weapon (a supply drop).
+func refill_secondary() -> void:
+	if secondary != null:
+		secondary_ammo = secondary.ammo if secondary.ammo > 0 else -1
+
+
 func secondary_ready_to_fire() -> bool:
 	return secondary != null and secondary_ammo != 0
 

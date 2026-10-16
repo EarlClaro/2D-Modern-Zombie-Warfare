@@ -23,6 +23,11 @@ func tick(delta: float) -> void:
 	cp = minf(cp + regen_per_s * maxf(delta, 0.0), cap)
 
 
+## Adds Command Points (a supply drop), never above the cap.
+func gain(amount: float) -> void:
+	cp = minf(cp + maxf(amount, 0.0), cap)
+
+
 func can_afford(cost: int) -> bool:
 	return cp + EPS >= float(cost)
 
