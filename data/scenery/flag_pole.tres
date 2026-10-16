@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_jys02"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_4upty"]
+[ext_resource type="Texture2D" path="res://assets/sprites/flag_pole/se.png" id="3_wnova"]
+
+[sub_resource type="Resource" id="Resource_egs6u"]
+script = ExtResource("2_4upty")
+textures = {
+"SE": ExtResource("3_wnova")
+}
+frame_size = Vector2i(33, 99)
+columns = 1
+origin = Vector2(19, 89)
+
+[resource]
+script = ExtResource("1_jys02")
+display_name = "Flag Pole"
+sprite = SubResource("Resource_egs6u")
+fades = true
+id = "flag_pole"

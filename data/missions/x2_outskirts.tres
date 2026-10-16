@@ -1,0 +1,126 @@
+[gd_resource type="Resource" script_class="MissionDefinition" format=3]
+
+[ext_resource type="Resource" path="res://data/maps/outskirts.tres" id="1_8unk6"]
+[ext_resource type="Script" path="res://scripts/missions/mission_definition.gd" id="2_ph1lw"]
+[ext_resource type="Script" path="res://scripts/missions/start_unit.gd" id="3_n8gt6"]
+[ext_resource type="Script" path="res://scripts/missions/wave_entry.gd" id="4_5jny8"]
+
+[sub_resource type="Resource" id="Resource_pqdo8"]
+script = ExtResource("3_n8gt6")
+unit_id = "mg_nest"
+cell = Vector2i(16, 36)
+
+[sub_resource type="Resource" id="Resource_sdnt2"]
+script = ExtResource("3_n8gt6")
+unit_id = "mg_nest"
+cell = Vector2i(16, 40)
+
+[sub_resource type="Resource" id="Resource_ebdni"]
+script = ExtResource("3_n8gt6")
+unit_id = "rifle_soldier"
+cell = Vector2i(15, 38)
+
+[sub_resource type="Resource" id="Resource_4dfkc"]
+script = ExtResource("3_n8gt6")
+unit_id = "jeep"
+cell = Vector2i(16, 34)
+
+[sub_resource type="Resource" id="Resource_ljg6n"]
+script = ExtResource("4_5jny8")
+start_s = 5.0
+enemy_id = "shambler"
+count = 100
+interval_s = 0.08
+
+[sub_resource type="Resource" id="Resource_42g13"]
+script = ExtResource("4_5jny8")
+start_s = 5.0
+enemy_id = "shambler"
+count = 75
+interval_s = 0.1
+spawn_index = 1
+
+[sub_resource type="Resource" id="Resource_cirey"]
+script = ExtResource("4_5jny8")
+start_s = 26.0
+enemy_id = "runner"
+count = 100
+interval_s = 0.05
+
+[sub_resource type="Resource" id="Resource_c53sy"]
+script = ExtResource("4_5jny8")
+start_s = 30.0
+enemy_id = "spitter"
+count = 15
+interval_s = 0.6
+spawn_index = 1
+
+[sub_resource type="Resource" id="Resource_x28gy"]
+script = ExtResource("4_5jny8")
+start_s = 48.0
+enemy_id = "shambler"
+count = 300
+interval_s = 0.03
+
+[sub_resource type="Resource" id="Resource_endvr"]
+script = ExtResource("4_5jny8")
+start_s = 52.0
+enemy_id = "brute"
+count = 12
+spawn_index = 1
+
+[sub_resource type="Resource" id="Resource_u2ysw"]
+script = ExtResource("4_5jny8")
+start_s = 78.0
+enemy_id = "runner"
+count = 175
+interval_s = 0.032
+spawn_index = 1
+
+[sub_resource type="Resource" id="Resource_atce0"]
+script = ExtResource("4_5jny8")
+start_s = 80.0
+enemy_id = "spitter"
+count = 25
+interval_s = 0.5
+
+[sub_resource type="Resource" id="Resource_tscqw"]
+script = ExtResource("4_5jny8")
+start_s = 100.0
+enemy_id = "shambler"
+count = 400
+interval_s = 0.02
+
+[sub_resource type="Resource" id="Resource_psn5j"]
+script = ExtResource("4_5jny8")
+start_s = 104.0
+enemy_id = "brute"
+count = 30
+interval_s = 0.6
+spawn_index = 1
+
+[sub_resource type="Resource" id="Resource_560hy"]
+script = ExtResource("4_5jny8")
+start_s = 120.0
+enemy_id = "runner"
+count = 150
+interval_s = 0.04
+
+[resource]
+script = ExtResource("2_ph1lw")
+display_name = "Hold the Outskirts"
+map = ExtResource("1_8unk6")
+core_cell = Vector2i(11, 38)
+core_health = 900.0
+duration_s = 150.0
+spawn_cells = Array[Vector2i]([Vector2i(60, 5), Vector2i(61, 34)])
+path_cells = Array[Vector2i]([Vector2i(45, 21), Vector2i(30, 21), Vector2i(24, 38), Vector2i(19, 38), Vector2i(11, 38)])
+start_units = Array[ExtResource("3_n8gt6")]([SubResource("Resource_pqdo8"), SubResource("Resource_sdnt2"), SubResource("Resource_ebdni"), SubResource("Resource_4dfkc")])
+waves = Array[ExtResource("4_5jny8")]([SubResource("Resource_ljg6n"), SubResource("Resource_42g13"), SubResource("Resource_cirey"), SubResource("Resource_c53sy"), SubResource("Resource_x28gy"), SubResource("Resource_endvr"), SubResource("Resource_u2ysw"), SubResource("Resource_atce0"), SubResource("Resource_tscqw"), SubResource("Resource_psn5j"), SubResource("Resource_560hy")])
+deck_id = "fortified"
+deploy_radius = 17.0
+core_scenery_id = "hq_bunker"
+core_radius = 1.2
+time_of_day = 0.4
+day_length_s = 300.0
+id = "x2_outskirts"

@@ -12,6 +12,8 @@ extends ContentDefinition
 @export var attack_range: float = 0.8  # tiles, ground distance
 @export var footprint_radius: float = 0.3
 @export var placeholder_color: Color = Color.WHITE
+## Ranged acid attacker: its (long-range) attack is shown as a spat glob. Damage still lands on the swing.
+@export var spits: bool = false
 ## Optional pixel-art sheet; enemies without one keep drawing the placeholder.
 @export var sprite: SpriteSheet
 
@@ -36,6 +38,8 @@ func validate() -> PackedStringArray:
 		errs.append(_err("attack_interval_s must be > 0"))
 	if attack_range <= 0.0:
 		errs.append(_err("attack_range must be > 0"))
+	if spits and attack_range < 2.0:
+		errs.append(_err("a spitter needs attack_range >= 2 (it is a ranged attacker)"))
 	if footprint_radius <= 0.0:
 		errs.append(_err("footprint_radius must be > 0"))
 	return errs

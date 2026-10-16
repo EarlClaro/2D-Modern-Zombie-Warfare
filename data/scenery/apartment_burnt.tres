@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_emq86"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_6nvdw"]
+[ext_resource type="Texture2D" path="res://assets/sprites/apartment_burnt/se.png" id="3_ylctf"]
+
+[sub_resource type="Resource" id="Resource_oh1fx"]
+script = ExtResource("2_6nvdw")
+textures = {
+"SE": ExtResource("3_ylctf")
+}
+frame_size = Vector2i(221, 154)
+columns = 1
+origin = Vector2(110, 95)
+
+[resource]
+script = ExtResource("1_emq86")
+display_name = "Burning Apartment Block"
+sprite = SubResource("Resource_oh1fx")
+footprint = Vector2i(4, 4)
+fades = true
+glow_offset = Vector2(0, -16)
+glow_radius = 96.0
+glow_color = Color(1, 0.5, 0.15, 1)
+id = "apartment_burnt"

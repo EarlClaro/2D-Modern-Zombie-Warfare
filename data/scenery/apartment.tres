@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_ifpth"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_y7vo2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/apartment/se.png" id="3_yybpq"]
+
+[sub_resource type="Resource" id="Resource_1ej27"]
+script = ExtResource("2_y7vo2")
+textures = {
+"SE": ExtResource("3_yybpq")
+}
+frame_size = Vector2i(224, 227)
+columns = 1
+origin = Vector2(112, 169)
+
+[resource]
+script = ExtResource("1_ifpth")
+display_name = "Apartment Block"
+sprite = SubResource("Resource_1ej27")
+footprint = Vector2i(4, 4)
+fades = true
+id = "apartment"

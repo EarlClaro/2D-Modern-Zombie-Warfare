@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_mpaxl"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_xbs23"]
+[ext_resource type="Texture2D" path="res://assets/sprites/sandbag_line/se.png" id="3_j8ff7"]
+
+[sub_resource type="Resource" id="Resource_pxxd5"]
+script = ExtResource("2_xbs23")
+textures = {
+"SE": ExtResource("3_j8ff7")
+}
+frame_size = Vector2i(68, 52)
+columns = 1
+origin = Vector2(33, 32)
+
+[resource]
+script = ExtResource("1_mpaxl")
+display_name = "Sandbag Line"
+sprite = SubResource("Resource_pxxd5")
+footprint = Vector2i(2, 1)
+id = "sandbag_line"

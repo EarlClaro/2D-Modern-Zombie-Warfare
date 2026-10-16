@@ -12,6 +12,7 @@ var missions: Dictionary = {}  # id -> MissionDefinition
 var cards: Dictionary = {}  # id -> CardDefinition
 var decks: Dictionary = {}  # id -> DeckDefinition
 var operations: Dictionary = {}  # id -> OperationDefinition (battle effects of Operation cards)
+var scenery_defs: Dictionary = {}  # id -> SceneryDefinition (decorations placed by maps)
 var deck_rules: DeckRules  # data/config/deck_rules.tres; null if missing/invalid (reported in errors)
 var errors: PackedStringArray = PackedStringArray()
 
@@ -27,6 +28,7 @@ static func load_from(root: String = "res://data") -> ContentDb:
 	db._load_dir(root + "/cards", "card")
 	db._load_dir(root + "/decks", "deck")
 	db._load_dir(root + "/operations", "operation")
+	db._load_dir(root + "/scenery", "scenery", false)
 	db._load_deck_rules(root + "/config/deck_rules.tres")
 	db.validate_references()
 	return db
@@ -66,6 +68,14 @@ func deck(id: String) -> DeckDefinition:
 
 func operation(id: String) -> OperationDefinition:
 	return operations.get(id)
+
+
+func scenery(id: String) -> SceneryDefinition:
+	return scenery_defs.get(id)
+
+
+func add_scenery(def: SceneryDefinition) -> bool:
+	return _register(scenery_defs, def)
 
 
 func add_operation(def: OperationDefinition) -> bool:
@@ -116,10 +126,60 @@ func validate_references() -> void:
 		for w in m.waves:
 			if w != null and not w.enemy_id.is_empty() and not enemies.has(w.enemy_id):
 				errors.append("mission '%s': wave references unknown enemy_id '%s'" % [id, w.enemy_id])
+		if not m.core_scenery_id.is_empty() and not scenery_defs.has(m.core_scenery_id):
+			errors.append("mission '%s': unknown core_scenery_id '%s'" % [id, m.core_scenery_id])
 		if not m.deck_id.is_empty() and not decks.has(m.deck_id):
 			errors.append("mission '%s': unknown deck_id '%s'" % [id, m.deck_id])
 	_validate_card_units()
 	_validate_decks()
+	_validate_scenery()
+
+
+## Every map's decorations must use known ids, fit on the map and not overlap; no mission may route enemies
+## through a decoration or put its core, spawns or start units under one.
+func _validate_scenery() -> void:
+	var cells_by_map: Dictionary = {}  # map id -> {cell: true}
+	for mid in maps:
+		var m: MapDefinition = maps[mid]
+		var taken: Dictionary = {}
+		for p in m.placements():
+			var def: SceneryDefinition = scenery_defs.get(p.scenery_id)
+			if def == null:
+				errors.append("map '%s': unknown scenery id '%s'" % [mid, p.scenery_id])
+				continue
+			for c in def.cells_at(p.cell):
+				if not m.in_bounds(c):
+					errors.append("map '%s': scenery '%s' at (%d, %d) does not fit on the map" % [mid, p.scenery_id, p.cell.x, p.cell.y])
+					break
+				if taken.has(c):
+					errors.append("map '%s': scenery '%s' at (%d, %d) overlaps another piece at (%d, %d)" % [mid, p.scenery_id, p.cell.x, p.cell.y, c.x, c.y])
+					break
+				taken[c] = true
+		cells_by_map[mid] = taken
+	for id in missions:
+		var mission: MissionDefinition = missions[id]
+		if mission.map == null or not cells_by_map.has(mission.map.id):
+			continue
+		var taken: Dictionary = cells_by_map[mission.map.id]
+		var special: Array[Vector2i] = [mission.core_cell]
+		special.append_array(mission.spawn_cells)
+		for su in mission.start_units:
+			if su != null:
+				special.append(su.cell)
+		for c in special:
+			if taken.has(c):
+				errors.append("mission '%s': (%d, %d) is covered by scenery" % [id, c.x, c.y])
+		for s in mission.spawn_cells:
+			var from := IsoProjection.cell_center(s)
+			for pc in mission.path_cells:
+				var to := IsoProjection.cell_center(pc)
+				var n := maxi(1, ceili(from.distance_to(to) / 0.2))
+				for i in n + 1:
+					var cell := IsoProjection.cell_of(from.lerp(to, float(i) / n))
+					if taken.has(cell):
+						errors.append("mission '%s': the enemy path from spawn (%d, %d) crosses scenery at (%d, %d)" % [id, s.x, s.y, cell.x, cell.y])
+						break
+				from = to
 
 
 ## Cards must point at real units of the right kind: deployments are ground units, sorties are aircraft.
@@ -181,10 +241,11 @@ func _register(table: Dictionary, def: ContentDefinition) -> bool:
 	return true
 
 
-func _load_dir(path: String, kind: String) -> void:
+func _load_dir(path: String, kind: String, required: bool = true) -> void:
 	var dir := DirAccess.open(path)
 	if dir == null:
-		errors.append("data directory missing: %s" % path)
+		if required:
+			errors.append("data directory missing: %s" % path)
 		return
 	var files := dir.get_files()
 	files.sort()
@@ -228,6 +289,11 @@ func _load_dir(path: String, kind: String) -> void:
 					add_operation(res)
 				else:
 					errors.append("%s is not an OperationDefinition" % full)
+			"scenery":
+				if res is SceneryDefinition:
+					add_scenery(res)
+				else:
+					errors.append("%s is not a SceneryDefinition" % full)
 			"deck":
 				if res is DeckDefinition:
 					add_deck(res)

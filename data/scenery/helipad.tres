@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_j64kr"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_hdcek"]
+[ext_resource type="Texture2D" path="res://assets/sprites/helipad/se.png" id="3_yfs5r"]
+
+[sub_resource type="Resource" id="Resource_vnthl"]
+script = ExtResource("2_hdcek")
+textures = {
+"SE": ExtResource("3_yfs5r")
+}
+frame_size = Vector2i(194, 103)
+columns = 1
+origin = Vector2(96, 52)
+
+[resource]
+script = ExtResource("1_j64kr")
+display_name = "Helipad"
+sprite = SubResource("Resource_vnthl")
+footprint = Vector2i(3, 3)
+id = "helipad"

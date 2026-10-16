@@ -1,16 +1,24 @@
 class_name MapDefinition
 extends ContentDefinition
 ## Terrain grid as ASCII rows. Cell (x, y) is rows[y][x]; ground +X is screen down-right, +Y down-left.
-## Legend: '.' grass (walkable, buildable), '=' road (walkable), '#' rock (blocked).
+## Legend: '.' grass (walkable, buildable), ',' dirt (walkable, buildable), 'p' paved concrete (walkable, buildable),
+## '=' road (walkable), 'x' rubble (walkable), '#' rock (blocked), 'w' water (blocked).
 ## The walkable/buildable flags here must match the IsoTileSet tile data (checked by a test).
 
 const GRASS: String = "."
 const ROAD: String = "="
 const ROCK: String = "#"
-const LEGEND: String = ".=#"
+const DIRT: String = ","
+const PAVED: String = "p"
+const RUBBLE: String = "x"
+const WATER: String = "w"
+const LEGEND: String = ".=#,pxw"
 const MAX_SIZE: int = 128
 
 @export var rows: PackedStringArray = PackedStringArray()
+## Decorations, one line each: `scenery_id x y [facing]` (see SceneryPlacement). Checked against the scenery
+## definitions by ContentDb (footprints in bounds, no overlaps, nothing on an enemy path).
+@export var scenery: PackedStringArray = PackedStringArray()
 
 
 func kind() -> String:
@@ -29,17 +37,27 @@ func in_bounds(cell: Vector2i) -> bool:
 	return cell.x >= 0 and cell.y >= 0 and cell.y < rows.size() and cell.x < rows[cell.y].length()
 
 
+## The parsed scenery lines (malformed lines are skipped here and reported by validate()).
+func placements() -> Array[SceneryPlacement]:
+	var out: Array[SceneryPlacement] = []
+	for line in scenery:
+		var p := SceneryPlacement.parse(line)
+		if p != null:
+			out.append(p)
+	return out
+
+
 ## The terrain character at `cell`, or "" outside the map.
 func terrain_char(cell: Vector2i) -> String:
 	return rows[cell.y][cell.x] if in_bounds(cell) else ""
 
 
 static func char_is_walkable(ch: String) -> bool:
-	return ch == GRASS or ch == ROAD
+	return ch == GRASS or ch == ROAD or ch == DIRT or ch == PAVED or ch == RUBBLE
 
 
 static func char_is_buildable(ch: String) -> bool:
-	return ch == GRASS
+	return ch == GRASS or ch == DIRT or ch == PAVED
 
 
 func is_walkable(cell: Vector2i) -> bool:
@@ -71,6 +89,12 @@ func validate() -> PackedStringArray:
 		errs.append(_err("row 0 is empty"))
 	if w > MAX_SIZE or rows.size() > MAX_SIZE:
 		errs.append(_err("size %dx%d exceeds the maximum %d" % [w, rows.size(), MAX_SIZE]))
+	for i in scenery.size():
+		var p := SceneryPlacement.parse(scenery[i])
+		if p == null:
+			errs.append(_err("scenery line %d is malformed: '%s' (expected 'id x y [facing]')" % [i, scenery[i]]))
+		elif not in_bounds(p.cell):
+			errs.append(_err("scenery '%s' at (%d, %d) is outside the map" % [p.scenery_id, p.cell.x, p.cell.y]))
 	for y in rows.size():
 		if rows[y].length() != w:
 			errs.append(_err("row %d has length %d, expected %d (rows must be rectangular)" % [y, rows[y].length(), w]))

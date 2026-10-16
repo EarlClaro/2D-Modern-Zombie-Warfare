@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_cc4p2"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_vvd7a"]
+[ext_resource type="Texture2D" path="res://assets/sprites/watchtower/se.png" id="3_41xmm"]
+
+[sub_resource type="Resource" id="Resource_vhf0u"]
+script = ExtResource("2_vvd7a")
+textures = {
+"SE": ExtResource("3_41xmm")
+}
+frame_size = Vector2i(85, 132)
+columns = 1
+origin = Vector2(42, 108)
+
+[resource]
+script = ExtResource("1_cc4p2")
+display_name = "Watchtower"
+sprite = SubResource("Resource_vhf0u")
+fades = true
+glow_offset = Vector2(8.639999, -74.4)
+glow_radius = 58.0
+glow_color = Color(1, 0.95, 0.7, 1)
+id = "watchtower"

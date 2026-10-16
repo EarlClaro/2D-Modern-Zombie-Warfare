@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_qae6c"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_36dbu"]
+[ext_resource type="Texture2D" path="res://assets/sprites/rubble_field/se.png" id="3_54dyt"]
+
+[sub_resource type="Resource" id="Resource_bqqk3"]
+script = ExtResource("2_36dbu")
+textures = {
+"SE": ExtResource("3_54dyt")
+}
+frame_size = Vector2i(160, 83)
+columns = 1
+origin = Vector2(77, 48)
+
+[resource]
+script = ExtResource("1_qae6c")
+display_name = "Rubble Field"
+sprite = SubResource("Resource_bqqk3")
+footprint = Vector2i(3, 3)
+id = "rubble_field"

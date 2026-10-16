@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_5lnf6"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_5koiq"]
+[ext_resource type="Texture2D" path="res://assets/sprites/rubble_heap/se.png" id="3_uwh5t"]
+
+[sub_resource type="Resource" id="Resource_c7kny"]
+script = ExtResource("2_5koiq")
+textures = {
+"SE": ExtResource("3_uwh5t")
+}
+frame_size = Vector2i(57, 56)
+columns = 1
+origin = Vector2(33, 34)
+
+[resource]
+script = ExtResource("1_5lnf6")
+display_name = "Rubble Heap"
+sprite = SubResource("Resource_c7kny")
+id = "rubble_heap"

@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_xvv5q"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_w21jg"]
+[ext_resource type="Texture2D" path="res://assets/sprites/dumpster/sw.png" id="3_4yyjh"]
+
+[sub_resource type="Resource" id="Resource_sc4kn"]
+script = ExtResource("2_w21jg")
+textures = {
+"SE": ExtResource("3_4yyjh")
+}
+frame_size = Vector2i(58, 48)
+columns = 1
+origin = Vector2(28, 32)
+
+[resource]
+script = ExtResource("1_xvv5q")
+display_name = "Dumpster (along y)"
+sprite = SubResource("Resource_sc4kn")
+id = "dumpster_y"

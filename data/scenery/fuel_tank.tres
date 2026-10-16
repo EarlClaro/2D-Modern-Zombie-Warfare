@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_24wde"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_awm0t"]
+[ext_resource type="Texture2D" path="res://assets/sprites/fuel_tank/se.png" id="3_ohn0y"]
+
+[sub_resource type="Resource" id="Resource_nxfdm"]
+script = ExtResource("2_awm0t")
+textures = {
+"SE": ExtResource("3_ohn0y")
+}
+frame_size = Vector2i(85, 82)
+columns = 1
+origin = Vector2(42, 58)
+
+[resource]
+script = ExtResource("1_24wde")
+display_name = "Fuel Tank"
+sprite = SubResource("Resource_nxfdm")
+id = "fuel_tank"

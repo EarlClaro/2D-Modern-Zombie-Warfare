@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_d7per"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_jd2ia"]
+[ext_resource type="Texture2D" path="res://assets/sprites/wall_ruin/sw.png" id="3_73q5g"]
+
+[sub_resource type="Resource" id="Resource_jgu1r"]
+script = ExtResource("2_jd2ia")
+textures = {
+"SE": ExtResource("3_73q5g")
+}
+frame_size = Vector2i(67, 55)
+columns = 1
+origin = Vector2(37, 37)
+
+[resource]
+script = ExtResource("1_d7per")
+display_name = "Broken Wall (along y)"
+sprite = SubResource("Resource_jgu1r")
+footprint = Vector2i(1, 2)
+id = "wall_ruin_y"

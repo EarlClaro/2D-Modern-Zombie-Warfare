@@ -1,0 +1,40 @@
+[gd_resource type="Resource" script_class="EnemyDefinition" load_steps=11 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/enemy_definition.gd" id="1_def"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_sheet"]
+[ext_resource type="Texture2D" path="res://assets/sprites/spitter/e.png" id="3_e"]
+[ext_resource type="Texture2D" path="res://assets/sprites/spitter/se.png" id="4_se"]
+[ext_resource type="Texture2D" path="res://assets/sprites/spitter/s.png" id="5_s"]
+[ext_resource type="Texture2D" path="res://assets/sprites/spitter/sw.png" id="6_sw"]
+[ext_resource type="Texture2D" path="res://assets/sprites/spitter/w.png" id="7_w"]
+[ext_resource type="Texture2D" path="res://assets/sprites/spitter/nw.png" id="8_nw"]
+[ext_resource type="Texture2D" path="res://assets/sprites/spitter/n.png" id="9_n"]
+[ext_resource type="Texture2D" path="res://assets/sprites/spitter/ne.png" id="10_ne"]
+
+[sub_resource type="Resource" id="Resource_sheet"]
+script = ExtResource("2_sheet")
+textures = {"E": ExtResource("3_e"), "SE": ExtResource("4_se"), "S": ExtResource("5_s"), "SW": ExtResource("6_sw"), "W": ExtResource("7_w"), "NW": ExtResource("8_nw"), "N": ExtResource("9_n"), "NE": ExtResource("10_ne")}
+frame_size = Vector2i(88, 72)
+origin = Vector2(44, 44)
+chest_px = 15.0
+height_px = 28.0
+walk_fps = 5.0
+stride_tiles = 0.5
+attack_frame = 5
+death_first = 6
+death_count = 4
+
+[resource]
+script = ExtResource("1_def")
+id = "spitter"
+display_name = "Spitter"
+max_health = 45.0
+armor = 0.0
+move_speed = 1.0
+attack_damage = 9.0
+attack_interval_s = 2.0
+attack_range = 4.5
+spits = true
+footprint_radius = 0.3
+placeholder_color = Color(0.6, 0.8, 0.15, 1)
+sprite = SubResource("Resource_sheet")

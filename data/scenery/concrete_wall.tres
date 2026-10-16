@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_djpyr"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_xn5ac"]
+[ext_resource type="Texture2D" path="res://assets/sprites/concrete_wall/se.png" id="3_repmj"]
+
+[sub_resource type="Resource" id="Resource_gyurq"]
+script = ExtResource("2_xn5ac")
+textures = {
+"SE": ExtResource("3_repmj")
+}
+frame_size = Vector2i(81, 75)
+columns = 1
+origin = Vector2(40, 52)
+
+[resource]
+script = ExtResource("1_djpyr")
+display_name = "Concrete Wall"
+sprite = SubResource("Resource_gyurq")
+footprint = Vector2i(2, 1)
+id = "concrete_wall"

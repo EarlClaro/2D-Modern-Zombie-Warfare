@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_ks768"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_jdvl1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/street_lamp/se.png" id="3_7k5l4"]
+
+[sub_resource type="Resource" id="Resource_j4013"]
+script = ExtResource("2_jdvl1")
+textures = {
+"SE": ExtResource("3_7k5l4")
+}
+frame_size = Vector2i(61, 85)
+columns = 1
+origin = Vector2(30, 76)
+
+[resource]
+script = ExtResource("1_ks768")
+display_name = "Street Lamp"
+sprite = SubResource("Resource_j4013")
+fades = true
+glow_offset = Vector2(17.28, -62.4)
+glow_radius = 46.0
+id = "street_lamp"

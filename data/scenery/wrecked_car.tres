@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_twsyx"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_ctb83"]
+[ext_resource type="Texture2D" path="res://assets/sprites/wrecked_car/e.png" id="3_nnr7p"]
+[ext_resource type="Texture2D" path="res://assets/sprites/wrecked_car/se.png" id="4_kia4w"]
+[ext_resource type="Texture2D" path="res://assets/sprites/wrecked_car/s.png" id="5_5551a"]
+[ext_resource type="Texture2D" path="res://assets/sprites/wrecked_car/sw.png" id="6_haa1r"]
+[ext_resource type="Texture2D" path="res://assets/sprites/wrecked_car/w.png" id="7_fo4pf"]
+[ext_resource type="Texture2D" path="res://assets/sprites/wrecked_car/nw.png" id="8_7khqf"]
+[ext_resource type="Texture2D" path="res://assets/sprites/wrecked_car/n.png" id="9_ca551"]
+[ext_resource type="Texture2D" path="res://assets/sprites/wrecked_car/ne.png" id="10_n3j5s"]
+
+[sub_resource type="Resource" id="Resource_vv8tc"]
+script = ExtResource("2_ctb83")
+textures = {
+"E": ExtResource("3_nnr7p"),
+"N": ExtResource("9_ca551"),
+"NE": ExtResource("10_n3j5s"),
+"NW": ExtResource("8_7khqf"),
+"S": ExtResource("5_5551a"),
+"SE": ExtResource("4_kia4w"),
+"SW": ExtResource("6_haa1r"),
+"W": ExtResource("7_fo4pf")
+}
+frame_size = Vector2i(80, 56)
+origin = Vector2(40, 38)
+
+[resource]
+script = ExtResource("1_twsyx")
+display_name = "Wrecked Car"
+sprite = SubResource("Resource_vv8tc")
+id = "wrecked_car"

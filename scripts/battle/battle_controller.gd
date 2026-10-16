@@ -15,6 +15,8 @@ signal hit_landed(target: Node, amount: float)
 signal enemy_died(enemy: BattleEnemy)
 signal unit_died(unit: BattleUnit)
 signal core_damaged(amount: float)
+## An enemy's attack landed on `target` (a BattleUnit or the BattleCore); used to draw spat acid and the like.
+signal enemy_attacked(enemy: BattleEnemy, target: Node)
 ## An area weapon went off at `center` (ground position, tiles) with the given ground radius.
 signal blast_landed(center: Vector2, radius: float)
 ## A card was played successfully (units are already in the battle).
@@ -51,12 +53,6 @@ class Strike:
 		duration = p_duration
 		time_left = p_duration
 		warning_s = p_warning
-
-const TERRAIN_BY_CHAR: Dictionary = {
-	MapDefinition.GRASS: IsoTileSet.TERRAIN_GRASS,
-	MapDefinition.ROAD: IsoTileSet.TERRAIN_ROAD,
-	MapDefinition.ROCK: IsoTileSet.TERRAIN_ROCK,
-}
 
 
 ## One aircraft on a sortie: the flight state machine, where it leaves to, and the aircraft itself.
@@ -107,6 +103,13 @@ var strikes: Array[Strike] = []
 var sorties: Array[Sortie] = []
 ## Preview of the selected card over the cell under the mouse; null when nothing is selected. Updated every frame.
 var preview: CardTargeting.Preview
+
+## Decorations of the current map (see _spawn_scenery) and the cells they occupy.
+var scenery_nodes: Array[BattleScenery] = []
+var _scenery_cells: Array[Vector2i] = []
+var _fade_pieces: Array[BattleScenery] = []  # the pieces that can fade
+var _fade_lookup: Dictionary = {}  # cell -> Array[BattleScenery]: pieces that could hide something standing on that cell
+var _fade_clock: float = 0.0
 
 var _rules: MissionRules
 var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
@@ -177,6 +180,10 @@ func _ready() -> void:
 	feedback.name = "Feedback"
 	add_child(feedback)
 	feedback.bind(self)
+	var atmosphere := Atmosphere.new()
+	atmosphere.name = "Atmosphere"
+	add_child(atmosphere)
+	atmosphere.bind(self)
 
 
 ## Builds (or rebuilds) the whole battle from validated data. Safe to call again to restart.
@@ -205,6 +212,7 @@ func setup(p_db: ContentDb, p_mission: MissionDefinition, p_seed: int) -> void:
 	_rules = MissionRules.new(mission.duration_s)
 	_rules.ended.connect(_on_rules_ended)
 	_build_map()
+	_spawn_scenery()
 	_spawn_core()
 	for su in mission.start_units:
 		_spawn_unit_at(su.unit_id, IsoProjection.cell_center(su.cell))
@@ -295,8 +303,10 @@ func _spawn_due_enemies() -> void:
 func _enemy_phase(delta: float) -> void:
 	var candidates: Array[TargetCandidate] = []
 	var by_id: Dictionary = {}  # target id -> entity
+	var core_cand: TargetCandidate = null
 	if core.is_alive():
-		candidates.append(TargetCandidate.new(CORE_ID, core.ground_pos))
+		core_cand = TargetCandidate.new(CORE_ID, core.ground_pos)
+		candidates.append(core_cand)
 		by_id[CORE_ID] = core
 	for u in units:
 		if u.is_alive() and not u.def.is_air():  # ground enemies cannot hit aircraft
@@ -305,6 +315,8 @@ func _enemy_phase(delta: float) -> void:
 	for e in enemies:
 		if not e.is_alive():
 			continue
+		if core_cand != null and core.radius > 0.0:  # the core's walls reach `radius` out: aim at the nearest point of them
+			core_cand.pos = core.ground_pos + (e.ground_pos - core.ground_pos).limit_length(core.radius)
 		var tid := TargetingService.pick(e.ground_pos, e.def.attack_range, candidates)
 		if tid != TargetingService.NO_TARGET:
 			var target: Object = by_id[tid]
@@ -312,6 +324,7 @@ func _enemy_phase(delta: float) -> void:
 			if e.attack_state.tick(delta, true):
 				var armor: float = (target as BattleUnit).def.armor if target is BattleUnit else 0.0
 				_pending.append(Hit.new(target, DamageService.compute(e.def.attack_damage, armor)))
+				enemy_attacked.emit(e, target)
 		else:
 			e.attack_state.tick(delta, false)
 			e.advance_path(delta)
@@ -511,6 +524,7 @@ func _process(delta: float) -> void:
 	_highlight.cell = cell
 	_preview_node.show_preview(preview, IsoProjection.cell_center(mission.core_cell), mission.deploy_radius)
 	_update_core_fade(delta)
+	update_scenery_fade(delta)
 
 
 ## The core is tall: fade it when a unit or enemy is behind it (ADR-005).
@@ -535,9 +549,25 @@ func has_cards() -> bool:
 	return deck != null
 
 
+## Cells under the core's walls (its radius), other than the core cell itself; nothing can be built there.
+func _core_cells() -> Array[Vector2i]:
+	var out: Array[Vector2i] = []
+	if core == null or core.radius <= 0.0:
+		return out
+	var r := int(ceil(core.radius + 0.5))
+	for dy in range(-r, r + 1):
+		for dx in range(-r, r + 1):
+			var c := mission.core_cell + Vector2i(dx, dy)
+			if c != mission.core_cell and IsoProjection.cell_center(c).distance_to(core.ground_pos) <= core.radius + 0.5:
+				out.append(c)
+	return out
+
+
 ## Cells holding the core or a living player unit (deployments cannot be placed there).
 func occupied_cells() -> Array[Vector2i]:
 	var out: Array[Vector2i] = [mission.core_cell]
+	out.append_array(_core_cells())
+	out.append_array(_scenery_cells)
 	for u in units:
 		if u.is_alive() and not u.def.is_air():
 			out.append(IsoProjection.cell_of(u.ground_pos))
@@ -709,6 +739,10 @@ func _clear_dynamic() -> void:
 			child.free()
 	units.clear()
 	enemies.clear()
+	scenery_nodes.clear()
+	_scenery_cells.clear()
+	_fade_pieces.clear()
+	_fade_lookup.clear()
 	core = null
 	_ground.clear()
 
@@ -718,13 +752,86 @@ func _build_map() -> void:
 	for y in map.height():
 		for x in map.width():
 			var cell := Vector2i(x, y)
-			_ground.set_cell(cell, IsoTileSet.SOURCE_ID, TERRAIN_BY_CHAR[map.terrain_char(cell)])
+			_ground.set_cell(cell, IsoTileSet.SOURCE_ID, IsoTileSet.coords_for(map.terrain_char(cell), cell))
+
+
+## Places the map's decorations on the entity layer and remembers their cells and which of them can fade.
+func _spawn_scenery() -> void:
+	scenery_nodes.clear()
+	_scenery_cells.clear()
+	_fade_pieces.clear()
+	_fade_lookup.clear()
+	for p in mission.map.placements():
+		var def := db.scenery(p.scenery_id)
+		if def == null:
+			continue
+		var node := BattleScenery.new()
+		node.name = "Scenery%d" % scenery_nodes.size()
+		node.setup_scenery(def, p.cell, p.facing)
+		_entities.add_child(node)
+		scenery_nodes.append(node)
+		_scenery_cells.append_array(def.cells_at(p.cell))
+		if def.fades:
+			_fade_pieces.append(node)
+			_register_fade_cells(node)
+
+
+const FADE_PERIOD_S: float = 0.1
+const FADE_MARGIN_PX: float = 26.0  # slack around a piece's art when deciding which cells it can hide
+const FADE_CELLS_BEHIND: int = 13  # a tall piece can hide cells this far behind it (smaller x + y)
+
+
+## Remembers, for every cell behind the piece whose screen position lies under its art, that the piece can hide
+## something standing there. Built once at setup so the per-frame test is one lookup per entity.
+func _register_fade_cells(piece: BattleScenery) -> void:
+	var rect := piece.world_rect().grow(FADE_MARGIN_PX)
+	var anchor := IsoProjection.cell_of(piece.ground_pos)
+	var key := IsoProjection.sort_key(piece.ground_pos)
+	for dy in range(-FADE_CELLS_BEHIND, 2):
+		for dx in range(-FADE_CELLS_BEHIND, 2):
+			var c := anchor + Vector2i(dx, dy)
+			var centre := IsoProjection.cell_center(c)
+			if IsoProjection.sort_key(centre) > key + 0.001:
+				continue
+			if rect.has_point(IsoProjection.ground_to_screen(centre) + Vector2(0.0, -12.0)):
+				if not _fade_lookup.has(c):
+					_fade_lookup[c] = []
+				_fade_lookup[c].append(piece)
+
+
+## Fades the tall decorations that have a unit or enemy behind them (ADR-005). The occlusion test runs every
+## FADE_PERIOD_S and only against the pieces registered for the cell each entity stands on; the alpha moves every frame.
+func update_scenery_fade(delta: float) -> void:
+	if _fade_pieces.is_empty():
+		return
+	_fade_clock += delta
+	if _fade_clock >= FADE_PERIOD_S:
+		_fade_clock = 0.0
+		for piece in _fade_pieces:
+			piece.faded = false
+		for u in units:
+			_mark_fading_over(u)
+		for e in enemies:
+			_mark_fading_over(e)
+	for piece in _fade_pieces:
+		piece.update_fade(delta)
+
+
+func _mark_fading_over(subject: IsoEntity) -> void:
+	var candidates: Array = _fade_lookup.get(IsoProjection.cell_of(subject.ground_pos), [])
+	if candidates.is_empty():
+		return
+	var rect := subject.world_rect()
+	for p in candidates:
+		var piece := p as BattleScenery
+		if not piece.faded and IsoOcclusion.is_occluding(piece.ground_pos, piece.world_rect(), subject.ground_pos, rect):
+			piece.faded = true
 
 
 func _spawn_core() -> void:
 	core = BattleCore.new()
 	core.name = "Core"
-	core.setup_core(mission.core_cell, mission.core_health)
+	core.setup_core(mission.core_cell, mission.core_health, db.scenery(mission.core_scenery_id) if not mission.core_scenery_id.is_empty() else null, mission.core_radius)
 	_entities.add_child(core)
 
 

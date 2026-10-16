@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_82gi5"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_borga"]
+[ext_resource type="Texture2D" path="res://assets/sprites/generator/sw.png" id="3_dv4g8"]
+
+[sub_resource type="Resource" id="Resource_1w1s6"]
+script = ExtResource("2_borga")
+textures = {
+"SE": ExtResource("3_dv4g8")
+}
+frame_size = Vector2i(84, 79)
+columns = 1
+origin = Vector2(33, 52)
+
+[resource]
+script = ExtResource("1_82gi5")
+display_name = "Generator (along y)"
+sprite = SubResource("Resource_1w1s6")
+id = "generator_y"

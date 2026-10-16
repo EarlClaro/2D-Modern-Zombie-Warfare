@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_mufot"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_k1dmb"]
+[ext_resource type="Texture2D" path="res://assets/sprites/house_small_brick/se.png" id="3_2a2yv"]
+
+[sub_resource type="Resource" id="Resource_ij43w"]
+script = ExtResource("2_k1dmb")
+textures = {
+"SE": ExtResource("3_2a2yv")
+}
+frame_size = Vector2i(179, 129)
+columns = 1
+origin = Vector2(89, 83)
+
+[resource]
+script = ExtResource("1_mufot")
+display_name = "Brick House"
+sprite = SubResource("Resource_ij43w")
+footprint = Vector2i(3, 3)
+fades = true
+id = "house_small_brick"

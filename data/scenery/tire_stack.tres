@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_4lutx"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_x7vr1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/tire_stack/se.png" id="3_2nffs"]
+
+[sub_resource type="Resource" id="Resource_ubguk"]
+script = ExtResource("2_x7vr1")
+textures = {
+"SE": ExtResource("3_2nffs")
+}
+frame_size = Vector2i(52, 42)
+columns = 1
+origin = Vector2(16, 22)
+
+[resource]
+script = ExtResource("1_4lutx")
+display_name = "Tyre Stack"
+sprite = SubResource("Resource_ubguk")
+id = "tire_stack"

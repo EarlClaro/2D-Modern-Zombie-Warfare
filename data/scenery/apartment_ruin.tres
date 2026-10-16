@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_rf0jf"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_i4ilu"]
+[ext_resource type="Texture2D" path="res://assets/sprites/apartment_ruin/se.png" id="3_01rbw"]
+
+[sub_resource type="Resource" id="Resource_r6p60"]
+script = ExtResource("2_i4ilu")
+textures = {
+"SE": ExtResource("3_01rbw")
+}
+frame_size = Vector2i(221, 154)
+columns = 1
+origin = Vector2(110, 95)
+
+[resource]
+script = ExtResource("1_rf0jf")
+display_name = "Ruined Apartment Block"
+sprite = SubResource("Resource_r6p60")
+footprint = Vector2i(4, 4)
+fades = true
+id = "apartment_ruin"

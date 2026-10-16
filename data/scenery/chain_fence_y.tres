@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_s77no"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_qgslm"]
+[ext_resource type="Texture2D" path="res://assets/sprites/chain_fence/sw.png" id="3_vnoxq"]
+
+[sub_resource type="Resource" id="Resource_0awpc"]
+script = ExtResource("2_qgslm")
+textures = {
+"SE": ExtResource("3_vnoxq")
+}
+frame_size = Vector2i(67, 74)
+columns = 1
+origin = Vector2(33, 54)
+
+[resource]
+script = ExtResource("1_s77no")
+display_name = "Chain-link Fence (along y)"
+sprite = SubResource("Resource_0awpc")
+footprint = Vector2i(1, 2)
+id = "chain_fence_y"

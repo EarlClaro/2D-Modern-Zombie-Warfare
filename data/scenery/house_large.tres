@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_c72xa"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_6jyj1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/house_large/se.png" id="3_5e4do"]
+
+[sub_resource type="Resource" id="Resource_pyjfb"]
+script = ExtResource("2_6jyj1")
+textures = {
+"SE": ExtResource("3_5e4do")
+}
+frame_size = Vector2i(199, 135)
+columns = 1
+origin = Vector2(99, 84)
+
+[resource]
+script = ExtResource("1_c72xa")
+display_name = "Large House"
+sprite = SubResource("Resource_pyjfb")
+footprint = Vector2i(4, 3)
+fades = true
+id = "house_large"

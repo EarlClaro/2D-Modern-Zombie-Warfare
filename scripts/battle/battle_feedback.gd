@@ -43,6 +43,7 @@ func bind(battle: BattleController) -> void:
 	battle.unit_died.connect(_on_unit_died)
 	battle.blast_landed.connect(_on_blast)
 	battle.projectile_launched.connect(_on_projectile_launched)
+	battle.enemy_attacked.connect(_on_enemy_attacked)
 
 
 func _on_shot(shooter: BattleUnit, target: BattleEnemy) -> void:
@@ -111,6 +112,11 @@ func _on_blast(center: Vector2, radius: float) -> void:
 		ImpactSpark.spawn(_fx, pos, SPARK_BLAST)  # flying debris
 	sfx.play("blast")
 	shake.trigger(BLAST_SHAKE_PX, BLAST_SHAKE_S)
+
+
+func _on_enemy_attacked(enemy: BattleEnemy, target: Node) -> void:
+	if enemy.def.spits and target is IsoEntity:
+		AcidSpit.spawn(_fx, enemy.mouth_world(), (target as IsoEntity).chest_world())
 
 
 func _on_projectile_launched(shooter: BattleUnit, weapon: WeaponDefinition, from_ground: Vector2, target_ground: Vector2) -> void:

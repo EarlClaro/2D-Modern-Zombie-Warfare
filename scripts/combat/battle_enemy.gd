@@ -70,6 +70,12 @@ func is_swinging() -> bool:
 	return attack_state.cooldown_remaining() > def.attack_interval_s - ATTACK_ANIM_S
 
 
+## World-pixel point a spat glob leaves from: the head, a little toward the facing.
+func mouth_world() -> Vector2:
+	var top := def.sprite.top_px() if def != null and def.sprite != null else 30.0
+	return position + Vector2(0, -top * 0.8) + IsoProjection.ground_to_screen(IsoProjection.ground_dir_of_facing(facing) * 0.25)
+
+
 func chest_world() -> Vector2:
 	return position + Vector2(0, -(def.sprite.chest_px if def != null and def.sprite != null else CHEST_PX))
 

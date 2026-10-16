@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_0hfk2"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_ef5b5"]
+[ext_resource type="Texture2D" path="res://assets/sprites/barracks/se.png" id="3_refts"]
+
+[sub_resource type="Resource" id="Resource_rgyvd"]
+script = ExtResource("2_ef5b5")
+textures = {
+"SE": ExtResource("3_refts")
+}
+frame_size = Vector2i(179, 120)
+columns = 1
+origin = Vector2(89, 72)
+
+[resource]
+script = ExtResource("1_0hfk2")
+display_name = "Barracks"
+sprite = SubResource("Resource_rgyvd")
+footprint = Vector2i(4, 2)
+fades = true
+id = "barracks"

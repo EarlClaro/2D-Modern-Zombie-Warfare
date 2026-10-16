@@ -52,7 +52,7 @@ func test_valid_map_has_no_errors() -> void:
 func test_empty_and_ragged_and_unknown_char_errors() -> void:
 	assert_true(_has(_map([]).validate(), "rows is empty"))
 	assert_true(_has(_map(["..", "..."]).validate(), "rectangular"))
-	assert_true(_has(_map(["..", ".x"]).validate(), "unknown terrain character 'x' at (1, 1)"))
+	assert_true(_has(_map(["..", ".?"]).validate(), "unknown terrain character '?' at (1, 1)"))
 	assert_true(_has(_map([""]).validate(), "row 0 is empty"))
 
 
@@ -87,12 +87,15 @@ func test_terrain_flags_match_iso_tileset_tile_data() -> void:
 	# The map legend must agree with the placeholder TileSet used to draw it.
 	var layer := TileMapLayer.new()
 	layer.tile_set = IsoTiles.build()
-	var by_char := {MapDef.GRASS: IsoTiles.TERRAIN_GRASS, MapDef.ROAD: IsoTiles.TERRAIN_ROAD, MapDef.ROCK: IsoTiles.TERRAIN_ROCK}
-	for ch in by_char:
-		layer.set_cell(Vector2i.ZERO, IsoTiles.SOURCE_ID, by_char[ch])
-		var data := layer.get_cell_tile_data(Vector2i.ZERO)
-		assert_eq(data.get_custom_data("walkable"), MapDef.char_is_walkable(ch), "walkable for '%s'" % ch)
-		assert_eq(data.get_custom_data("buildable"), MapDef.char_is_buildable(ch), "buildable for '%s'" % ch)
+	for ch in MapDef.LEGEND:  # every terrain, every look-variant
+		for v in IsoTiles.VARIANTS:
+			layer.set_cell(Vector2i.ZERO, IsoTiles.SOURCE_ID, Vector2i(v, IsoTiles.terrain_row(ch)))
+			var data := layer.get_cell_tile_data(Vector2i.ZERO)
+			assert_true(data != null, "tile exists for '%s' variant %d" % [ch, v])
+			if data == null:
+				continue
+			assert_eq(data.get_custom_data("walkable"), MapDef.char_is_walkable(ch), "walkable for '%s' v%d" % [ch, v])
+			assert_eq(data.get_custom_data("buildable"), MapDef.char_is_buildable(ch), "buildable for '%s' v%d" % [ch, v])
 	layer.free()
 
 

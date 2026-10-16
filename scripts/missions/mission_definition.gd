@@ -17,6 +17,15 @@ extends ContentDefinition
 @export var deck_id: String = ""
 ## Deployment cards may only be placed within this many tiles of the core.
 @export var deploy_radius: float = 10.0
+## Optional: scenery id of the command-bunker art drawn for the core (empty = the plain box), and how far
+## its walls reach from the core's centre in tiles (enemies attack from that far out).
+@export var core_scenery_id: String = ""
+@export var core_radius: float = 0.0
+## Look of the battle (presentation only, see Atmosphere): time of day at the start (0 = midnight, 0.25 sunrise,
+## 0.5 noon, 0.75 sunset), seconds one full day takes (0 = the time stays put) and the weather (DayNight.WEATHER).
+@export_range(0.0, 1.0) var time_of_day: float = 0.5
+@export var day_length_s: float = 0.0
+@export var weather: String = "clear"
 
 
 func kind() -> String:
@@ -53,6 +62,14 @@ func validate() -> PackedStringArray:
 		_validate_geometry(errs)
 	if deploy_radius <= 0.0:
 		errs.append(_err("deploy_radius must be > 0"))
+	if core_radius < 0.0:
+		errs.append(_err("core_radius must be >= 0"))
+	if day_length_s < 0.0:
+		errs.append(_err("day_length_s must be >= 0"))
+	if time_of_day < 0.0 or time_of_day > 1.0:
+		errs.append(_err("time_of_day must be within 0..1"))
+	if not DayNight.is_weather(weather):
+		errs.append(_err("weather '%s' is unknown (%s)" % [weather, ", ".join(DayNight.WEATHER)]))
 	_validate_start_units(errs, map_ok)
 	_validate_waves(errs)
 	return errs
