@@ -1,6 +1,6 @@
 extends SceneTree
 ## Dev tool (not a test). Screenshots of one cutaway clip at several moments, for eyeballing it.
-## Run (NOT headless): godot --path . --resolution 1600x900 --audio-driver Dummy --script tools/cutaway_shots.gd -- --clip=artillery_barrage --out=<dir> [--mission=m2_card_defense]
+## Run (NOT headless): godot --path . --resolution 1600x900 --audio-driver Dummy --script tools/cutaway_shots.gd -- --clip=artillery_barrage --out=<dir> [--mission=m2_card_defense] [--marks=0.2,0.34,0.42,0.7]
 ## Takes frames at 20 %, 34 %, 42 % and 70 % of the clip's full length (the clip is advanced by the tool, not by real time).
 
 var _b: BattleController
@@ -8,7 +8,7 @@ var _player: CutawayPlayer
 var _clip: String = "artillery_barrage"
 var _out: String = ""
 var _mission: String = "m2_card_defense"
-var _marks: Array[float] = [0.2, 0.34, 0.42, 0.7]
+var _marks: Array[float] = [0.12, 0.3, 0.38, 0.7]
 var _index: int = 0
 var _frames: int = 0
 var _started: bool = false
@@ -22,6 +22,10 @@ func _initialize() -> void:
 			_out = a.substr(6)
 		elif a.begins_with("--mission="):
 			_mission = a.substr(10)
+		elif a.begins_with("--marks="):
+			_marks.clear()
+			for m in a.substr(8).split(","):
+				_marks.append(float(m))
 	if _out.is_empty():
 		_out = OS.get_user_data_dir()
 	DirAccess.make_dir_recursive_absolute(_out)

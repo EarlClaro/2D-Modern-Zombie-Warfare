@@ -335,3 +335,47 @@ func test_a_battle_with_clips_gives_the_same_result_as_one_without() -> void:
 	assert_near(plain.core.health.hp, clipped.core.health.hp, 1e-6, "same core hit points")
 	tree.root.remove_child(clipped)
 	_release()
+
+
+# --- the naval and air clips ------------------------------------------------------------------------------------
+
+func test_naval_gunfire_has_its_card_operation_and_large_clip() -> void:
+	var db := _get_db()
+	assert_true(db.is_valid(), "content errors: %s" % ", ".join(db.errors))
+	var card := db.card("naval_gunfire")
+	assert_true(card != null and card.card_kind == CardDefinition.CardKind.OPERATION)
+	assert_eq(card.effect_id, "naval_gunfire")
+	assert_eq(card.max_copies, 1, "a rare, heavy support")
+	var op := db.operation("naval_gunfire")
+	assert_eq(op.cutaway_id, "naval_gunfire")
+	assert_true(op.shell_damage > db.operation("artillery_strike").shell_damage, "heavier shells than the artillery")
+	assert_true(op.target_radius > db.operation("artillery_strike").target_radius, "over a wider circle")
+	assert_eq(db.cutaway("naval_gunfire").tier, CutawayDefinition.Tier.LARGE)
+
+
+func test_close_air_support_has_a_large_clip() -> void:
+	var c := _get_db().cutaway("close_air_support")
+	assert_true(c != null)
+	assert_eq(c.tier, CutawayDefinition.Tier.LARGE)
+	assert_true(CutawayScenes.has(c.scene))
+	assert_near(c.full_duration(), 1.5)
+
+
+func test_playing_the_naval_card_requests_its_clip() -> void:
+	var b := _battle()
+	b.deck.hand = ["naval_gunfire"] as Array[String]
+	b.points.cp = 10.0
+	var seen: Array[String] = []
+	b.cutaway_requested.connect(func(id: String) -> void: seen.append(id))
+	assert_true(b.play_card(0, TARGET).ok)
+	assert_eq(seen, ["naval_gunfire"] as Array[String])
+	assert_eq(b.projectiles.count(), 9, "all nine shells are queued")
+	_release()
+
+
+func test_scene_shake_stays_small_and_finite_for_every_recipe() -> void:
+	for id in CutawayScenes.ids():
+		var scene := CutawayScenes.build(id)
+		for i in 21:
+			var sh := scene.shake(1.5 * float(i) / 20.0, 1.5)
+			assert_true(is_finite(sh.x) and is_finite(sh.y) and sh.length() < 30.0, "%s shake at step %d is %s" % [id, i, str(sh)])

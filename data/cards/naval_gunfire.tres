@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CardDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/cards/card_definition.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = "naval_gunfire"
+display_name = "Naval Gunfire"
+description = "A battleship's nine 16-inch guns fire at once: heavy shells over a wide circle after a long warning."
+card_kind = 1
+cost = 7
+lockout_s = 45.0
+max_copies = 1
+unit_id = ""
+unit_count = 1
+effect_id = "naval_gunfire"
