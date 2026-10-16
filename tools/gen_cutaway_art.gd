@@ -3,15 +3,15 @@ extends SceneTree
 ## drawn from polygons and circles with 3-tone shading and a 1 px outline, deterministic.
 ## Run: godot --headless --path . --script tools/gen_cutaway_art.gd
 ## Writes assets/cutaways/<name>.png. Sprites are side views (cutaway art, the 2:1 isometric rules do not apply).
-##   howitzer_body.png   carriage, wheel, trail legs, gun shield and recoil housing; the barrel pivots at BODY_PIVOT
-##   howitzer_barrel.png the barrel with breech and muzzle brake, facing right; it pivots at BARREL_PIVOT
+##   howitzer_body.png   a tracked self-propelled howitzer without its barrel (hull, tracks, turret); the barrel pivots at BODY_PIVOT
+##   howitzer_barrel.png the 52-calibre barrel with fume extractor and muzzle brake, facing right; it pivots at BARREL_PIVOT
 
 const OUT_DIR := "res://assets/cutaways"
 const INK := Color("12140f")
-const BODY_SIZE := Vector2i(64, 44)
-const BARREL_SIZE := Vector2i(60, 10)
-const BODY_PIVOT := Vector2i(40, 15)  # where the barrel's pivot sits on the body (the cutaway scene reads the same numbers)
-const BARREL_PIVOT := Vector2i(5, 5)
+const BODY_SIZE := Vector2i(100, 50)
+const BARREL_SIZE := Vector2i(100, 14)
+const BODY_PIVOT := Vector2i(60, 15)  # where the barrel's pivot sits on the body (the cutaway scene reads the same numbers)
+const BARREL_PIVOT := Vector2i(6, 7)
 
 # olive drab, three tones (dark, mid, light)
 const OLIVE: Array[Color] = [Color("3b4a2a"), Color("55683a"), Color("6f8650")]
@@ -89,41 +89,62 @@ func _outline(img: Image) -> void:
 		img.set_pixel(e.x, e.y, INK)
 
 
+## A modern tracked 155 mm self-propelled howitzer in side view, facing right (proportions after the M109A6 Paladin
+## and the PzH 2000: a low hull with the engine in front, a big turret over the rear half with a sloped roof and a
+## bustle, seven road wheels, a front sprocket and a rear spade, 1 px about 0.1 m). The barrel is a separate sprite.
 func _body() -> Image:
 	var img := _blank(BODY_SIZE)
-	# trail legs spread back along the ground, each ending in a spade
-	_poly(img, PackedVector2Array([Vector2(24, 26), Vector2(31, 29), Vector2(9, 41), Vector2(3, 40)]), OLIVE_DEEP)
-	_rect(img, 2, 39, 6, 43, STEEL)
-	_poly(img, PackedVector2Array([Vector2(28, 28), Vector2(34, 29), Vector2(22, 41), Vector2(17, 40)]), OLIVE)
-	# carriage and cradle
-	_poly(img, PackedVector2Array([Vector2(17, 22), Vector2(43, 19), Vector2(46, 29), Vector2(19, 32)]), OLIVE)
-	_rect(img, 20, 20, 40, 23, OLIVE_DEEP)
-	# the recoil housing the barrel slides in
-	_rect(img, 31, 11, 47, 18, STEEL)
-	_rect(img, 31, 13, 47, 14, [STEEL[1], STEEL[2], HUB[2]] as Array[Color])
-	# the wheel
-	_disc(img, 27.0, 34.0, 9.0, RUBBER)
-	_disc(img, 27.0, 34.0, 5.0, HUB)
-	_disc(img, 27.0, 34.0, 1.6, STEEL)
-	# the gun shield, a little proud of the cradle, with rivets
-	_poly(img, PackedVector2Array([Vector2(37, 8), Vector2(43, 8), Vector2(46, 28), Vector2(39, 29)]), OLIVE)
-	for ry in [11, 16, 21, 26]:
-		img.set_pixel(41 + (ry - 11) / 8, ry, OLIVE[2])
-	# elevating wheel and sight
-	_disc(img, 33.0, 25.0, 2.6, STEEL)
-	_rect(img, 34, 6, 38, 9, STEEL)
+	# the rear spade, dug in
+	_poly(img, PackedVector2Array([Vector2(1, 49), Vector2(6, 37), Vector2(9, 38), Vector2(7, 49)]), STEEL)
+	# tracks: a dark belt, the road wheels, the idler at the back and the sprocket at the front
+	_poly(img, PackedVector2Array([Vector2(7, 40), Vector2(81, 38), Vector2(86, 43), Vector2(82, 49), Vector2(7, 49), Vector2(3, 45)]), RUBBER)
+	for wx in [15, 23, 31, 39, 47, 55, 63]:
+		_disc(img, float(wx), 43.5, 4.6, STEEL)
+		_disc(img, float(wx), 43.5, 1.8, RUBBER)
+	_disc(img, 9.0, 42.0, 4.2, STEEL)
+	_disc(img, 9.0, 42.0, 1.6, RUBBER)
+	_disc(img, 77.0, 42.0, 5.4, HUB)
+	_disc(img, 77.0, 42.0, 2.2, STEEL)
+	# the side skirt over the top of the track
+	_poly(img, PackedVector2Array([Vector2(8, 33), Vector2(80, 33), Vector2(80, 39), Vector2(8, 39)]), OLIVE_DEEP)
+	for sx in [20, 34, 48, 62]:
+		_rect(img, sx, 34, sx + 1, 38, OLIVE)
+	# the hull with its sloped front and the engine deck
+	_poly(img, PackedVector2Array([Vector2(7, 36), Vector2(7, 29), Vector2(12, 27), Vector2(70, 27), Vector2(80, 31), Vector2(84, 37), Vector2(80, 39), Vector2(8, 39)]), OLIVE)
+	_poly(img, PackedVector2Array([Vector2(60, 27), Vector2(61, 23), Vector2(72, 23), Vector2(79, 29)]), OLIVE_DEEP)
+	for gx in [64, 67, 70]:
+		_rect(img, gx, 24, gx + 1, 27, STEEL)
+	# the turret: a bustle at the back, a roof that slopes down to the front and the gun mantlet
+	_poly(img, PackedVector2Array([Vector2(8, 28), Vector2(8, 12), Vector2(13, 8), Vector2(44, 8), Vector2(51, 10), Vector2(58, 13), Vector2(59, 24), Vector2(55, 28)]), OLIVE)
+	_rect(img, 14, 8, 44, 10, [OLIVE[1], OLIVE[2], OLIVE[2]] as Array[Color])
+	_rect(img, 9, 17, 19, 26, OLIVE_DEEP)  # a stowage bin on the side
+	_rect(img, 22, 14, 44, 16, OLIVE_DEEP)  # a panel line
+	_rect(img, 22, 20, 50, 22, OLIVE_DEEP)
+	_rect(img, 55, 11, 62, 21, STEEL)  # the mantlet the barrel passes through
+	_rect(img, 56, 12, 58, 20, [STEEL[1], STEEL[2], HUB[2]] as Array[Color])
+	# hatches, the commander's cupola with its machine gun, and the radio mast
+	_rect(img, 23, 6, 31, 9, STEEL)
+	_rect(img, 36, 4, 44, 9, STEEL)
+	_rect(img, 38, 2, 42, 5, OLIVE_DEEP)
+	_rect(img, 44, 3, 50, 4, STEEL)
+	_rect(img, 12, 0, 13, 9, STEEL)
 	_outline(img)
 	return img
 
 
+## The barrel: a 52-calibre tube (about 8 m, 80 px) with the breech end inside the mantlet, a fume extractor two thirds
+## of the way along and a multi-baffle muzzle brake. Facing right, pivots at BARREL_PIVOT.
 func _barrel() -> Image:
 	var img := _blank(BARREL_SIZE)
-	_rect(img, 0, 2, 7, 9, STEEL)  # breech block
-	_rect(img, 7, 3, 47, 8, [OLIVE_DEEP[0], OLIVE_DEEP[1], OLIVE[1]] as Array[Color])  # tube
-	_rect(img, 7, 4, 47, 5, [OLIVE[1], OLIVE[2], HUB[2]] as Array[Color])  # a highlight along the top
-	_rect(img, 22, 2, 25, 9, STEEL)  # a collar
-	_rect(img, 47, 1, 58, 9, STEEL)  # muzzle brake
-	for sx in [49, 52, 55]:
-		_rect(img, sx, 1, sx + 1, 9, [RUBBER[0], RUBBER[1], RUBBER[1]] as Array[Color])
+	_rect(img, 0, 3, 12, 10, STEEL)  # breech and recoil cylinder
+	_rect(img, 12, 4, 40, 9, [OLIVE_DEEP[0], OLIVE_DEEP[1], OLIVE[1]] as Array[Color])  # the thick part of the tube
+	_rect(img, 40, 5, 88, 8, [OLIVE_DEEP[0], OLIVE_DEEP[1], OLIVE[1]] as Array[Color])  # the long, thinner part
+	_rect(img, 12, 5, 40, 6, [OLIVE[1], OLIVE[2], HUB[2]] as Array[Color])  # highlights along the top
+	_rect(img, 40, 5, 88, 6, [OLIVE[1], OLIVE[2], HUB[2]] as Array[Color])
+	_rect(img, 58, 3, 70, 10, STEEL)  # the fume extractor
+	_rect(img, 59, 4, 69, 5, [STEEL[1], STEEL[2], HUB[2]] as Array[Color])
+	_rect(img, 86, 2, 97, 11, STEEL)  # the muzzle brake
+	for sx in [88, 91, 94]:
+		_rect(img, sx, 2, sx + 1, 11, [RUBBER[0], RUBBER[1], RUBBER[1]] as Array[Color])
 	_outline(img)
 	return img
