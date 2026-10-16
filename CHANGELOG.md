@@ -1,5 +1,8 @@
 # Changelog
 
+## Milestone 3 — Horde and mission objectives (in progress; spec v0.2 approved 2026-10-16)
+- 3.1: horde movement measurement (A6), no game change. New `tools/perf_flow.gd` (waypoints vs flow field vs separation variants, route facts, overlap and not-progressing counts on a real mission) and `tools/perf_sim.gd` options (`--counts`, `--interval`, `--defenders`) plus a cost-by-enemies-alive table. Results in docs/BALANCE.md; ADR-012 proposed (flow field with lane offset, optional separation); spec gains "3.1 findings", including that the whole step costs about 26 ms at 1000 alive and a step-cost increment is proposed before the stress run.
+
 ## Milestone 2 — First card loop (in progress; plan approved 2026-10-15, decisions D1–D7 as recommended)
 - Cost rebalance after the m3 re-sweep: Tank 6 to 5, Artillery 4 to 3, RPG team 4 to 5 (Helicopter unchanged). Tests read card costs from data. Side effects (m2 too easy, saving player hurt by a 5-CP Helicopter) recorded in docs/BALANCE.md.
 - M2 closed (2026-10-16): ADR-011 records CP regen 3.0 s; economy spec and GDD updated; tank / crowd-card / roster balance deferred.

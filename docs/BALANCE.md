@@ -196,5 +196,40 @@ Roughly 6 draw calls per enemy (body, shadow, health bar, flash states) — the 
 **What this does and doesn't show:** at the Milestone 1 scale (≤ ~100 enemies, 2 defenders, hitscan, no particles beyond the small effects) the game has large headroom on a weak GPU. It says nothing about artillery/air effects, larger maps, or card UI. Do not quote a maximum enemy count from this; "500 held 98–119 FPS on this machine in this test" is the measured fact.
 **Readability at 100:** with the widened lanes the horde reads as a dense crowd of individual silhouettes; true separation (zombies not overlapping) is not implemented and is a Milestone 3 item (together with the flow-field decision).
 
+## Horde movement and the cost of a step (M3.1, 2026-10-16; decides A6, see ADR-012)
+Tools: `tools/perf_flow.gd` (new; movement strategies on the real `x2_outskirts` map: 64x48, two spawns, water, rubble, scenery, 5 waypoints) and `tools/perf_sim.gd` (extended with `--counts`, `--interval`, `--defenders` and a cost-by-enemies-alive table). Headless, same laptop as above (i7-1165G7). **Load caveat:** other processes shared this CPU the whole time (about 50-70 % busy, four old Godot processes included), and the same configuration varied by up to 2x between runs (waypoints at 500 alive: 1.10 ms in one run, 0.50 ms in another). Compare numbers **within a run, against the waypoint line**, not across runs. Enemies appear at 25/s (the shipped waves peak at about 20-40/s) until N are alive; stopped enemies stay alive; 60 % shamblers, 30 % runners, 10 % brutes; one seed unless stated. The prototype classes are in the tool, not in the game.
+
+**Strategies:** A = today's waypoints with a random lane offset. B1 = flow field (distance field from the core, 8-neighbour, no corner cutting, scenery and terrain block), each enemy blends the four nearest cells' directions every tick. B2 = B1 refreshed every 4th tick per enemy (staggered). B3 = nearest cell's direction every tick. B4 = B2 sampled at the position plus a fixed per-enemy lane offset (0.9 tile, like A). C1/C2 = B2 + separation (counting-sort hash with 1-tile cells, push from the first 8 neighbours) every tick / every 2nd tick. C3 = B4 + separation every 4th tick with the hash rebuilt every 4th tick. C4 = C3 looking at 4 neighbours.
+
+**Cost of the movement step alone, average ms per tick (the whole tick budget is 16.7 ms):**
+| Run | Alive | A | B1 | B2 | B3 | B4 | C1 | C2 | C3 | C4 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 1 (busy) | 500 | 1.10 | 4.19 | 1.78 | 1.62 | - | 6.39 | 4.02 | - | - |
+| 1 | 1000 | 1.40 | 6.91 | 2.88 | 2.99 | - | 13.56 | 11.29 | - | - |
+| 1 | 2000 | 3.12 | 11.70 | 3.26 | 3.21 | - | 21.38 | 7.02 | - | - |
+| 2 (quieter) | 500 | 0.50 | - | 0.75 | - | 0.83 | - | - | 1.39 | 1.18 |
+| 2 | 1000 | 0.96 | - | 1.48 | - | 1.43 | - | - | 2.59 | 2.23 |
+| 2 | 2000 | 1.19 | - | 1.75 | - | 1.93 | - | - | 3.63 | 2.78 |
+Repeat of run 1 at 1000 alive with seed 2: A 1.47, B1 5.17, B2 2.32, B3 3.67, C1 14.85, C2 7.36 (same ranking). **Reading:** the field costs little once the direction is refreshed every 4th tick (B2/B4 about 1.4-1.6x waypoints, at most 1.9 ms at 2000 alive); refreshing every tick (B1) is 4x waypoints and not worth it; nearest-cell (B3) is no cheaper than B2. Separation every tick (C1) breaks the budget at 1000+ alive (13-21 ms); the staggered, rarely rebuilt C3 costs about 1.1-1.7 ms more than B4 (2.6 ms at 1000, 3.6 ms at 2000 = 16 % and 22 % of a tick), C4 a little less.
+**Field build, once at setup:** 82-117 ms for the 64x48 map (3,072 cells), 530-970 ms for an empty 128x128 (the largest allowed map). It is a GDScript binary-heap Dijkstra; a bucket queue would be much faster if a large map needs it.
+
+**Routes (x2_outskirts):** the straight line from each spawn to the core is blocked by terrain or scenery (59.1 and 50.2 tiles). Waypoint routes are 68.0 and 66.6 tiles; the flow route found on its own is **60.7 and 59.4 tiles** (shorter than the hand-placed waypoints) and reaches the core from both spawns. Reachable cells from the core: 2,124 of 2,154 open cells (30 open cells are islands).
+
+**Do they overlap?** Share of moving enemies at 30 s that have another moving enemy closer than **half** the sum of their radii ("near" = practically on top of each other), and share that are **touching** (closer than the sum):
+| Spawn rate, alive | A | B2 (flow, no lane) | B4 (flow + lane) | C3 (+ separation) | C4 |
+|---|---|---|---|---|---|
+| 8/s, 500 (about 225 moving), near | 38.9 % | 79.0 % | 31.1 % | **4.4 %** | 19.0 % |
+| same, touching | 83.4 % | 92.9 % | 80.0 % | 73.2 % | 74.8 % |
+| 25/s, 500 (about 450 moving), near | 72.9 % | 95.7 % | 72.4 % | 40.8 % | 52.2 % |
+| 25/s, 1000 (about 700 moving), near | 77.7 % | 95.5 % | 77.9 % | 52.3 % | 63.8 % |
+| same, touching | 94.7 % | 99.4 % | 97.0 % | 91.9 % | 93.4 % |
+**Reading:** a flow field with no lane offset stacks the horde into columns (near 79-96 %), worse than today; the lane offset (B4) gets back to today's level at no cost. Separation (C3) is clearly effective when bodies can fit (near 31 % to 4 % at 8/s) and only partly effective at the shipped spawn density (78 % to 52 % at 25/s): at 25/s a front of 12.5 enemies/s walking 1.2 tiles/s is denser than shamblers can pack side by side, so "touching" stays above 70 % in every variant. Not progressing (under half a tile in 5 s): 12 of about 700 in every mode including waypoints at 25/s, so not caused by the field (the cause was not investigated).
+
+**The cost of the whole step is the bigger finding.** `perf_sim` with no defenders, 2,000 shamblers at 83/s, step cost by enemies alive (same loaded machine):
+| Alive | 250-499 | 500-749 | 750-999 | 1000-1249 | 1250-1499 | 1500-1749 |
+|---|---|---|---|---|---|---|
+| Average step | 7.0 ms | 14.6 ms | 20.0 ms | 25.7 ms | 30.9 ms | 37.4 ms |
+Phase split from a scratch profile of the same run: at 1000-1249 alive the **enemy phase takes about 13.5 ms, the unit phase about 10.8 ms (with zero player units) and applying damage about 2.3 ms**. `_unit_phase` builds a `TargetCandidate` and a dictionary entry for every living enemy every tick whether or not any unit can fire, and each unit's target search then scans every enemy; the enemy phase allocates and scans per enemy too. So the step passes the 16.7 ms tick at roughly 600-700 alive on this machine under this load, **before** any change of movement, and movement (the A6 question) adds only 1-4 ms of it. A 1,000-alive horde (spec D7) is therefore not reachable by choosing a movement strategy; it needs the per-tick allocation and the all-pairs target search removed first. Not measured: the same table on a quiet machine, and with defenders (the earlier table at 2 defenders and about 320 alive was 3.5 ms, consistent with a roughly linear cost of 10-25 us per enemy).
+
 ## Synergy notes
 Add per synergy: intended counterplay and balance risk (post-MVP).
