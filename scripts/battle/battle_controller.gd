@@ -94,6 +94,10 @@ var enemies: Array[BattleEnemy] = []
 ## Card economy; both null in missions without a deck_id. Ticked inside step(), mutated only by play_card().
 var deck: DeckState
 var points: CommandPoints
+## Orders and doctrines in force (armour and damage changes of the player's side).
+var modifiers: BattleModifiers = BattleModifiers.new()
+## Doctrine card ids added on top of the mission's (the `--doctrine=` option); set before `setup`.
+var extra_doctrines: PackedStringArray = PackedStringArray()
 ## Which hand slot is selected for placement (state only; the HUD and the world preview read it).
 var targeting: CardTargeting = CardTargeting.new()
 ## Arcing shells in flight (artillery) and the telegraphs of strikes that are still landing.
@@ -141,8 +145,9 @@ var _preview_node: CardPreview
 var _camera: IsoCamera
 
 
-## Parses launch options given after `--`, e.g. `godot --path . -- --mission=s1_stress_horde --seed=5`.
-## Unknown or malformed options are ignored. Returns {"mission": String?, "seed": int?} with only the keys given.
+## Parses launch options given after `--`, e.g. `godot --path . -- --mission=s1_stress_horde --seed=5 --doctrine=hollow_points`.
+## Unknown or malformed options are ignored. Returns {"mission": String?, "seed": int?, "doctrine": PackedStringArray?}
+## with only the keys given (doctrine ids are comma separated).
 static func parse_user_args(args: PackedStringArray) -> Dictionary:
 	var out: Dictionary = {}
 	for a in args:
@@ -154,17 +159,29 @@ static func parse_user_args(args: PackedStringArray) -> Dictionary:
 			var v := a.trim_prefix("--seed=")
 			if v.is_valid_int():
 				out["seed"] = v.to_int()
+		elif a.begins_with("--doctrine="):
+			var ids := PackedStringArray()
+			for part in a.trim_prefix("--doctrine=").split(",", false):
+				ids.append(part.strip_edges())
+			if not ids.is_empty():
+				out["doctrine"] = ids
 	return out
+
+
+## Takes the options `parse_user_args` returned: which mission, which seed, which extra doctrines.
+func apply_launch_options(cli: Dictionary) -> void:
+	if cli.has("mission"):
+		mission_id = cli["mission"]
+	if cli.has("seed"):
+		rng_seed = cli["seed"]
+	if cli.has("doctrine"):
+		extra_doctrines = cli["doctrine"]
 
 
 func _ready() -> void:
 	if mission != null:
 		return  # already set up by a test or caller
-	var cli := parse_user_args(OS.get_cmdline_user_args())
-	if cli.has("mission"):
-		mission_id = cli["mission"]
-	if cli.has("seed"):
-		rng_seed = cli["seed"]
+	apply_launch_options(parse_user_args(OS.get_cmdline_user_args()))
 	var loaded := ContentDb.load_from()
 	if not loaded.is_valid():
 		_show_fatal("Content errors:\n" + "\n".join(loaded.errors))
@@ -226,6 +243,7 @@ func setup(p_db: ContentDb, p_mission: MissionDefinition, p_seed: int) -> void:
 	for su in mission.start_units:
 		_spawn_unit_at(su.unit_id, IsoProjection.cell_center(su.cell))
 	_setup_cards()
+	_apply_doctrines()
 	if _camera != null and is_inside_tree():
 		_camera.position = IsoProjection.ground_to_screen(Vector2(mission.map.width(), mission.map.height()) * 0.5)
 	battle_started.emit()
@@ -280,6 +298,7 @@ func step(delta: float) -> void:
 		return
 	# 1. clock + card economy + spawns
 	elapsed += delta
+	modifiers.tick(delta)
 	if deck != null:
 		deck.tick(delta)
 		points.tick(delta)
@@ -328,6 +347,7 @@ func _enemy_phase(delta: float) -> void:
 			lo = lo.min(up)
 			hi = hi.max(up)
 	var unit_targets := _target_pos.size()
+	var armor_bonus := modifiers.armor_bonus()
 	var core_alive := core.is_alive()
 	var core_pos := core.ground_pos
 	var core_radius := core.radius
@@ -366,7 +386,7 @@ func _enemy_phase(delta: float) -> void:
 		if target != null:
 			e.face_toward((target as IsoEntity).ground_pos)
 			if e.attack_state.tick(delta, true):
-				var armor: float = (target as BattleUnit).def.armor if target is BattleUnit else 0.0
+				var armor: float = (target as BattleUnit).def.armor + armor_bonus if target is BattleUnit else 0.0
 				_pending.append(Hit.new(target, DamageService.compute(e.def.attack_damage, armor)))
 				enemy_attacked.emit(e, target)
 		else:
@@ -526,19 +546,20 @@ func _fire(u: BattleUnit, weapon: WeaponDefinition, target: BattleEnemy) -> void
 	if not u.is_moving():
 		u.face_toward(target.ground_pos)  # a moving unit keeps facing its direction of travel
 	stats["shots"] += 1
+	var damage := weapon.damage * modifiers.damage_mult(weapon.id)  # doctrines
 	if weapon.delivery == WeaponDefinition.Delivery.PROJECTILE:
 		var to := target.ground_pos
 		var from := u.ground_pos
 		if u is BattleAircraft:
 			from = (u as BattleAircraft).next_pylon_ground()  # missiles hang under the wings, not the fuselage
 		var flight := maxf(from.distance_to(to) / weapon.projectile_speed, MIN_PROJECTILE_FLIGHT_S)
-		projectiles.spawn(from, to, flight, weapon.projectile_arc, weapon.damage, weapon.blast_radius, 0.0, u.altitude, ProjectileSystem.KIND_MISSILE, weapon.projectile_accel, weapon.projectile_drop)
+		projectiles.spawn(from, to, flight, weapon.projectile_arc, damage, weapon.blast_radius, 0.0, u.altitude, ProjectileSystem.KIND_MISSILE, weapon.projectile_accel, weapon.projectile_drop)
 		projectile_launched.emit(u, weapon, from, to)
 		return
 	if weapon.blast_radius > 0.0:
-		_queue_blast(target.ground_pos, weapon.damage, weapon.blast_radius)
+		_queue_blast(target.ground_pos, damage, weapon.blast_radius)
 	else:
-		_pending.append(Hit.new(target, DamageService.compute(weapon.damage, target.def.armor)))
+		_pending.append(Hit.new(target, DamageService.compute(damage, target.def.armor)))
 	shot_fired.emit(u, target)
 
 
@@ -722,6 +743,8 @@ func check_card(hand_index: int, cell: Vector2i) -> CardPlayService.Result:
 	var def: CardDefinition = cards_by_id().get(deck.card_at(hand_index))
 	var placement := PlacementRules.Reason.OK
 	if def != null:
+		if def.card_kind == CardDefinition.CardKind.DOCTRINE:
+			return CardPlayService.Result.new(CardPlayService.Reason.UNAVAILABLE, def)  # never played: a mission starts with it
 		match def.card_kind:
 			CardDefinition.CardKind.DEPLOYMENT:
 				placement = PlacementRules.check_deploy(mission.map, cell, mission.core_cell, mission.deploy_radius, occupied_cells())
@@ -746,11 +769,39 @@ func play_card(hand_index: int, cell: Vector2i) -> CardPlayService.Result:
 		_start_strike(db.operation(card.effect_id), centre)
 	elif card.card_kind == CardDefinition.CardKind.SORTIE:
 		_launch_sortie(card, centre)
+	elif card.is_instant():
+		_run_state_effect(db.effect(card.effect_id))
 	else:
 		for off in PlacementRules.formation_offsets(card.unit_count):
 			_spawn_unit_at(card.unit_id, centre + off)
 	card_played.emit(card, cell)
 	return res
+
+
+## Carries out an order / supply / deck card's effect at once: starts its modifier, adds Command Points, refills
+## aircraft missiles, draws cards.
+func _run_state_effect(effect: StateEffectDefinition) -> void:
+	modifiers.apply(effect)
+	if effect.cp_gain > 0.0:
+		points.gain(effect.cp_gain)
+	if effect.refill_ammo:
+		for u in units:
+			if u is BattleAircraft:
+				(u as BattleAircraft).refill_secondary()
+	if effect.draw_count > 0:
+		deck.draw(effect.draw_count)
+
+
+## Starts the doctrines the mission and the launch options name (permanent for the battle).
+func _apply_doctrines() -> void:
+	modifiers.clear()
+	var ids: Array[String] = []
+	ids.append_array(mission.doctrines)
+	ids.append_array(extra_doctrines)
+	for did in ids:
+		var card: CardDefinition = db.card(did)
+		if card != null and card.card_kind == CardDefinition.CardKind.DOCTRINE:
+			modifiers.apply(db.effect(card.effect_id))
 
 
 ## Sends the card's aircraft in from the nearest map edge to hold station over `center`, then out the other side.
@@ -775,9 +826,18 @@ func _start_strike(op: OperationDefinition, center: Vector2) -> void:
 	strike_called.emit(center, op.reach_radius(), duration)
 
 
-## Selects (or deselects, if already selected) a hand slot for placement.
+## Selects (or deselects, if already selected) a hand slot for placement. An instant card (order, supply, deck trick)
+## has no target, so it is played at once; a refusal shows like any other (`card_rejected`).
 func select_slot(slot: int) -> void:
 	if deck == null or is_ended():
+		return
+	var def: CardDefinition = cards_by_id().get(deck.card_at(slot))
+	if def != null and def.is_instant():
+		var res := play_card(slot, Vector2i.ZERO)
+		if res.ok:
+			targeting.cancel()  # the hand shifted left; a selected card would now point at another slot
+		else:
+			card_rejected.emit(slot, res)
 		return
 	targeting.select(deck, slot)
 

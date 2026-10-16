@@ -12,12 +12,13 @@ var missions: Dictionary = {}  # id -> MissionDefinition
 var cards: Dictionary = {}  # id -> CardDefinition
 var decks: Dictionary = {}  # id -> DeckDefinition
 var operations: Dictionary = {}  # id -> OperationDefinition (battle effects of Operation cards)
+var effects: Dictionary = {}  # id -> StateEffectDefinition (battle effects of Order / Supply / Deck / Doctrine cards)
 var scenery_defs: Dictionary = {}  # id -> SceneryDefinition (decorations placed by maps)
 var deck_rules: DeckRules  # data/config/deck_rules.tres; null if missing/invalid (reported in errors)
 var errors: PackedStringArray = PackedStringArray()
 
 
-## Loads data/{weapons,units,enemies,maps,missions,cards,decks,operations} and data/config/deck_rules.tres under `root`, then verifies cross-references.
+## Loads data/{weapons,units,enemies,maps,missions,cards,decks,operations,effects} and data/config/deck_rules.tres under `root`, then verifies cross-references.
 static func load_from(root: String = "res://data") -> ContentDb:
 	var db := ContentDb.new()
 	db._load_dir(root + "/weapons", "weapon")
@@ -28,6 +29,7 @@ static func load_from(root: String = "res://data") -> ContentDb:
 	db._load_dir(root + "/cards", "card")
 	db._load_dir(root + "/decks", "deck")
 	db._load_dir(root + "/operations", "operation")
+	db._load_dir(root + "/effects", "effect")
 	db._load_dir(root + "/scenery", "scenery", false)
 	db._load_deck_rules(root + "/config/deck_rules.tres")
 	db.validate_references()
@@ -70,6 +72,10 @@ func operation(id: String) -> OperationDefinition:
 	return operations.get(id)
 
 
+func effect(id: String) -> StateEffectDefinition:
+	return effects.get(id)
+
+
 func scenery(id: String) -> SceneryDefinition:
 	return scenery_defs.get(id)
 
@@ -80,6 +86,10 @@ func add_scenery(def: SceneryDefinition) -> bool:
 
 func add_operation(def: OperationDefinition) -> bool:
 	return _register(operations, def)
+
+
+func add_effect(def: StateEffectDefinition) -> bool:
+	return _register(effects, def)
 
 
 func add_card(def: CardDefinition) -> bool:
@@ -130,6 +140,16 @@ func validate_references() -> void:
 			errors.append("mission '%s': unknown core_scenery_id '%s'" % [id, m.core_scenery_id])
 		if not m.deck_id.is_empty() and not decks.has(m.deck_id):
 			errors.append("mission '%s': unknown deck_id '%s'" % [id, m.deck_id])
+		for did in m.doctrines:
+			var dc: CardDefinition = cards.get(did)
+			if dc == null:
+				errors.append("mission '%s': unknown doctrine card '%s'" % [id, did])
+			elif dc.card_kind != CardDefinition.CardKind.DOCTRINE:
+				errors.append("mission '%s': doctrine '%s' is not a doctrine card" % [id, did])
+	for eid in effects:
+		for wid in (effects[eid] as StateEffectDefinition).weapon_ids:
+			if not weapons.has(wid):
+				errors.append("effect '%s': unknown weapon id '%s'" % [eid, wid])
 	_validate_card_units()
 	_validate_decks()
 	_validate_scenery()
@@ -190,6 +210,9 @@ func _validate_card_units() -> void:
 			if not operations.has(c.effect_id):
 				errors.append("card '%s': unknown effect_id '%s'" % [id, c.effect_id])
 			continue
+		if c.uses_state_effect():
+			_validate_state_card(c)
+			continue
 		var u: UnitDefinition = units.get(c.unit_id)
 		if u == null:
 			errors.append("card '%s': unknown unit_id '%s'" % [id, c.unit_id])
@@ -197,6 +220,27 @@ func _validate_card_units() -> void:
 			errors.append("card '%s': deployment unit '%s' must be a ground unit" % [id, c.unit_id])
 		elif c.card_kind == CardDefinition.CardKind.SORTIE and u.height_class == UnitDefinition.HeightClass.GROUND:
 			errors.append("card '%s': sortie unit '%s' must be an aircraft" % [id, c.unit_id])
+
+
+## An order, supply, deck or doctrine card must name an effect that does what the card's kind promises.
+func _validate_state_card(c: CardDefinition) -> void:
+	var e: StateEffectDefinition = effects.get(c.effect_id)
+	if e == null:
+		errors.append("card '%s': unknown effect_id '%s'" % [c.id, c.effect_id])
+		return
+	match c.card_kind:
+		CardDefinition.CardKind.ORDER:
+			if not e.is_modifier() or e.duration_s <= 0.0:
+				errors.append("card '%s': an order needs an effect with a duration and an armour or damage change" % c.id)
+		CardDefinition.CardKind.DOCTRINE:
+			if not e.is_modifier() or e.duration_s > 0.0:
+				errors.append("card '%s': a doctrine needs a permanent effect (duration_s = 0) with an armour or damage change" % c.id)
+		CardDefinition.CardKind.SUPPLY:
+			if e.cp_gain <= 0.0 and not e.refill_ammo:
+				errors.append("card '%s': a supply card needs cp_gain or refill_ammo" % c.id)
+		CardDefinition.CardKind.DECK:
+			if e.draw_count < 1:
+				errors.append("card '%s': a deck card needs draw_count >= 1" % c.id)
 
 
 ## Deck legality needs the rules and the card table, so it is checked here once everything is loaded.
@@ -289,6 +333,11 @@ func _load_dir(path: String, kind: String, required: bool = true) -> void:
 					add_operation(res)
 				else:
 					errors.append("%s is not an OperationDefinition" % full)
+			"effect":
+				if res is StateEffectDefinition:
+					add_effect(res)
+				else:
+					errors.append("%s is not a StateEffectDefinition" % full)
 			"scenery":
 				if res is SceneryDefinition:
 					add_scenery(res)

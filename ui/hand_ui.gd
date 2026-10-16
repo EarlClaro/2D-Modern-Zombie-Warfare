@@ -17,11 +17,19 @@ const KIND_COLOR: Dictionary = {
 	CardDefinition.CardKind.DEPLOYMENT: Color(0.30, 0.58, 0.38),
 	CardDefinition.CardKind.OPERATION: Color(0.86, 0.52, 0.2),
 	CardDefinition.CardKind.SORTIE: Color(0.38, 0.55, 0.88),
+	CardDefinition.CardKind.ORDER: Color(0.78, 0.68, 0.25),
+	CardDefinition.CardKind.SUPPLY: Color(0.35, 0.72, 0.72),
+	CardDefinition.CardKind.DECK: Color(0.66, 0.5, 0.82),
+	CardDefinition.CardKind.DOCTRINE: Color(0.55, 0.55, 0.6),
 }
 const KIND_LABEL: Dictionary = {
 	CardDefinition.CardKind.DEPLOYMENT: "DEPLOY",
 	CardDefinition.CardKind.OPERATION: "STRIKE",
 	CardDefinition.CardKind.SORTIE: "AIR",
+	CardDefinition.CardKind.ORDER: "ORDER",
+	CardDefinition.CardKind.SUPPLY: "SUPPLY",
+	CardDefinition.CardKind.DECK: "DECK",
+	CardDefinition.CardKind.DOCTRINE: "DOCTRINE",
 }
 
 var _battle: BattleController
@@ -114,6 +122,7 @@ func _draw_surface() -> void:
 		return
 	var o := -_surface.position
 	_draw_cp_bar(o)
+	_draw_active_effects(o)
 	for i in SLOT_COUNT:
 		_draw_slot(i, o)
 	_draw_draw_timer(o)
@@ -148,6 +157,15 @@ func _draw_cp_bar(o: Vector2) -> void:
 			_surface.draw_rect(rect, Color(1.0, 0.85, 0.2), false, 2.0)  # these pips would be spent
 		else:
 			_surface.draw_rect(rect, Color(0, 0, 0, 0.8), false, 1.0)
+
+
+## Orders and doctrines in force, one line each above the CP bar: name and seconds left (doctrines have none).
+func _draw_active_effects(o: Vector2) -> void:
+	var y := HAND_TOP - 62.0
+	for a in _battle.modifiers.active():
+		var label := a.effect.display_name if a.is_permanent() else "%s  %ds" % [a.effect.display_name, ceili(a.time_left)]
+		_text(label, Vector2(slot_rect(0).position.x, y) + o, 20, Color(1.0, 0.9, 0.45), HORIZONTAL_ALIGNMENT_LEFT)
+		y -= 24.0
 
 
 func _draw_slot(i: int, o: Vector2) -> void:

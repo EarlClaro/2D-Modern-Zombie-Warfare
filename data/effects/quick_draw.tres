@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="StateEffectDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/cards/state_effect_definition.gd" id="1_effect"]
+
+[resource]
+script = ExtResource("1_effect")
+id = "quick_draw"
+display_name = "Quick Draw"
+duration_s = 0.0
+armor_bonus = 0.0
+damage_mult = 1.0
+weapon_ids = PackedStringArray()
+cp_gain = 0.0
+refill_ammo = false
+draw_count = 2

@@ -3,7 +3,8 @@ extends ContentDefinition
 ## A playable card. Immutable data; what a card *does* at play time lives in the battle (keyed by
 ## `card_kind` + `unit_id` / `effect_id`), never in the definition.
 
-enum CardKind { DEPLOYMENT, OPERATION, SORTIE }
+## ORDER, SUPPLY and DECK play at once with no target; DOCTRINE cards are never drawn, a mission starts with them.
+enum CardKind { DEPLOYMENT, OPERATION, SORTIE, ORDER, SUPPLY, DECK, DOCTRINE }
 
 const MAX_COPIES_LIMIT: int = 3  # hard ceiling from the deck rules; Legendary cards set max_copies = 1
 
@@ -20,12 +21,23 @@ const MAX_COPIES_LIMIT: int = 3  # hard ceiling from the deck rules; Legendary c
 @export var unit_count: int = 1
 ## SORTIE: how long the aircraft holds station over the target before leaving.
 @export var station_time_s: float = 0.0
-## OPERATION: the battle effect to run (e.g. "artillery_strike").
+## OPERATION: the battle effect to run (e.g. "artillery_strike"). ORDER / SUPPLY / DECK / DOCTRINE: the id of a
+## StateEffectDefinition.
 @export var effect_id: String = ""
 
 
 func kind() -> String:
 	return "card"
+
+
+## Instant cards take no target cell: clicking the card plays it.
+func is_instant() -> bool:
+	return card_kind == CardKind.ORDER or card_kind == CardKind.SUPPLY or card_kind == CardKind.DECK
+
+
+## True for kinds whose effect_id names a StateEffectDefinition.
+func uses_state_effect() -> bool:
+	return is_instant() or card_kind == CardKind.DOCTRINE
 
 
 func validate() -> PackedStringArray:
@@ -49,4 +61,7 @@ func validate() -> PackedStringArray:
 		CardKind.OPERATION:
 			if effect_id.is_empty():
 				errs.append(_err("effect_id is required for operation cards"))
+		CardKind.ORDER, CardKind.SUPPLY, CardKind.DECK, CardKind.DOCTRINE:
+			if effect_id.is_empty():
+				errs.append(_err("effect_id is required for order/supply/deck/doctrine cards"))
 	return errs

@@ -61,6 +61,8 @@ func validate_deck(card_ids: Array[String], cards: Dictionary) -> PackedStringAr
 		var def: CardDefinition = cards.get(cid)
 		if def == null:
 			errs.append("deck references unknown card '%s'" % cid)
+		elif def.card_kind == CardDefinition.CardKind.DOCTRINE:
+			errs.append("deck contains doctrine card '%s' (a mission starts with doctrines, they are not drawn)" % cid)
 		elif counts[cid] > def.max_copies:
 			errs.append("deck has %d copies of '%s', maximum is %d" % [counts[cid], cid, def.max_copies])
 	return errs

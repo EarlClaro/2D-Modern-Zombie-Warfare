@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CardDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/cards/card_definition.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = "supply_drop"
+display_name = "Supply Drop"
+description = "Logistics: +3 Command Points at once and your aircraft reload their missiles. Plays at once."
+card_kind = 4
+cost = 1
+lockout_s = 15.0
+max_copies = 2
+unit_id = ""
+unit_count = 1
+effect_id = "supply_drop"
