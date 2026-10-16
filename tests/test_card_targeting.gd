@@ -301,7 +301,7 @@ func test_preview_reports_missing_cp_before_the_cell() -> void:
 	b.select_slot(0)
 	var p := b.targeting.preview(b, Vector2i(5, 19))
 	assert_eq(p.reason, R.INSUFFICIENT_CP)
-	assert_eq(p.message, "Need 6 CP")
+	assert_eq(p.message, "Need %d CP" % b.db.card("tank").cost)
 	_release()
 
 

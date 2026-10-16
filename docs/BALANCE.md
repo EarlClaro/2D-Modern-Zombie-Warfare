@@ -17,8 +17,8 @@ Shipped in `data/cards/` (M2.1) per the M2 spec; **unmeasured**, to be swept in 
 |---|---|---|---|
 | Rifle Squad | Deployment | 3 (was 2) | cheap, flexible, fragile |
 | Gatling Gun | Deployment | 3 | crowd shred (overheat not in M2) |
-| Tank | Deployment | 6 (lockout 20 s) | durable, slow, expensive |
-| Artillery Strike | Operation | 4 (lockout 15 s) | telegraphed AoE, delayed |
+| Tank | Deployment | 5 (was 6; lockout 20 s) | durable, slow, expensive |
+| Artillery Strike | Operation | 3 (was 4; lockout 15 s) | telegraphed AoE, delayed |
 | Helicopter Support | Sortie | 5 (lockout 25 s) | mobile, timed |
 | Ammo Resupply | Operation | 2 | logistics: refills/relieves overheat |
 
@@ -74,7 +74,7 @@ Open tuning questions for your playtest: is "50–70 % to hold by default" the r
 | Tank | HP 400, armor 5, speed 1.0, cannon 45 dmg x 0.5 shots/s, range 9, blast radius 1.6 (falloff 1.0 to 0.25) |
 | Helicopter (cost 5, lockout 25 s) | HP 200, speed 3, altitude 3; 12 s on station; machine gun 6 dmg x 12/s range 8 (hover only); **6 missiles** (was 4; the user asked for at least 4): 50 dmg, blast 1.8 (falloff 1.0 to 0.25), range 14, 1.5/s, fired while flying in |
 | Rifle squad (cost 3) | 3 x rifle soldier |
-| Artillery strike (`data/operations/artillery_strike.tres`) | **6 shells**, scatter radius 3, **warning 1.2 s**, one shell per 0.35 s, **flight 0.7 s** (first impact 1.9 s after the card, was 2.9), **110 dmg**, blast 1.8 (falloff 1.0 to 0.25), card cost 4, lockout 15 s |
+| Artillery strike (`data/operations/artillery_strike.tres`) | **6 shells**, scatter radius 3, **warning 1.2 s**, one shell per 0.35 s, **flight 0.7 s** (first impact 1.9 s after the card, was 2.9), **110 dmg**, blast 1.8 (falloff 1.0 to 0.25), card cost 3 (was 4), lockout 15 s |
 | Mission `m2_card_defense` | 120 s, core 500 HP, deploy radius 10; waves **30 @ 4 s (every 0.2 s), 100 @ 25 s (0.1), 220 @ 55 s (0.07), 360 @ 85 s (0.05) = 710 Shamblers**. Tuned in 2.6 (below) |
 
 ## Milestone 2 balance sweep (2.6)
@@ -112,7 +112,7 @@ Artillery and the helicopter are crowd cards (weak against a thin stream, strong
 |---|---|
 | Runner | HP 35, speed 2.6 (Shambler 1.2), 6 dmg per 0.6 s, footprint 0.25 |
 | Brute | HP 320, armor 4 (a rifle bullet does 8 instead of 12), speed 0.7, 30 dmg per 1.4 s, range 1.0, footprint 0.45 |
-| RPG soldier (card `rpg_team`, 2 per card, cost 4) | HP 70, speed 2.6; rocket 70 dmg, blast 1.2, range 7, speed 11, 0.35 shots/s |
+| RPG soldier (card `rpg_team`, 2 per card, cost 5, was 4) | HP 70, speed 2.6; rocket 70 dmg, blast 1.2, range 7, speed 11, 0.35 shots/s |
 | Howitzer (card `howitzer_battery`, cost 5, lockout 12 s) | HP 140, fixed; shell 80 dmg, blast 2.0, range 16, arc 5, speed 9, 0.2 shots/s. No minimum range |
 | Mission `m3_combined_arms` | 120 s, core 500, deck `combined_arms`; shambler 48 @4 s, runner 40 @20 s, shambler 100 @38 s, brute 6 @48 s, runner 80 @72 s, shambler 160 @76 s, brute 12 @95 s = 446 enemies |
 Sweep (`tools/tune_cards.gd --mission=m3_combined_arms --seeds=8`, the economy values in the current data): do nothing **0/8** (core falls at ~27 s); spam (cheapest card first) **8/8**, core 91 % left; mix **7/8**, core 69 % left, 96 % killed, one loss at 32 s (runner rush before the defence was up). Wave counts were raised from a first draft (116 enemies) after it turned out to be won at 100 % core with no losses; the 446 figure is in line with the current `m2_card_defense` wave sizes. Only ~8 seeds, so read it as a rough band. The Howitzer and RPG were not measured one card at a time (`--bench`/`only=` is the tool for that).
@@ -160,6 +160,16 @@ Same battle, two looks: `x2_outskirts` is a day cycle (starts at 0.4, 300 s per 
 | Waves x2.5 = the shipped 1383 (4 seeds) | spam **1/4** (core 11 % left, 6 units lost), mix **4/4** (core 100 %, 3 units lost, 82 % killed) |
 So a sensible mix holds comfortably, spamming cheap cards usually fails, and nothing loses: as designed, but the mix still keeps the core at full health, so the next tuning step is probably more brutes and spitters rather than more bodies. The bots do not use the gate geometry, the bunker walls or the terrain, and no seed count above 6 was run. The shipped missions were not re-swept after the final wave numbers were typed in; the 2.5x run is the same numbers within rounding.
 **Performance (`tools/perf_world.gd`, windowed 1920x1080, vsync off, MX330).** These were measured while another process tree was running three `tune_cards.gd` sweeps (about three cores busy), so treat every number as a floor, not a result: scenery only (about 176 to 258 enemies from the first waves) day 101 to 108 FPS avg, 1 % low 90 to 99; night with rain 78 to 86 avg, 1 % low 60 to 83 (about 180 to 630 draw calls, depending on zoom); with a 400-enemy horde added (566 to 649 alive) 50 to 71 FPS avg earlier in the session and 10 to 24 once the other sweeps were at full load. Two changes came out of this: the night glows are one additive texture each (14 stacked circles each had cost about 380 extra draw calls), and the scenery fade pass uses a per-cell lookup built at setup (8.9 ms per pass with 600 enemies became 1.5 ms). Repeat the horde numbers on a quiet machine before quoting them.
+
+### Cost rebalance applied (2026-10-16, after the re-sweep)
+Applied to `data/cards/`: **Tank 6 to 5, Artillery 3 (was 4), RPG team 5 (was 4)**. The Helicopter stays at 5 CP, unchanged: the user chose to leave it alone for now (the tested candidate had it at 4). Tests that hard-coded the Tank's cost now read it from data.
+**Verification with the shipped data (20 seeds), which differs from the candidate because of the Helicopter:**
+| Mission | idle | spam | cheap | mix |
+|---|---|---|---|---|
+| `m3_combined_arms`, 1.5x pressure | 0/20 | 6/20 | 12/20 | **7/20** (candidate with Helicopter at 4: 7 / 10 / 18) |
+| `m3_combined_arms`, as shipped | - | 19/20 | 20/20 | 14/20 |
+| `m2_card_defense`, as shipped | 0/20 | **19/20** | **16/20** | **20/20** (before: 8 / 8 / 18) |
+Two side effects to decide on: (1) `m2_card_defense` is now too easy (cheaper Tank and Artillery both live in its deck), so its waves need roughly 1.25-1.5x pressure to get back to the earlier spread; (2) the saving player (`mix`) falls from 18/20 to 7/20 at m3 1.5x with the Helicopter at 5 CP. `mix` waits up to 16 s for the most expensive card it could play, and a 5-CP Helicopter is now the one it saves for, so a weak 5-CP card acts as a trap for that kind of player. This is a bot-behaviour effect as well as a card one; a Helicopter cost of 4 removed it in the candidate run.
 
 ## Performance: projectiles (measured, M2.4)
 `ProjectileSystem` with the 256-shell cap full: 0.46 ms per tick including per-shell position/altitude queries (headless, same laptop). A strike uses 5 shells. Rendering of shells/telegraphs under a 500-zombie horde is measured in 2.6.

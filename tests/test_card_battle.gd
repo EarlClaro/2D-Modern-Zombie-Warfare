@@ -162,7 +162,7 @@ func test_a_unit_that_walked_away_frees_its_cell() -> void:
 
 func test_not_enough_cp_keeps_the_card() -> void:
 	var b := _battle()
-	_hand(b, ["tank"] as Array[String], 5.0)
+	_hand(b, ["tank"] as Array[String], float(b.db.card("tank").cost) - 1.0)
 	var before := _snapshot(b)
 	var res := b.play_card(0, GOOD)
 	assert_eq(res.reason, R.INSUFFICIENT_CP)
