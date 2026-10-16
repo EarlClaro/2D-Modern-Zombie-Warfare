@@ -392,3 +392,32 @@ func test_the_air_strike_releases_every_missile_and_all_of_them_land_before_the_
 	assert_true(last < 0.95, "the last missile lands at %.2f of the clip, leaving the aftermath on screen" % last)
 	assert_eq(CloseAirSupportScene.LAG.size() * CloseAirSupportScene.HARDPOINTS.size(), 12, "three jets with four missiles each")
 	assert_true(CloseAirSupportScene.release_at(0, 3) < CloseAirSupportScene.release_at(2, 0) + 0.2, "the flight dives together")
+
+
+func test_missile_strike_has_its_card_operation_and_large_clip() -> void:
+	var db := _get_db()
+	assert_true(db.is_valid(), "content errors: %s" % ", ".join(db.errors))
+	var card := db.card("missile_strike")
+	assert_true(card != null and card.card_kind == CardDefinition.CardKind.OPERATION)
+	assert_eq(card.max_copies, 1)
+	var op := db.operation("missile_strike")
+	assert_eq(op.projectile, OperationDefinition.Projectile.MISSILE)
+	assert_eq(op.shell_count, 3, "a few missiles on one spot")
+	assert_true(op.shell_damage > db.operation("naval_gunfire").shell_damage, "each missile hits harder than a naval shell")
+	assert_true(op.blast_radius > db.operation("close_air_support").blast_radius, "a wider blast than the air strike's missiles")
+	assert_eq(op.cutaway_id, "missile_strike")
+	assert_eq(db.cutaway("missile_strike").tier, CutawayDefinition.Tier.LARGE)
+	assert_true(CutawayScenes.has("missile_strike"))
+
+
+func test_playing_the_missile_card_requests_its_clip_and_queues_three_missiles() -> void:
+	var b := _battle()
+	b.deck.hand = ["missile_strike"] as Array[String]
+	b.points.cp = 10.0
+	var seen: Array[String] = []
+	b.cutaway_requested.connect(func(id: String) -> void: seen.append(id))
+	assert_true(b.play_card(0, TARGET).ok)
+	assert_eq(seen, ["missile_strike"] as Array[String])
+	assert_eq(b.projectiles.count(), 3)
+	assert_eq(b.projectiles.kind_of(0), ProjectileSystem.KIND_MISSILE)
+	_release()

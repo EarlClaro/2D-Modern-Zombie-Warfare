@@ -8,6 +8,7 @@ const RECIPES: Dictionary = {
 	"artillery_barrage": preload("res://scripts/cutaways/scenes/artillery_barrage_scene.gd"),
 	"naval_gunfire": preload("res://scripts/cutaways/scenes/naval_gunfire_scene.gd"),
 	"close_air_support": preload("res://scripts/cutaways/scenes/close_air_support_scene.gd"),
+	"missile_strike": preload("res://scripts/cutaways/scenes/missile_strike_scene.gd"),
 }
 
 

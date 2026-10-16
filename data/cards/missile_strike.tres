@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CardDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/cards/card_definition.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = "missile_strike"
+display_name = "Missile Strike"
+description = "A launcher truck fires three ballistic missiles at one spot: huge damage in a wide blast after a long warning."
+card_kind = 1
+cost = 6
+lockout_s = 35.0
+max_copies = 1
+unit_id = ""
+unit_count = 1
+effect_id = "missile_strike"

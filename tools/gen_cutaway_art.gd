@@ -6,6 +6,8 @@ extends SceneTree
 ##   howitzer_body.png   a tracked self-propelled howitzer without its barrel (hull, tracks, turret); the barrel pivots at BODY_PIVOT
 ##   howitzer_barrel.png the 52-calibre barrel with fume extractor and muzzle brake, facing right; it pivots at BARREL_PIVOT
 ##   battleship.png      an Iowa-class battleship in profile, bow to the right, without its gun barrels (the scene draws them)
+##   launcher.png        an 8x8 transporter-erector-launcher (Iskander-M style) facing right, jacks planted, with a bare hinge for the cradle
+##   missile.png         a 9M723-style ballistic missile, nose right, tail fins and nozzle at the left edge
 ##   f15e.png            an F-15E Strike Eagle in profile, nose to the right, with empty weapon pylons under the conformal tanks
 
 const OUT_DIR := "res://assets/cutaways"
@@ -29,6 +31,8 @@ const GHOST_LOW: Array[Color] = [Color("6b737b"), Color("8a929a"), Color("a8b0b8
 const GLASS: Array[Color] = [Color("1e3b4a"), Color("2f6a85"), Color("8fd0ea")]
 const SHIP_SIZE := Vector2i(384, 112)
 const F15_SIZE := Vector2i(112, 40)
+const TEL_SIZE := Vector2i(140, 46)
+const MISSILE_SIZE := Vector2i(76, 13)
 
 
 func _initialize() -> void:
@@ -37,6 +41,8 @@ func _initialize() -> void:
 	_save(_barrel(), "howitzer_barrel")
 	_save(_battleship(), "battleship")
 	_save(_f15e(), "f15e")
+	_save(_launcher(), "launcher")
+	_save(_missile(), "missile")
 	quit()
 
 
@@ -282,5 +288,59 @@ func _f15e() -> Image:
 	# the radome and the pitot probe
 	_poly(img, PackedVector2Array([Vector2(86, 22), Vector2(105, 26), Vector2(86, 29)]), [STEEL[1], STEEL[2], HUB[1]] as Array[Color])
 	_line(img, Vector2(105, 26), Vector2(111, 26), STEEL[2])
+	_outline(img)
+	return img
+
+
+## An 8x8 transporter-erector-launcher in side view, facing right, after the Iskander-M's MZKT-7930 chassis (about 13 m
+## long, four axles with the front two close together, a boxy cab, 1 px about 0.1 m): olive drab, the rear stabiliser
+## jacks planted, and a bare cradle hinge at CRADLE_HINGE for the scene to erect the missile on.
+func _launcher() -> Image:
+	var img := _blank(TEL_SIZE)
+	# the chassis rails and the rear equipment deck
+	_rect(img, 4, 27, 134, 34, STEEL)
+	_poly(img, PackedVector2Array([Vector2(6, 22), Vector2(100, 22), Vector2(100, 28), Vector2(6, 28)]), OLIVE_DEEP)
+	for sx in [28, 52, 76]:
+		_rect(img, sx, 23, sx + 1, 27, OLIVE)
+	# the stabiliser jacks, planted
+	_rect(img, 3, 28, 6, 42, STEEL)
+	_rect(img, 0, 42, 10, 44, HUB)
+	_rect(img, 94, 28, 97, 42, STEEL)
+	_rect(img, 91, 42, 101, 44, HUB)
+	# the cab: a tall box with a sloped windscreen and a sun visor
+	_poly(img, PackedVector2Array([Vector2(102, 34), Vector2(102, 11), Vector2(124, 11), Vector2(133, 21), Vector2(136, 24), Vector2(136, 34)]), OLIVE)
+	_poly(img, PackedVector2Array([Vector2(118, 14), Vector2(124, 14), Vector2(131, 22), Vector2(118, 22)]), GLASS)
+	_rect(img, 105, 14, 115, 22, GLASS)
+	_rect(img, 118, 10, 126, 12, OLIVE_DEEP)
+	_rect(img, 102, 25, 112, 27, OLIVE_DEEP)  # a panel line and a step
+	_rect(img, 134, 28, 138, 32, STEEL)  # the front bumper
+	# four axles: two close together under the cab, two at the rear
+	for wx in [118, 99, 52, 33]:
+		_disc(img, float(wx), 37.0, 7.0, RUBBER)
+		_disc(img, float(wx), 37.0, 3.4, HUB)
+		_disc(img, float(wx), 37.0, 1.2, STEEL)
+	# the cradle hinge at the back of the deck
+	_rect(img, 10, 18, 18, 23, STEEL)
+	_disc(img, 14.0, 20.0, 2.4, HUB)
+	_outline(img)
+	return img
+
+
+## A 9M723-style ballistic missile in side view, nose to the right (7.3 m long, 0.92 m across: 73 x 9 px at 1 px
+## 0.1 m, drawn a little fatter to read on screen): a pale body with a dark band, a tapering dark ogive nose and four
+## small tail fins, the nozzle at the left edge. Origin of the scene's flight is MISSILE_TAIL.
+func _missile() -> Image:
+	var img := _blank(MISSILE_SIZE)
+	var white: Array[Color] = [Color("8a9096"), Color("b4bac0"), Color("dde1e4")]
+	# the fins at the tail (the near pair, drawn behind the body)
+	_poly(img, PackedVector2Array([Vector2(0, 0), Vector2(12, 3), Vector2(12, 6), Vector2(0, 6)]), STEEL)
+	_poly(img, PackedVector2Array([Vector2(0, 12), Vector2(12, 9), Vector2(12, 6), Vector2(0, 6)]), STEEL)
+	# the body and the ogive nose
+	_poly(img, PackedVector2Array([Vector2(2, 2), Vector2(56, 2), Vector2(56, 10), Vector2(2, 10)]), white)
+	_rect(img, 18, 2, 22, 10, [BOOT[0], BOOT[1], BOOT[2]] as Array[Color])
+	_rect(img, 40, 2, 42, 10, [STEEL[0], STEEL[1], STEEL[2]] as Array[Color])
+	_poly(img, PackedVector2Array([Vector2(56, 2), Vector2(66, 3), Vector2(73, 5), Vector2(75, 6), Vector2(73, 7), Vector2(66, 9), Vector2(56, 10)]), [STEEL[1], STEEL[2], HUB[1]] as Array[Color])
+	# the nozzle
+	_rect(img, 0, 3, 3, 9, [STEEL[0], STEEL[0], STEEL[1]] as Array[Color])
 	_outline(img)
 	return img

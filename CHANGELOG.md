@@ -1,5 +1,8 @@
 # Changelog
 
+## 3.8 Strike cutaways, slice 5 (branch m3-3.8-cutaways)
+- Missile strike clip and card: three 8x8 launcher trucks (Iskander-M style) erect their missiles and fire them one after another, the picture tilting up after them into the night sky. New operation, card and clip `missile_strike` (cost 6, lockout 35 s, one copy, three 260-damage missiles; first guesses, in no deck yet). Art by `tools/gen_cutaway_art.gd` (`launcher.png`, `missile.png`). 2 more tests.
+
 ## 3.8 Strike cutaways, slice 4b (branch m3-3.8-cutaways)
 - Line strike and the Close Air Support card. An Operation can now be a LINE pass (`pattern`, `line_length`, `line_direction`) that lays its missiles down one after another along a strip, tail first, instead of scattering shells over a circle; it can fire missiles (`projectile`, `launch_altitude`, `accel`, `drop`) that come in from altitude on smoke trails. The warning and the placement preview draw a strip. New operation and card `close_air_support` (cost 6, lockout 40 s, one copy, twelve 70-damage missiles; first guesses, in no deck yet) playing the F-15E clip. `tools/strike_shots.gd` screenshots a card on the battlefield. 11 new tests.
 
