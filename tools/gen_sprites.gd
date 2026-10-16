@@ -83,6 +83,35 @@ const MATS := {
 	"rags": ["3a2f20", "58492f", "756444"],
 	"char": ["171513", "26231f", "3a352f"],
 	"charhi": ["241f1a", "3b342c", "544a3f"],
+	# scenery
+	"leaf": ["2f5a2a", "447a38", "63a04c"],
+	"leafd": ["234a2c", "356638", "4c8450"],
+	"leafl": ["3d6a30", "5a8f42", "7db85a"],
+	"bark": ["2e2118", "4a3524", "654a33"],
+	"deadwood": ["3a3631", "5a544c", "7a7266"],
+	"stone": ["3e4046", "5c5f66", "7c8088"],
+	"stonel": ["4c4e55", "6c6f77", "8d9199"],
+	"bag": ["14161a", "232830", "363d48"],
+	"cardboard": ["5e4828", "816539", "a1824f"],
+	"dump": ["1f4430", "2b6040", "3a7e54"],
+	"dumpd": ["173525", "20492f", "2c6341"],
+	"lampglow": ["e8c870", "fbe9a0", "fffbe0"],
+	"whitep": ["a8a8a4", "d4d4d0", "f2f2ee"],
+	"plaster": ["8f8872", "b3ac94", "d3ccb4"],
+	"plasterw": ["a0a09a", "c8c8c0", "e6e6de"],
+	"plasterc": ["3a342d", "4f473c", "675d4e"],
+	"brick": ["5e2a22", "7e3d30", "9c5444"],
+	"roofred": ["54261f", "743729", "94503a"],
+	"slate": ["272d33", "38414a", "4d5965"],
+	"tento": ["34432a", "4d6137", "677e49"],
+	"corrugated": ["505860", "727c86", "949ea8"],
+	"concretel": ["7a7a76", "9a9a94", "babab3"],
+	"tankg": ["58605a", "7a847c", "9ca79e"],
+	"padg": ["30353a", "40464c", "525a62"],
+	"rubble": ["3f3b36", "58544c", "736f65"],
+	"cont_red": ["54201a", "7e3328", "a04a3a"],
+	"cont_blue": ["1c2a44", "2a4572", "40649a"],
+	"cont_green": ["26382a", "385040", "4d6c56"],
 }
 
 const BOX := 0
@@ -94,6 +123,8 @@ var _track_phase: float = 0.0
 var _kit: String = "rifle"  # soldier weapon: "rifle" or "rpg"
 var _z_stride: float = 1.0  # zombie variants: stride multiplier
 var _z_lean: float = 0.0  # zombie variants: extra forward lean (rad)
+var _spec_k: Dictionary = {}  # unit -> uniform scale, filled from the specs
+var _k: float = 1.0  # scenery: uniform enlargement applied to the finished model
 var _z_kind: String = ""  # zombie variants: "spitter" adds the acid sac and the spit stream
 
 
@@ -134,6 +165,55 @@ func _initialize() -> void:
 		{"dir": "tank_trap", "frame": Vector2i(64, 56), "origin": Vector2(32, 40), "frames": 4, "columns": 2, "ss": 2},
 		{"dir": "jeep", "frame": Vector2i(80, 60), "origin": Vector2(40, 42), "frames": 5, "columns": 3, "ss": 1},
 		{"dir": "supply_truck", "frame": Vector2i(112, 76), "origin": Vector2(56, 52), "frames": 5, "columns": 3, "ss": 1},
+		{"dir": "oak_tree", "auto": true, "k": 1.8, "frames": 1, "columns": 1, "ss": 2, "facings": ["se"]},
+		{"dir": "oak_tree_b", "auto": true, "k": 1.9, "frames": 1, "columns": 1, "ss": 2, "facings": ["se"]},
+		{"dir": "pine_tree", "auto": true, "k": 1.8, "frames": 1, "columns": 1, "ss": 2, "facings": ["se"]},
+		{"dir": "dead_tree", "auto": true, "k": 1.7, "frames": 1, "columns": 1, "ss": 2, "facings": ["se"]},
+		{"dir": "bush", "auto": true, "k": 1.4, "frames": 1, "columns": 1, "ss": 2, "facings": ["se"]},
+		{"dir": "boulder", "auto": true, "k": 1.5, "frames": 1, "columns": 1, "ss": 2, "facings": ["se"]},
+		{"dir": "rock_pile", "auto": true, "k": 1.5, "frames": 1, "columns": 1, "ss": 2, "facings": ["se"]},
+		{"dir": "fallen_log", "auto": true, "k": 1.5, "frames": 1, "columns": 1, "ss": 2, "facings": ["se", "sw"]},
+		{"dir": "trash_pile", "auto": true, "k": 1.3, "frames": 1, "columns": 1, "ss": 2, "facings": ["se"]},
+		{"dir": "dumpster", "auto": true, "k": 1.3, "frames": 1, "columns": 1, "ss": 2, "facings": ["se", "sw"]},
+		{"dir": "tire_stack", "auto": true, "k": 1.3, "frames": 1, "columns": 1, "ss": 2, "facings": ["se"]},
+		{"dir": "scrap_pile", "auto": true, "k": 1.4, "frames": 1, "columns": 1, "ss": 2, "facings": ["se"]},
+		{"dir": "street_lamp", "auto": true, "k": 2.0, "frames": 1, "columns": 1, "ss": 2, "facings": ["se", "sw"]},
+		{"dir": "road_sign", "auto": true, "k": 1.8, "frames": 1, "columns": 1, "ss": 2, "facings": ["se", "sw"]},
+		{"dir": "bench", "auto": true, "k": 1.3, "frames": 1, "columns": 1, "ss": 2, "facings": ["se", "sw"]},
+		{"dir": "house_small", "auto": true, "k": 1.45, "frames": 1, "columns": 1, "ss": 1, "facings": ["se"]},
+		{"dir": "house_small_brick", "auto": true, "k": 1.45, "frames": 1, "columns": 1, "ss": 1, "facings": ["se"]},
+		{"dir": "house_large", "auto": true, "k": 1.3, "frames": 1, "columns": 1, "ss": 1, "facings": ["se", "sw"]},
+		{"dir": "house_ruin", "auto": true, "k": 1.45, "frames": 1, "columns": 1, "ss": 1, "facings": ["se"]},
+		{"dir": "house_burnt", "auto": true, "k": 1.45, "frames": 1, "columns": 1, "ss": 1, "facings": ["se"]},
+		{"dir": "shop", "auto": true, "k": 1.3, "frames": 1, "columns": 1, "ss": 1, "facings": ["se", "sw"]},
+		{"dir": "shop_ruin", "auto": true, "k": 1.3, "frames": 1, "columns": 1, "ss": 1, "facings": ["se", "sw"]},
+		{"dir": "apartment", "auto": true, "k": 1.25, "frames": 1, "columns": 1, "ss": 1, "facings": ["se"]},
+		{"dir": "apartment_ruin", "auto": true, "k": 1.25, "frames": 1, "columns": 1, "ss": 1, "facings": ["se"]},
+		{"dir": "apartment_burnt", "auto": true, "k": 1.25, "frames": 1, "columns": 1, "ss": 1, "facings": ["se"]},
+		{"dir": "warehouse", "auto": true, "k": 1.15, "frames": 1, "columns": 1, "ss": 1, "facings": ["se", "sw"]},
+		{"dir": "warehouse_ruin", "auto": true, "k": 1.15, "frames": 1, "columns": 1, "ss": 1, "facings": ["se", "sw"]},
+		{"dir": "wall_ruin", "auto": true, "k": 1.5, "frames": 1, "columns": 1, "ss": 2, "facings": ["se", "sw"]},
+		{"dir": "rubble_heap", "auto": true, "k": 1.4, "frames": 1, "columns": 1, "ss": 2, "facings": ["se"]},
+		{"dir": "rubble_field", "auto": true, "k": 1.4, "frames": 1, "columns": 1, "ss": 1, "facings": ["se"]},
+		{"dir": "hq_bunker", "auto": true, "k": 1.2, "frames": 4, "columns": 2, "ss": 1, "facings": ["se"]},
+		{"dir": "concrete_wall", "auto": true, "k": 1.7, "frames": 1, "columns": 1, "ss": 2, "facings": ["se", "sw"]},
+		{"dir": "chain_fence", "auto": true, "k": 1.7, "frames": 1, "columns": 1, "ss": 2, "facings": ["se", "sw"]},
+		{"dir": "sandbag_line", "auto": true, "k": 1.7, "frames": 1, "columns": 1, "ss": 2, "facings": ["se", "sw"]},
+		{"dir": "gate_post", "auto": true, "k": 1.6, "frames": 1, "columns": 1, "ss": 2, "facings": ["se"]},
+		{"dir": "boom_gate", "auto": true, "k": 1.6, "frames": 1, "columns": 1, "ss": 2, "facings": ["se", "sw"]},
+		{"dir": "watchtower", "auto": true, "k": 1.5, "frames": 1, "columns": 1, "ss": 1, "facings": ["se"]},
+		{"dir": "floodlight", "auto": true, "k": 1.7, "frames": 1, "columns": 1, "ss": 2, "facings": ["se"]},
+		{"dir": "tent", "auto": true, "k": 1.4, "frames": 1, "columns": 1, "ss": 1, "facings": ["se", "sw"]},
+		{"dir": "generator", "auto": true, "k": 1.5, "frames": 1, "columns": 1, "ss": 2, "facings": ["se", "sw"]},
+		{"dir": "fuel_tank", "auto": true, "k": 1.5, "frames": 1, "columns": 1, "ss": 2, "facings": ["se"]},
+		{"dir": "container_red", "auto": true, "k": 1.5, "frames": 1, "columns": 1, "ss": 1, "facings": ["se", "sw"]},
+		{"dir": "container_blue", "auto": true, "k": 1.5, "frames": 1, "columns": 1, "ss": 1, "facings": ["se", "sw"]},
+		{"dir": "container_green", "auto": true, "k": 1.5, "frames": 1, "columns": 1, "ss": 1, "facings": ["se", "sw"]},
+		{"dir": "radar_mast", "auto": true, "k": 1.7, "frames": 1, "columns": 1, "ss": 2, "facings": ["se"]},
+		{"dir": "flag_pole", "auto": true, "k": 1.7, "frames": 1, "columns": 1, "ss": 2, "facings": ["se"]},
+		{"dir": "helipad", "auto": true, "k": 1.0, "frames": 1, "columns": 1, "ss": 1, "facings": ["se"]},
+		{"dir": "barracks", "auto": true, "k": 1.3, "frames": 1, "columns": 1, "ss": 1, "facings": ["se", "sw"]},
+		{"dir": "barracks_ruin", "auto": true, "k": 1.3, "frames": 1, "columns": 1, "ss": 1, "facings": ["se", "sw"]},
 		{"dir": "wrecked_car", "frame": Vector2i(80, 56), "origin": Vector2(40, 38), "frames": 1, "columns": 1, "ss": 1},
 	]
 	var only: PackedStringArray = []
@@ -141,9 +221,50 @@ func _initialize() -> void:
 		if a.begins_with("--units="):
 			only = a.substr(8).split(",")
 	for spec in specs:
+		if spec.has("k"):
+			_spec_k[spec["dir"]] = spec["k"]
+	for spec in specs:
 		if only.is_empty() or spec["dir"] in only:
+			if spec.get("auto", false):
+				_auto_frame(spec)
 			_render_unit(spec)
 	quit()
+
+
+## Sizes the frame to fit every primitive of every frame and listed facing (4 px margin) and stores origin and
+## size in the spec; also writes assets/sprites/<unit>/frame.json so the data tool can read them.
+func _auto_frame(spec: Dictionary) -> void:
+	var unit: String = spec["dir"]
+	var lo := Vector2(INF, INF)
+	var hi := Vector2(-INF, -INF)
+	for f in 8:
+		if IsoProjection.facing_name(f).to_lower() not in spec["facings"]:
+			continue
+		var fwd := IsoProjection.ground_dir_of_facing(f)
+		var perp := Vector2(-fwd.y, fwd.x)
+		for k in spec["frames"]:
+			for p in _model(unit, k):
+				var ext := Vector3(p.h.x, p.h.y, p.h.z)
+				if p.kind == CYL:
+					ext = Vector3(p.h.x, p.h.x, p.h.z)
+				for sx in [-1.0, 1.0]:
+					for sy in [-1.0, 1.0]:
+						for sz in [-1.0, 1.0]:
+							var q: Vector3 = p.c + p.basis * Vector3(ext.x * sx, ext.y * sy, ext.z * sz)
+							var g := fwd * q.x + perp * q.y
+							var sp := IsoProjection.ground_to_screen_z(g, q.z)
+							lo = lo.min(sp)
+							hi = hi.max(sp)
+	var margin := 4.0
+	lo -= Vector2(margin, margin)
+	hi += Vector2(margin, margin)
+	var size := Vector2i(int(ceil(hi.x - lo.x)), int(ceil(hi.y - lo.y)))
+	spec["frame"] = size
+	spec["origin"] = Vector2(floor(-lo.x), floor(-lo.y))
+	DirAccess.make_dir_recursive_absolute("res://assets/sprites/%s" % unit)
+	var fh := FileAccess.open("res://assets/sprites/%s/frame.json" % unit, FileAccess.WRITE)
+	fh.store_string(JSON.stringify({"frame": [size.x, size.y], "origin": [int(spec["origin"].x), int(spec["origin"].y)], "frames": spec["frames"], "columns": spec["columns"]}))
+	fh.close()
 
 
 func _render_unit(spec: Dictionary) -> void:
@@ -153,7 +274,10 @@ func _render_unit(spec: Dictionary) -> void:
 	var columns: int = spec["columns"]
 	var rows := int(ceil(float(frames) / columns))
 	DirAccess.make_dir_recursive_absolute("res://assets/sprites/%s" % unit)
+	var facings: Array = spec.get("facings", ["e", "se", "s", "sw", "w", "nw", "n", "ne"])
 	for f in 8:
+		if IsoProjection.facing_name(f).to_lower() not in facings:
+			continue
 		var sheet := Image.create(frame_size.x * columns, frame_size.y * rows, false, Image.FORMAT_RGBA8)
 		for k in frames:
 			var model := _model(unit, k)
@@ -182,6 +306,7 @@ func _model(unit: String, frame: int) -> Array[Prim]:
 	_z_stride = 1.0
 	_z_lean = 0.0
 	_z_kind = ""
+	_k = _spec_k.get(unit, 1.0)
 	match unit:
 		"rifle_soldier":
 			_soldier(m, frame)
@@ -226,6 +351,8 @@ func _model(unit: String, frame: int) -> Array[Prim]:
 			_truck(m, frame)
 		"wrecked_car":
 			_wreck_car(m)
+		_:
+			_scenery_model(m, unit, frame)
 		"tank":
 			_tank(m, frame)
 		"gatling_gun":
@@ -237,11 +364,119 @@ func _model(unit: String, frame: int) -> Array[Prim]:
 	return m
 
 
+## Scenery models, built at authoring scale and then enlarged by the spec's uniform factor `_k`.
+func _scenery_model(m: Array[Prim], unit: String, frame: int) -> void:
+	match unit:
+		"oak_tree":
+			_oak(m, 0)
+		"oak_tree_b":
+			_oak(m, 1)
+		"pine_tree":
+			_pine(m)
+		"dead_tree":
+			_dead_tree(m)
+		"bush":
+			_bush(m)
+		"boulder":
+			_boulder(m)
+		"rock_pile":
+			_rock_pile(m)
+		"fallen_log":
+			_fallen_log(m)
+		"trash_pile":
+			_trash_pile(m)
+		"dumpster":
+			_dumpster(m)
+		"tire_stack":
+			_tire_stack(m)
+		"scrap_pile":
+			_scrap_pile(m)
+		"street_lamp":
+			_street_lamp(m)
+		"road_sign":
+			_road_sign(m)
+		"bench":
+			_bench(m)
+		"house_small":
+			_house(m, 0, "plaster", "roofred", false)
+		"house_small_brick":
+			_house(m, 0, "brick", "slate", false)
+		"house_large":
+			_house(m, 0, "plasterw", "slate", true)
+		"house_ruin":
+			_house(m, 1, "plaster", "roofred", false)
+		"house_burnt":
+			_house(m, 2, "plaster", "roofred", false)
+		"shop":
+			_shop(m, 0)
+		"shop_ruin":
+			_shop(m, 1)
+		"apartment":
+			_apartment(m, 0)
+		"apartment_ruin":
+			_apartment(m, 1)
+		"apartment_burnt":
+			_apartment(m, 2)
+		"warehouse":
+			_warehouse(m, 0)
+		"warehouse_ruin":
+			_warehouse(m, 1)
+		"wall_ruin":
+			_wall_ruin(m)
+		"rubble_heap":
+			_rubble_heap(m, false)
+		"rubble_field":
+			_rubble_heap(m, true)
+		"hq_bunker":
+			_hq(m, frame)
+		"concrete_wall":
+			_wall_x(m, "concrete")
+		"chain_fence":
+			_wall_x(m, "fence")
+		"sandbag_line":
+			_wall_x(m, "sandbags")
+		"gate_post":
+			_gate_post(m)
+		"boom_gate":
+			_boom_gate(m)
+		"watchtower":
+			_watchtower(m)
+		"floodlight":
+			_floodlight(m)
+		"tent":
+			_tent(m)
+		"generator":
+			_generator(m)
+		"fuel_tank":
+			_fuel_tank(m)
+		"container_red":
+			_container(m, "cont_red")
+		"container_blue":
+			_container(m, "cont_blue")
+		"container_green":
+			_container(m, "cont_green")
+		"radar_mast":
+			_radar_mast(m)
+		"flag_pole":
+			_flag_pole(m)
+		"helipad":
+			_helipad(m)
+		"barracks":
+			_barracks(m, 0)
+		"barracks_ruin":
+			_barracks(m, 1)
+	if _k != 1.0:
+		_scale(m, _k)
+
+
 const CHAR := {
 	"hull": "hullc", "track": "trackc", "gun": "gunc", "glass": "gunc", "base": "basec", "ammo": "gunc",
 	"heli": "helic", "rotor": "gunc", "sand": "sandc", "dirt": "dirtc",
 	"wood": "woodc", "woodd": "woodc", "concrete": "concretec", "drum": "drumc", "canvas": "canvasc", "rust": "rustc",
-	"steel": "steelc",
+	"steel": "steelc", "plaster": "plasterc", "plasterw": "plasterc", "brick": "basec", "corrugated": "steelc",
+	"tento": "hullc", "concretel": "concretec", "dump": "basec", "dumpd": "basec", "roofred": "basec", "slate": "gunc",
+	"tankg": "steelc", "cont_red": "hullc", "cont_blue": "hullc", "cont_green": "hullc", "leaf": "dirtc",
+	"leafd": "dirtc", "leafl": "dirtc", "rubble": "basec", "whitep": "basec",
 }
 
 
@@ -1164,6 +1399,544 @@ func _wreck_car(m: Array[Prim]) -> void:
 	m.append_array(wheels)
 	_blob(m, Vector3(0.0, 0, 0.5), 0.06, "smoke")
 	_blob(m, Vector3(0.05, 0.02, 0.62), 0.045, "smoke")
+
+
+# ---- scenery: nature, street clutter, buildings, ruins, base pieces ----------------------------------
+
+static func _bx(l: Array[Prim], c: Vector3, h: Vector3, mat: String, yaw: float = 0.0) -> void:
+	l.append(Prim.new(BOX, c, h, mat, yaw))
+
+
+static func _cy(l: Array[Prim], c: Vector3, r: float, hz: float, mat: String) -> void:
+	l.append(Prim.new(CYL, c, Vector3(r, 0, hz), mat))
+
+
+static func _sp(l: Array[Prim], c: Vector3, r: Vector3, mat: String) -> void:
+	l.append(Prim.new(SPH, c, r, mat))
+
+
+## Windows on all four faces of a box centred at `c` with half extents hx, hy: `nx` along x (on the +/-y faces),
+## `ny` along y (on the +/-x faces), at each height in `zs`.
+static func _windows(l: Array[Prim], c: Vector3, hx: float, hy: float, zs: Array, nx: int, ny: int, ww: float, wh: float) -> void:
+	for z in zs:
+		for i in nx:
+			var x := c.x + (float(i) + 0.5 - float(nx) * 0.5) * (2.0 * hx / float(nx))
+			for s in [1.0, -1.0]:
+				l.append(Prim.new(BOX, Vector3(x, c.y + s * (hy + 0.004), float(z)), Vector3(ww, 0.008, wh), "glass"))
+		for j in ny:
+			var y := c.y + (float(j) + 0.5 - float(ny) * 0.5) * (2.0 * hy / float(ny))
+			for s in [1.0, -1.0]:
+				l.append(Prim.new(BOX, Vector3(c.x + s * (hx + 0.004), y, float(z)), Vector3(0.008, ww, wh), "glass"))
+
+
+## Gable roof over a box with half extents hx, hy whose top is at `z`; ridge runs along y.
+static func _gable(l: Array[Prim], c: Vector3, hx: float, hy: float, z: float, rise: float, mat: String, wall_mat: String) -> void:
+	var span := hx + 0.06
+	var th := atan2(rise, span)
+	var half_len := span / cos(th) * 0.5
+	for s in [1.0, -1.0]:
+		var p := Prim.new(BOX, Vector3(c.x + s * span * 0.5, c.y, z + rise * 0.5 + 0.015), Vector3(half_len, hy + 0.07, 0.02), mat, 0.0, 0.06)
+		p.basis = Basis(Vector3(0, 1, 0), th * s)
+		l.append(p)
+	for k in 3:  # triangular gable ends, stepped
+		var f := 1.0 - (float(k) + 0.5) / 3.0
+		for s in [1.0, -1.0]:
+			l.append(Prim.new(BOX, Vector3(c.x, c.y + s * (hy - 0.005), z + rise * (float(k) + 0.5) / 3.0), Vector3(hx * f, 0.02, rise / 6.0), wall_mat))
+
+
+static func _leaf_blob(l: Array[Prim], c: Vector3, r: float, seed_i: int) -> void:
+	var mats := ["leafd", "leaf", "leafl"]
+	l.append(Prim.new(SPH, c, Vector3(r, r, r * 0.85), mats[seed_i % 3]))
+
+
+func _oak(m: Array[Prim], variant: int) -> void:
+	_cy(m, Vector3(0, 0, 0.25), 0.075 + 0.02 * variant, 0.25, "bark")
+	_bone(m, Vector3(0, 0, 0.45), Vector3(0.12, 0.1, 0.72), 0.03, 0.03, "bark")
+	_bone(m, Vector3(0, 0, 0.45), Vector3(-0.1, -0.12, 0.7), 0.025, 0.025, "bark")
+	var blobs: Array = [
+		[Vector3(0.0, 0.0, 0.95), 0.34], [Vector3(0.18, 0.12, 0.8), 0.24], [Vector3(-0.17, -0.1, 0.82), 0.25],
+		[Vector3(0.06, -0.2, 1.0), 0.22], [Vector3(-0.08, 0.18, 1.05), 0.22], [Vector3(0.05, 0.0, 1.18), 0.2],
+	]
+	if variant == 1:
+		blobs = [
+			[Vector3(0.0, 0.0, 0.85), 0.4], [Vector3(0.24, 0.0, 0.95), 0.26], [Vector3(-0.22, 0.12, 1.0), 0.28],
+			[Vector3(0.0, -0.22, 1.1), 0.26], [Vector3(0.02, 0.1, 1.28), 0.26],
+		]
+	for i in blobs.size():
+		_leaf_blob(m, blobs[i][0], blobs[i][1], i)
+
+
+func _pine(m: Array[Prim]) -> void:
+	_cy(m, Vector3(0, 0, 0.2), 0.06, 0.2, "bark")
+	var radii := [0.36, 0.29, 0.22, 0.15]
+	for i in 4:
+		_cy(m, Vector3(0, 0, 0.32 + 0.22 * float(i)), float(radii[i]), 0.11, "leafd" if i % 2 == 0 else "leaf")
+	_sp(m, Vector3(0, 0, 1.28), Vector3(0.07, 0.07, 0.12), "leaf")
+
+
+func _dead_tree(m: Array[Prim]) -> void:
+	_cy(m, Vector3(0, 0, 0.3), 0.07, 0.3, "deadwood")
+	_bone(m, Vector3(0, 0, 0.55), Vector3(0.3, 0.15, 0.95), 0.028, 0.028, "deadwood")
+	_bone(m, Vector3(0, 0, 0.5), Vector3(-0.28, -0.1, 0.85), 0.025, 0.025, "deadwood")
+	_bone(m, Vector3(0, 0, 0.62), Vector3(0.05, -0.3, 0.92), 0.022, 0.022, "deadwood")
+	_bone(m, Vector3(0.12, 0.06, 0.74), Vector3(0.3, 0.3, 1.08), 0.018, 0.018, "deadwood")
+	_bone(m, Vector3(0, 0, 0.6), Vector3(0, 0.02, 1.15), 0.03, 0.03, "deadwood")
+
+
+func _bush(m: Array[Prim]) -> void:
+	_sp(m, Vector3(0, 0, 0.14), Vector3(0.24, 0.22, 0.15), "leafd")
+	_sp(m, Vector3(0.12, 0.1, 0.2), Vector3(0.16, 0.15, 0.13), "leaf")
+	_sp(m, Vector3(-0.1, -0.08, 0.22), Vector3(0.15, 0.15, 0.13), "leaf")
+	_sp(m, Vector3(0.02, -0.02, 0.3), Vector3(0.1, 0.1, 0.08), "leafl")
+
+
+func _boulder(m: Array[Prim]) -> void:
+	_sp(m, Vector3(0, 0, 0.17), Vector3(0.3, 0.26, 0.2), "stone")
+	_sp(m, Vector3(0.1, 0.12, 0.26), Vector3(0.15, 0.13, 0.12), "stonel")
+	_bx(m, Vector3(-0.18, -0.08, 0.06), Vector3(0.08, 0.06, 0.06), "stone", 0.5)
+
+
+func _rock_pile(m: Array[Prim]) -> void:
+	var spots: Array = [[Vector3(0.0, 0.0, 0.12), 0.2], [Vector3(0.24, 0.1, 0.09), 0.14], [Vector3(-0.2, 0.14, 0.1), 0.15], [Vector3(0.05, -0.24, 0.1), 0.16], [Vector3(-0.18, -0.2, 0.07), 0.1]]
+	for i in spots.size():
+		var r: float = spots[i][1]
+		_sp(m, spots[i][0], Vector3(r, r * 0.9, r * 0.8), "stone" if i % 2 == 0 else "stonel")
+
+
+func _fallen_log(m: Array[Prim]) -> void:
+	_bone(m, Vector3(-0.38, 0, 0.1), Vector3(0.38, 0.04, 0.11), 0.1, 0.1, "bark")
+	_bone(m, Vector3(-0.3, 0.14, 0.07), Vector3(0.2, 0.2, 0.08), 0.07, 0.07, "bark")
+	_cy(m, Vector3(0.42, -0.1, 0.08), 0.1, 0.08, "bark")
+	_sp(m, Vector3(0.42, -0.1, 0.17), Vector3(0.08, 0.08, 0.02), "wood")
+
+
+func _trash_pile(m: Array[Prim]) -> void:
+	for i in 6:
+		var a := TAU * float(i) / 6.0
+		_sp(m, Vector3(cos(a) * 0.17, sin(a) * 0.17, 0.09), Vector3(0.1, 0.09, 0.09), "bag")
+	_sp(m, Vector3(0.0, 0.0, 0.2), Vector3(0.13, 0.12, 0.12), "bag")
+	_bx(m, Vector3(0.12, -0.15, 0.15), Vector3(0.07, 0.06, 0.04), "cardboard", 0.6)
+	_bx(m, Vector3(-0.14, 0.1, 0.22), Vector3(0.05, 0.08, 0.03), "cardboard", 0.2)
+	_cy(m, Vector3(0.22, 0.14, 0.04), 0.03, 0.04, "steel")
+	_cy(m, Vector3(-0.22, -0.12, 0.04), 0.03, 0.04, "red")
+
+
+func _dumpster(m: Array[Prim]) -> void:
+	_bx(m, Vector3(0, 0, 0.18), Vector3(0.36, 0.2, 0.15), "dump")
+	_bx(m, Vector3(0, 0, 0.35), Vector3(0.38, 0.22, 0.025), "dumpd")
+	_bx(m, Vector3(0.0, 0.0, 0.05), Vector3(0.34, 0.18, 0.03), "gun")
+	for s in [1.0, -1.0]:
+		_cy(m, Vector3(-0.28, 0.2 * s, 0.05), 0.04, 0.04, "track")
+		_cy(m, Vector3(0.28, 0.2 * s, 0.05), 0.04, 0.04, "track")
+	_bx(m, Vector3(0.0, 0.0, 0.38), Vector3(0.1, 0.1, 0.02), "cardboard", 0.4)
+
+
+func _tire_stack(m: Array[Prim]) -> void:
+	for i in 4:
+		_cy(m, Vector3(0, 0, 0.04 + 0.075 * float(i)), 0.15, 0.037, "track")
+	_cy(m, Vector3(0, 0, 0.34), 0.07, 0.005, "gun")
+	_cy(m, Vector3(0.3, 0.12, 0.04), 0.14, 0.037, "track")
+	_cy(m, Vector3(0.28, -0.18, 0.04), 0.14, 0.037, "track")
+	_cy(m, Vector3(0.28, -0.18, 0.115), 0.14, 0.037, "track")
+
+
+func _scrap_pile(m: Array[Prim]) -> void:
+	_sp(m, Vector3(0, 0, 0.1), Vector3(0.3, 0.26, 0.14), "rust")
+	_bone(m, Vector3(-0.25, -0.1, 0.1), Vector3(0.22, 0.2, 0.4), 0.025, 0.025, "steel")
+	_bone(m, Vector3(-0.1, 0.2, 0.08), Vector3(0.28, -0.1, 0.3), 0.03, 0.02, "rust")
+	_bx(m, Vector3(0.1, -0.05, 0.24), Vector3(0.14, 0.1, 0.02), "corrugated", 0.4)
+	_bx(m, Vector3(-0.05, 0.1, 0.2), Vector3(0.1, 0.12, 0.02), "steel", -0.3)
+	_cy(m, Vector3(0.22, 0.12, 0.08), 0.08, 0.07, "drumc")
+
+
+func _street_lamp(m: Array[Prim]) -> void:
+	_cy(m, Vector3(0, 0, 0.02), 0.07, 0.02, "steel")
+	_cy(m, Vector3(0, 0, 0.55), 0.025, 0.55, "steel")
+	_bone(m, Vector3(0, 0, 1.08), Vector3(0.22, 0, 1.14), 0.02, 0.02, "steel")
+	_bx(m, Vector3(0.27, 0, 1.11), Vector3(0.09, 0.05, 0.025), "gun")
+	_bx(m, Vector3(0.27, 0, 1.08), Vector3(0.07, 0.04, 0.01), "lampglow")
+
+
+func _road_sign(m: Array[Prim]) -> void:
+	_cy(m, Vector3(0, 0, 0.35), 0.018, 0.35, "steel")
+	_bx(m, Vector3(0.015, 0, 0.68), Vector3(0.012, 0.13, 0.13), "red")
+	_bx(m, Vector3(0.027, 0, 0.68), Vector3(0.006, 0.09, 0.03), "whitep")
+
+
+func _bench(m: Array[Prim]) -> void:
+	_bx(m, Vector3(0, 0, 0.17), Vector3(0.05, 0.3, 0.015), "wood")
+	_bx(m, Vector3(-0.09, 0, 0.27), Vector3(0.012, 0.3, 0.07), "wood")
+	for s in [1.0, -1.0]:
+		_bx(m, Vector3(0, 0.26 * s, 0.08), Vector3(0.05, 0.015, 0.08), "steel")
+		_bx(m, Vector3(-0.09, 0.26 * s, 0.17), Vector3(0.012, 0.015, 0.12), "steel")
+
+
+# ---- buildings ----
+
+func _house(m: Array[Prim], ruin: int, wall: String, roof: String, large: bool) -> void:
+	var hx := 0.9 if not large else 1.35
+	var hy := 0.8 if not large else 0.8
+	var wz := 0.38
+	var c := Vector3(0, 0, wz)
+	if ruin == 0:
+		_bx(m, c, Vector3(hx, hy, wz), wall)
+		_bx(m, Vector3(0, 0, 0.02), Vector3(hx + 0.03, hy + 0.03, 0.02), "concrete")  # footing
+		_windows(m, c, hx, hy, [0.45], 3 if not large else 5, 2, 0.1, 0.1)
+		_bx(m, Vector3(hx + 0.006, 0.0, 0.18), Vector3(0.008, 0.1, 0.16), "woodd")  # door
+		_bx(m, Vector3(0.0, hy + 0.006, 0.18), Vector3(0.1, 0.008, 0.16), "woodd")
+		_gable(m, c, hx, hy, wz * 2.0, 0.34, roof, wall)
+		_bx(m, Vector3(-hx * 0.45, hy * 0.35, wz * 2.0 + 0.3), Vector3(0.07, 0.07, 0.14), "brick")  # chimney
+		return
+	# ruin: broken walls of varying height, collapsed beams, rubble, scorch
+	var w2 := "plasterc" if ruin == 2 else wall
+	var rng_i := 7
+	var segs := 7
+	for i in segs:  # front (+x) and back (-x) walls as jagged runs
+		var y := (float(i) + 0.5 - float(segs) * 0.5) * (2.0 * hy / float(segs))
+		var h1 := wz * (0.25 + 1.5 * _rnd(i, rng_i))
+		_bx(m, Vector3(hx, y, h1 * 0.5), Vector3(0.05, hy / float(segs), h1 * 0.5), w2)
+		var h2 := wz * (0.2 + 1.7 * _rnd(i, rng_i + 1))
+		_bx(m, Vector3(-hx, y, h2 * 0.5), Vector3(0.05, hy / float(segs), h2 * 0.5), w2)
+	var sx := 9
+	for i in sx:
+		var x := (float(i) + 0.5 - float(sx) * 0.5) * (2.0 * hx / float(sx))
+		var h3 := wz * (0.15 + 1.4 * _rnd(i, rng_i + 2))
+		_bx(m, Vector3(x, hy, h3 * 0.5), Vector3(hx / float(sx), 0.05, h3 * 0.5), w2)
+		if i % 3 != 1:
+			var h4 := wz * (0.2 + 1.2 * _rnd(i, rng_i + 3))
+			_bx(m, Vector3(x, -hy, h4 * 0.5), Vector3(hx / float(sx), 0.05, h4 * 0.5), w2)
+	_bx(m, Vector3(0, 0, 0.03), Vector3(hx * 0.95, hy * 0.95, 0.03), "rubble")
+	for i in 7:  # rubble heaps
+		var rx := (_rnd(i, 21) - 0.5) * 2.0 * hx * 0.8
+		var ry := (_rnd(i, 22) - 0.5) * 2.0 * hy * 0.8
+		_bx(m, Vector3(rx, ry, 0.07), Vector3(0.1 + 0.12 * _rnd(i, 23), 0.1 + 0.1 * _rnd(i, 24), 0.07), "rubble", _rnd(i, 25) * 3.0)
+	_bone(m, Vector3(-hx * 0.6, -hy * 0.5, 0.5), Vector3(hx * 0.3, hy * 0.1, 0.14), 0.035, 0.035, "woodd")  # fallen roof beams
+	_bone(m, Vector3(-hx * 0.2, hy * 0.4, 0.45), Vector3(hx * 0.7, -hy * 0.2, 0.1), 0.035, 0.035, "woodd")
+	_bone(m, Vector3(hx * 0.1, -hy * 0.6, 0.38), Vector3(hx * 0.6, hy * 0.3, 0.12), 0.03, 0.03, "woodd")
+	if ruin == 2:
+		_blob(m, Vector3(-hx * 0.2, 0, 0.18), 0.1, "fire")
+		_blob(m, Vector3(-hx * 0.2, 0.0, 0.42), 0.12, "smoke")
+
+
+func _shop(m: Array[Prim], ruin: int) -> void:
+	var hx := 1.35
+	var hy := 0.85
+	var wz := 0.45
+	if ruin > 0:
+		_house(m, ruin, "brick", "slate", true)
+		return
+	_bx(m, Vector3(0, 0, wz), Vector3(hx, hy, wz), "brick")
+	_bx(m, Vector3(0, 0, wz * 2.0 + 0.03), Vector3(hx + 0.04, hy + 0.04, 0.03), "concrete")  # flat roof slab
+	_bx(m, Vector3(hx + 0.008, 0.0, 0.3), Vector3(0.008, hy * 0.78, 0.2), "glass")  # shop front
+	_bx(m, Vector3(hx + 0.008, 0.52, 0.28), Vector3(0.008, 0.1, 0.16), "woodd")
+	_bx(m, Vector3(hx + 0.09, 0.0, 0.62), Vector3(0.1, hy * 0.82, 0.015), "red", 0.0)  # awning
+	_bx(m, Vector3(hx + 0.012, 0.0, 0.79), Vector3(0.012, hy * 0.55, 0.07), "whitep")  # sign board
+	_windows(m, Vector3(0, 0, wz), hx, hy, [0.55], 4, 2, 0.1, 0.09)
+	_bx(m, Vector3(-0.6, 0.3, wz * 2.0 + 0.12), Vector3(0.12, 0.1, 0.07), "steel")  # roof unit
+
+
+func _apartment(m: Array[Prim], ruin: int) -> void:
+	var hx := 1.3
+	var hy := 1.3
+	var hz := 1.35
+	if ruin == 0:
+		_bx(m, Vector3(0, 0, hz), Vector3(hx, hy, hz), "plaster")
+		_bx(m, Vector3(0, 0, 0.03), Vector3(hx + 0.04, hy + 0.04, 0.03), "concrete")
+		_bx(m, Vector3(0, 0, hz * 2.0 + 0.04), Vector3(hx + 0.05, hy + 0.05, 0.04), "concrete")
+		_windows(m, Vector3(0, 0, hz), hx, hy, [0.55, 1.05, 1.55, 2.05], 4, 4, 0.1, 0.1)
+		_bx(m, Vector3(hx + 0.01, 0.0, 0.18), Vector3(0.01, 0.17, 0.17), "woodd")  # entrance
+		_bx(m, Vector3(hx + 0.14, 0.0, 0.4), Vector3(0.14, 0.24, 0.02), "concrete")  # canopy
+		_bx(m, Vector3(-0.5, -0.5, hz * 2.0 + 0.18), Vector3(0.16, 0.12, 0.1), "steel")
+		_cy(m, Vector3(0.5, 0.4, hz * 2.0 + 0.2), 0.07, 0.12, "steel")
+		return
+	# ruin: jagged walls, the top floors gone on one side, exposed floors
+	var w2 := "plasterc" if ruin == 2 else "plaster"
+	var n := 8
+	for i in n:
+		var t := (float(i) + 0.5 - float(n) * 0.5) * (2.0 / float(n))
+		var hh := hz * (0.5 + 1.15 * _rnd(i, 31)) * (1.0 - 0.45 * maxf(t, 0.0))
+		_bx(m, Vector3(hx * t, hy, hh * 0.5), Vector3(hx / float(n), 0.06, hh * 0.5), w2)
+		var hh2 := hz * (0.4 + 1.2 * _rnd(i, 32)) * (1.0 - 0.5 * maxf(-t, 0.0))
+		_bx(m, Vector3(hx, hy * t, hh2 * 0.5), Vector3(0.06, hy / float(n), hh2 * 0.5), w2)
+	for k in 2:  # floors sagging
+		_bx(m, Vector3(-0.1, 0, 0.55 + 0.5 * float(k)), Vector3(hx * 0.9, hy * 0.9, 0.025), "concrete")
+	_bx(m, Vector3(0, 0, 0.04), Vector3(hx, hy, 0.04), "rubble")
+	for i in 9:
+		var rx := (_rnd(i, 41) - 0.5) * 2.0 * hx * 0.9
+		var ry := (_rnd(i, 42) - 0.5) * 2.0 * hy * 0.9
+		_bx(m, Vector3(rx, ry, 0.1), Vector3(0.12 + 0.14 * _rnd(i, 43), 0.12 + 0.12 * _rnd(i, 44), 0.1), "rubble", _rnd(i, 45) * 3.0)
+	_bone(m, Vector3(-hx * 0.7, hy * 0.2, 1.1), Vector3(-hx * 0.2, hy * 0.5, 1.6), 0.03, 0.03, "rust")  # rebar
+	_bone(m, Vector3(hx * 0.1, -hy * 0.5, 1.0), Vector3(hx * 0.3, -hy * 0.1, 1.5), 0.03, 0.03, "rust")
+	if ruin == 2:
+		_blob(m, Vector3(0.0, 0.0, 0.25), 0.16, "fire")
+		_blob(m, Vector3(0.1, 0.0, 0.55), 0.18, "smoke")
+		_blob(m, Vector3(0.15, 0.05, 0.85), 0.14, "smoke")
+
+
+func _warehouse(m: Array[Prim], ruin: int) -> void:
+	var hx := 1.85
+	var hy := 1.3
+	var wz := 0.55
+	if ruin > 0:
+		_house(m, ruin, "corrugated", "corrugated", true)
+		_bx(m, Vector3(0, 0, 0.35), Vector3(hx * 0.2, hy * 0.6, 0.35), "corrugated")
+		return
+	_bx(m, Vector3(0, 0, wz), Vector3(hx, hy, wz), "corrugated")
+	_gable(m, Vector3(0, 0, wz), hx, hy, wz * 2.0, 0.3, "steel", "corrugated")
+	_bx(m, Vector3(hx + 0.01, 0.0, 0.35), Vector3(0.012, 0.5, 0.33), "woodd")  # big door
+	_bx(m, Vector3(hx + 0.014, 0.0, 0.35), Vector3(0.008, 0.01, 0.33), "gun")
+	for j in 3:
+		_bx(m, Vector3(-0.8 + 0.8 * float(j), hy + 0.008, 0.82), Vector3(0.22, 0.008, 0.06), "glass")
+	_bx(m, Vector3(0.0, 0, wz * 2.0 + 0.36), Vector3(0.9, 0.04, 0.04), "steel")  # ridge vents
+	_bx(m, Vector3(0, 0, 0.03), Vector3(hx + 0.04, hy + 0.04, 0.03), "concrete")
+
+
+func _wall_ruin(m: Array[Prim]) -> void:
+	for i in 6:
+		var x := (float(i) - 2.5) * 0.15
+		var h := 0.15 + 0.5 * _rnd(i, 51)
+		_bx(m, Vector3(x, 0, h * 0.5), Vector3(0.075, 0.06, h * 0.5), "plaster")
+	for i in 4:
+		_bx(m, Vector3((_rnd(i, 52) - 0.5) * 0.8, (_rnd(i, 53) - 0.5) * 0.4, 0.04), Vector3(0.08, 0.07, 0.04), "rubble", _rnd(i, 54) * 3.0)
+	_bone(m, Vector3(0.2, 0, 0.3), Vector3(0.3, 0.05, 0.62), 0.02, 0.02, "rust")
+
+
+func _rubble_heap(m: Array[Prim], big: bool) -> void:
+	var n := 14 if big else 7
+	var span := 0.9 if big else 0.4
+	for i in n:
+		var rx := (_rnd(i, 61) - 0.5) * 2.0 * span
+		var ry := (_rnd(i, 62) - 0.5) * 2.0 * span
+		var h := (0.1 + 0.16 * _rnd(i, 63)) * (1.0 - 0.5 * (absf(rx) + absf(ry)) / (2.0 * span))
+		_bx(m, Vector3(rx, ry, h), Vector3(0.1 + 0.1 * _rnd(i, 64), 0.1 + 0.09 * _rnd(i, 65), h), "rubble", _rnd(i, 66) * 3.0)
+	_bone(m, Vector3(-span * 0.4, 0, 0.2), Vector3(span * 0.3, span * 0.4, 0.45), 0.02, 0.02, "rust")
+	_bx(m, Vector3(span * 0.2, -span * 0.3, 0.3), Vector3(0.14, 0.05, 0.02), "woodd", 0.7)
+
+
+# ---- base ----
+
+## The command bunker: frames 0 intact, 1 damaged, 2 burning, 3 ruin. About 1.6 cells wide.
+func _hq(m: Array[Prim], frame: int) -> void:
+	var d := frame
+	var body: Array[Prim] = []
+	var top: Array[Prim] = []
+	var gear: Array[Prim] = []
+	var fx: Array[Prim] = []
+	_bx(body, Vector3(0, 0, 0.03), Vector3(0.84, 0.84, 0.03), "concrete")  # plinth
+	_bx(body, Vector3(0, 0, 0.3), Vector3(0.72, 0.68, 0.27), "concrete")
+	_bx(body, Vector3(0, 0, 0.6), Vector3(0.76, 0.72, 0.035), "concretel")  # roof slab
+	_bx(body, Vector3(0.73, 0.0, 0.22), Vector3(0.012, 0.16, 0.19), "steel")  # armoured door
+	_bx(body, Vector3(0.74, 0.0, 0.22), Vector3(0.008, 0.01, 0.19), "gun")
+	for s in [1.0, -1.0]:
+		_bx(body, Vector3(0.73, 0.42 * s, 0.38), Vector3(0.012, 0.12, 0.04), "gun")  # firing slits
+		_bx(body, Vector3(0.0, 0.69 * s, 0.38), Vector3(0.12, 0.012, 0.04), "gun")
+		_bx(body, Vector3(0.73, 0.42 * s, 0.38), Vector3(0.014, 0.1, 0.025), "glass")
+	_bx(top, Vector3(-0.1, 0, 0.78), Vector3(0.38, 0.34, 0.15), "concrete")  # control room
+	_bx(top, Vector3(-0.1, 0, 0.94), Vector3(0.4, 0.36, 0.02), "concretel")
+	_windows(top, Vector3(-0.1, 0, 0.78), 0.38, 0.34, [0.8], 3, 3, 0.07, 0.05)
+	_bone(top, Vector3(-0.32, 0.18, 0.96), Vector3(-0.32, 0.18, 1.55), 0.015, 0.015, "steel")  # mast
+	_bone(top, Vector3(-0.32, 0.18, 1.35), Vector3(-0.32, 0.4, 1.35), 0.012, 0.012, "steel")
+	_bone(top, Vector3(-0.32, 0.18, 1.2), Vector3(-0.32, -0.02, 1.2), 0.012, 0.012, "steel")
+	_cy(top, Vector3(0.1, -0.2, 1.0), 0.1, 0.012, "steel")  # radar dish (flat)
+	_bone(top, Vector3(0.1, -0.2, 0.96), Vector3(0.1, -0.2, 1.0), 0.02, 0.02, "steel")
+	_bone(top, Vector3(0.18, 0.2, 0.96), Vector3(0.18, 0.2, 1.4), 0.012, 0.012, "steel")  # flag pole
+	_bx(top, Vector3(0.18, 0.12, 1.34), Vector3(0.01, 0.1, 0.06), "red")
+	for i in 5:  # sandbags along the front
+		_bx(gear, Vector3(0.9, -0.5 + 0.25 * float(i), 0.06), Vector3(0.08, 0.1, 0.05), "sand")
+		if i % 2 == 0:
+			_bx(gear, Vector3(0.9, -0.38 + 0.25 * float(i), 0.15), Vector3(0.08, 0.1, 0.05), "sand")
+	_bx(gear, Vector3(0.74, -0.2, 0.52), Vector3(0.012, 0.28, 0.04), "hull")  # hazard band over the door
+	match d:
+		1:  # scorched, a chunk gone from the roof edge, cracks, smoke
+			_scorch(top)
+			_bone(body, Vector3(0.74, 0.3, 0.5), Vector3(0.74, 0.5, 0.25), 0.012, 0.012, "gun")
+			_bone(body, Vector3(0.3, 0.7, 0.55), Vector3(0.45, 0.7, 0.2), 0.012, 0.012, "gun")
+			_blob(fx, Vector3(-0.2, 0.2, 1.05), 0.14, "smoke")
+			_blob(fx, Vector3(-0.15, 0.25, 1.28), 0.12, "smoke")
+		2:  # control room half collapsed, fires
+			_scorch(top)
+			_scorch(body)
+			_xform_about(top, Vector3(-0.1, 0, 0.62), Basis(Vector3(1, 0, 0), 0.22), Vector3(0, 0.06, -0.12))
+			_blob(fx, Vector3(0.1, 0.1, 0.7), 0.16, "fire")
+			_blob(fx, Vector3(-0.3, -0.1, 0.62), 0.12, "fire")
+			_blob(fx, Vector3(-0.1, 0.1, 1.0), 0.17, "smoke")
+			_blob(fx, Vector3(-0.05, 0.12, 1.3), 0.15, "smoke")
+		3:  # burnt-out shell
+			_scorch(body)
+			_scorch(top)
+			_scorch(gear)
+			_xform_about(top, Vector3(-0.1, 0, 0.62), Basis(Vector3(1, 0, 0), 0.9), Vector3(0.1, 0.3, -0.5))
+			_blob(fx, Vector3(0.0, 0.0, 0.66), 0.1, "fire")
+			_blob(fx, Vector3(0.0, 0.0, 0.88), 0.14, "smoke")
+			_blob(fx, Vector3(0.05, 0.0, 1.14), 0.12, "smoke")
+	m.append_array(body)
+	m.append_array(top)
+	m.append_array(gear)
+	m.append_array(fx)
+
+
+func _wall_x(m: Array[Prim], kind: String) -> void:
+	# kind: "concrete" T-wall, "fence" chain-link, "sandbags" short sandbag wall. Runs along local x, 1 cell long.
+	match kind:
+		"concrete":
+			_bx(m, Vector3(0, 0, 0.04), Vector3(0.5, 0.17, 0.04), "concrete")
+			_bx(m, Vector3(0, 0, 0.3), Vector3(0.5, 0.06, 0.26), "concrete")
+			_bx(m, Vector3(0, 0, 0.57), Vector3(0.5, 0.075, 0.025), "concretel")
+			for s in [1.0, -1.0]:
+				_bx(m, Vector3(0.48 * s, 0, 0.3), Vector3(0.025, 0.09, 0.27), "concrete")
+		"fence":
+			for i in 3:
+				_cy(m, Vector3(-0.5 + 0.5 * float(i), 0, 0.28), 0.02, 0.28, "steel")
+			_bx(m, Vector3(0, 0, 0.55), Vector3(0.5, 0.012, 0.012), "steel")
+			_bx(m, Vector3(0, 0, 0.1), Vector3(0.5, 0.012, 0.012), "steel")
+			for i in 12:
+				_bx(m, Vector3(-0.45 + 0.082 * float(i), 0, 0.33), Vector3(0.006, 0.006, 0.23), "glass")
+			_bx(m, Vector3(0, 0, 0.62), Vector3(0.5, 0.01, 0.01), "rust")  # razor wire
+			_bx(m, Vector3(0, 0, 0.66), Vector3(0.5, 0.01, 0.01), "rust")
+		"sandbags":
+			for layer in 3:
+				var n := 4 if layer % 2 == 0 else 3
+				for i in n:
+					var x := (float(i) - float(n - 1) * 0.5) * 0.24
+					_bx(m, Vector3(x, 0, 0.045 + 0.085 * float(layer)), Vector3(0.11, 0.075, 0.045), "sand", (_rnd(i, layer + 70) - 0.5) * 0.12)
+
+
+func _gate_post(m: Array[Prim]) -> void:
+	_bx(m, Vector3(0, 0, 0.04), Vector3(0.16, 0.16, 0.04), "concrete")
+	_bx(m, Vector3(0, 0, 0.5), Vector3(0.11, 0.11, 0.46), "concrete")
+	_bx(m, Vector3(0, 0, 0.98), Vector3(0.14, 0.14, 0.03), "concretel")
+	_bx(m, Vector3(0.0, 0, 1.05), Vector3(0.06, 0.06, 0.05), "lampglow")
+	_bx(m, Vector3(0.115, 0, 0.6), Vector3(0.008, 0.07, 0.07), "whitep")
+	_bx(m, Vector3(0.115, 0, 0.8), Vector3(0.008, 0.07, 0.02), "red")
+
+
+func _boom_gate(m: Array[Prim]) -> void:
+	_bx(m, Vector3(0, 0, 0.18), Vector3(0.1, 0.1, 0.18), "hull")
+	_bx(m, Vector3(0, 0, 0.38), Vector3(0.11, 0.11, 0.025), "gun")
+	_bone(m, Vector3(0, 0, 0.5), Vector3(0.0, 0.0, 1.25), 0.03, 0.02, "whitep")  # arm raised
+	for k in 3:
+		_bone(m, Vector3(0, 0, 0.62 + 0.25 * float(k)), Vector3(0, 0, 0.74 + 0.25 * float(k)), 0.032, 0.022, "red")
+	_bx(m, Vector3(0.1, 0, 0.2), Vector3(0.008, 0.05, 0.05), "lampglow")
+
+
+func _watchtower(m: Array[Prim]) -> void:
+	for sx in [1.0, -1.0]:
+		for sy in [1.0, -1.0]:
+			_bone(m, Vector3(0.3 * sx, 0.3 * sy, 0.0), Vector3(0.22 * sx, 0.22 * sy, 1.35), 0.03, 0.03, "wood")
+	for z in [0.4, 0.85]:
+		for s in [1.0, -1.0]:
+			_bone(m, Vector3(0.26 * s + 0.0, -0.28, z), Vector3(0.26 * s, 0.28, z + 0.3), 0.012, 0.012, "woodd")
+	_bx(m, Vector3(0, 0, 1.38), Vector3(0.34, 0.34, 0.03), "wood")  # platform
+	_bx(m, Vector3(0, 0, 1.58), Vector3(0.28, 0.28, 0.17), "hull")  # cabin
+	_windows(m, Vector3(0, 0, 1.6), 0.28, 0.28, [1.62], 2, 2, 0.1, 0.05)
+	_bx(m, Vector3(0, 0, 1.77), Vector3(0.38, 0.38, 0.025), "gun")  # roof
+	_bx(m, Vector3(0, 0, 1.82), Vector3(0.3, 0.3, 0.025), "hull")
+	_bx(m, Vector3(0.36, 0.0, 1.5), Vector3(0.02, 0.34, 0.1), "sand")  # sandbag rail
+	_bx(m, Vector3(0.12, 0.34, 1.5), Vector3(0.24, 0.02, 0.1), "sand")
+	_bx(m, Vector3(0.38, 0.2, 1.84), Vector3(0.05, 0.05, 0.04), "lampglow")  # searchlight
+	_cy(m, Vector3(0.0, 0.0, 0.03), 0.4, 0.03, "dirt")
+
+
+func _floodlight(m: Array[Prim]) -> void:
+	_cy(m, Vector3(0, 0, 0.03), 0.09, 0.03, "concrete")
+	_cy(m, Vector3(0, 0, 0.8), 0.03, 0.8, "steel")
+	_bx(m, Vector3(0.02, 0, 1.62), Vector3(0.05, 0.28, 0.05), "gun")
+	for i in 4:
+		_bx(m, Vector3(0.08, -0.2 + 0.13 * float(i), 1.62), Vector3(0.02, 0.05, 0.04), "lampglow")
+
+
+func _tent(m: Array[Prim]) -> void:
+	var hx := 0.95
+	var hy := 0.7
+	_bx(m, Vector3(0, 0, 0.03), Vector3(hx + 0.1, hy + 0.1, 0.02), "dirt")
+	_bx(m, Vector3(0, 0, 0.18), Vector3(hx, hy, 0.18), "tento")
+	_gable(m, Vector3(0, 0, 0.18), hx, hy, 0.36, 0.38, "tento", "tento")
+	_bx(m, Vector3(0.0, hy + 0.008, 0.14), Vector3(0.14, 0.008, 0.14), "gun")  # flap
+	_bone(m, Vector3(hx + 0.1, 0.5, 0.0), Vector3(hx * 0.4, 0.4, 0.5), 0.008, 0.008, "woodd")
+	_bone(m, Vector3(hx + 0.1, -0.5, 0.0), Vector3(hx * 0.4, -0.4, 0.5), 0.008, 0.008, "woodd")
+
+
+func _generator(m: Array[Prim]) -> void:
+	_bx(m, Vector3(0, 0, 0.04), Vector3(0.36, 0.26, 0.04), "concrete")
+	_bx(m, Vector3(0, 0, 0.25), Vector3(0.3, 0.2, 0.17), "hull")
+	_bx(m, Vector3(0.0, 0.0, 0.43), Vector3(0.31, 0.21, 0.015), "gun")
+	_cy(m, Vector3(-0.2, 0.12, 0.62), 0.03, 0.2, "steel")
+	_bx(m, Vector3(0.31, 0.0, 0.26), Vector3(0.008, 0.12, 0.1), "gun")
+	_bx(m, Vector3(0.315, 0.06, 0.3), Vector3(0.006, 0.03, 0.03), "lampglow")
+	_bone(m, Vector3(0.3, -0.2, 0.08), Vector3(0.5, -0.45, 0.02), 0.012, 0.012, "gun")
+	_cy(m, Vector3(0.12, -0.34, 0.1), 0.07, 0.1, "drum")
+
+
+func _fuel_tank(m: Array[Prim]) -> void:
+	_cy(m, Vector3(0, 0, 0.03), 0.4, 0.03, "concrete")
+	_cy(m, Vector3(0, 0, 0.42), 0.3, 0.36, "tankg")
+	_cy(m, Vector3(0, 0, 0.8), 0.31, 0.015, "steel")
+	_bone(m, Vector3(0.3, 0.0, 0.08), Vector3(0.3, 0.0, 0.78), 0.015, 0.015, "steel")  # ladder
+	_bx(m, Vector3(0.0, 0.0, 0.84), Vector3(0.05, 0.05, 0.03), "red")
+	_bone(m, Vector3(-0.3, 0.0, 0.2), Vector3(-0.45, 0.0, 0.08), 0.02, 0.02, "steel")
+	_bx(m, Vector3(0.31, 0.0, 0.5), Vector3(0.008, 0.08, 0.1), "whitep")
+
+
+func _container(m: Array[Prim], mat: String) -> void:
+	# 2 cells long along local x.
+	_bx(m, Vector3(0, 0, 0.3), Vector3(0.95, 0.4, 0.3), mat)
+	for i in 9:  # corrugation ribs
+		_bx(m, Vector3(-0.8 + 0.2 * float(i), 0.402, 0.3), Vector3(0.012, 0.004, 0.27), "steel")
+		_bx(m, Vector3(-0.8 + 0.2 * float(i), -0.402, 0.3), Vector3(0.012, 0.004, 0.27), "steel")
+	_bx(m, Vector3(0.953, 0.0, 0.3), Vector3(0.006, 0.34, 0.26), "steel")
+	_bx(m, Vector3(0.96, 0.0, 0.3), Vector3(0.004, 0.005, 0.26), "gun")
+	for sx in [1.0, -1.0]:
+		for sy in [1.0, -1.0]:
+			_bx(m, Vector3(0.95 * sx, 0.4 * sy, 0.3), Vector3(0.025, 0.025, 0.31), "steel")
+
+
+func _radar_mast(m: Array[Prim]) -> void:
+	_cy(m, Vector3(0, 0, 0.03), 0.16, 0.03, "concrete")
+	_bx(m, Vector3(0, 0, 0.16), Vector3(0.1, 0.1, 0.13), "hull")
+	_bone(m, Vector3(0, 0, 0.3), Vector3(0, 0, 1.3), 0.025, 0.025, "steel")
+	for k in 3:
+		_bone(m, Vector3(0, 0, 0.55 + 0.25 * float(k)), Vector3(0.0, 0.2 - 0.05 * float(k), 0.55 + 0.25 * float(k)), 0.012, 0.012, "steel")
+		_bone(m, Vector3(0, 0, 0.55 + 0.25 * float(k)), Vector3(0.0, -0.2 + 0.05 * float(k), 0.55 + 0.25 * float(k)), 0.012, 0.012, "steel")
+	_cy(m, Vector3(0.1, 0, 1.3), 0.17, 0.012, "steel")
+	_sp(m, Vector3(0.1, 0, 1.3), Vector3(0.18, 0.18, 0.05), "steel")
+	_bx(m, Vector3(0.0, 0, 1.38), Vector3(0.015, 0.015, 0.06), "red")
+
+
+func _flag_pole(m: Array[Prim]) -> void:
+	_cy(m, Vector3(0, 0, 0.03), 0.09, 0.03, "concrete")
+	_cy(m, Vector3(0, 0, 0.75), 0.015, 0.75, "steel")
+	_bx(m, Vector3(0.0, 0.14, 1.34), Vector3(0.006, 0.13, 0.08), "red")
+	_bx(m, Vector3(0.0, 0.12, 1.34), Vector3(0.008, 0.04, 0.04), "whitep")
+	_sp(m, Vector3(0, 0, 1.52), Vector3(0.025, 0.025, 0.025), "brass")
+
+
+func _helipad(m: Array[Prim]) -> void:
+	_bx(m, Vector3(0, 0, 0.012), Vector3(1.45, 1.45, 0.012), "padg")
+	_bx(m, Vector3(0, 0.34, 0.026), Vector3(0.4, 0.05, 0.006), "whitep")  # the H
+	_bx(m, Vector3(0, -0.34, 0.026), Vector3(0.4, 0.05, 0.006), "whitep")
+	_bx(m, Vector3(0, 0, 0.026), Vector3(0.05, 0.34, 0.006), "whitep")
+	_bx(m, Vector3(0.0, 0.0, 0.026), Vector3(0.4, 0.04, 0.006), "whitep")
+	for s in [1.0, -1.0]:
+		_bx(m, Vector3(1.4 * s, 0, 0.024), Vector3(0.04, 1.4, 0.006), "hull")
+		_bx(m, Vector3(0, 1.4 * s, 0.024), Vector3(1.4, 0.04, 0.006), "hull")
+	for sx in [1.0, -1.0]:
+		for sy in [1.0, -1.0]:
+			_bx(m, Vector3(1.38 * sx, 1.38 * sy, 0.05), Vector3(0.04, 0.04, 0.04), "lampglow")
+
+
+func _barracks(m: Array[Prim], ruin: int) -> void:
+	if ruin > 0:
+		_house(m, ruin, "hull", "gun", true)
+		return
+	var hx := 1.35
+	var hy := 0.6
+	_bx(m, Vector3(0, 0, 0.03), Vector3(hx + 0.05, hy + 0.05, 0.03), "concrete")
+	_bx(m, Vector3(0, 0, 0.3), Vector3(hx, hy, 0.27), "hull")
+	_bx(m, Vector3(0, 0, 0.6), Vector3(hx + 0.05, hy + 0.05, 0.03), "gun")
+	_windows(m, Vector3(0, 0, 0.3), hx, hy, [0.34], 5, 2, 0.1, 0.08)
+	for i in 2:
+		_bx(m, Vector3(hx + 0.008, -0.25 + 0.5 * float(i), 0.2), Vector3(0.008, 0.1, 0.17), "woodd")
+	_bx(m, Vector3(-0.6, 0, 0.7), Vector3(0.12, 0.1, 0.06), "steel")
 
 
 ## Ray-cast every pixel (ss x ss samples, majority colour, >=50% coverage); returns the finished frame.
