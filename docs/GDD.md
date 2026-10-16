@@ -34,7 +34,7 @@ Categories: Infantry, Armor, Artillery/Ordnance, Aviation, Naval, Drones, Comman
 | Initial hand / hand cap | 4 / 5 |
 | Draw | On battle start draw 4. Then 1 card per 4 s while hand < cap |
 | Reshuffle | When draw pile empty, shuffle discard into draw pile (no penalty in MVP) |
-| Command Points (CP) | start 5, cap 10, +1 per 1.5 s base |
+| Command Points (CP) | start 5, cap 10, +1 per 3.0 s base (tuned in M2.6, ADR-011) |
 | Card types | **Deployment** (unit/structure persists until destroyed or timed out), **Operation** (one-shot effect, e.g. strike), **Sortie** (aircraft: enters, acts, exits) |
 | After play | card goes to discard pile; no per-card cooldown in MVP except via draw cycle. Strong ops carry a per-card *lockout* (cooldown before it can be played again once redrawn) |
 | Upgrades | Persistent per card id, apply to all copies, branches change behavior not just stats |
