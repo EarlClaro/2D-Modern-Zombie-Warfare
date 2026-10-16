@@ -1,6 +1,6 @@
 # Spec: Milestone 3 — Horde and mission objectives
 
-Status: **v0.3 approved 2026-10-16: D1–D7 as recommended, the interview answers below, and the 3.1 decisions (ADR-012 accepted, separation on by default for flow missions, a step-cost increment added as 3.2).** 3.1 is done; nothing else is built yet.
+Status: **v0.4: re-ordered by ADR-013.** Increments 3.1 and 3.2 are done. Unit autonomy and the new card types are inserted before the rest, so the remaining increments here are renumbered (3.3 flow field becomes 3.10 and so on): see [unit-autonomy-and-card-types.md](unit-autonomy-and-card-types.md) "Effect on the M3 plan" for the current order. Decisions D1–D7 and the interview answers below still stand.
 
 ## Purpose
 Make a mission a *place with a purpose* instead of a timer: hordes that arrive from more than one direction, find their way across a map with real obstacles, and do not collapse into one stack; and missions whose win/fail conditions are data you can read on screen. Master prompt, Milestone 3: wave spawning from one or more spawn points, several archetypes, a documented path/flow-field decision, base health and timer, a defence mission with explicit victory/failure rules, objective UI with clear results, and a stress test of a representative horde in the isometric view.
