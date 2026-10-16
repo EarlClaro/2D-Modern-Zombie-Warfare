@@ -1,6 +1,6 @@
 # Spec: Milestone 3 — Horde and mission objectives
 
-Status: **v0.2 approved 2026-10-16: D1–D7 as recommended, plus the interview answers below (3.1 measured on 2026-10-16: awaiting the A6 decision and a decision on step cost, see "3.1 findings").** Builds on [card-loop.md](card-loop.md) (M2) and [combat-vertical-slice.md](combat-vertical-slice.md) (M1). Settles open item **A6** (flow field vs per-agent navigation) with measurements.
+Status: **v0.3 approved 2026-10-16: D1–D7 as recommended, the interview answers below, and the 3.1 decisions (ADR-012 accepted, separation on by default for flow missions, a step-cost increment added as 3.2).** 3.1 is done; nothing else is built yet.
 
 ## Purpose
 Make a mission a *place with a purpose* instead of a timer: hordes that arrive from more than one direction, find their way across a map with real obstacles, and do not collapse into one stack; and missions whose win/fail conditions are data you can read on screen. Master prompt, Milestone 3: wave spawning from one or more spawn points, several archetypes, a documented path/flow-field decision, base health and timer, a defence mission with explicit victory/failure rules, objective UI with clear results, and a stress test of a representative horde in the isometric view.
@@ -53,25 +53,28 @@ Grading (Bronze/Silver/Gold), rewards, mission modifiers, assault/escort/rescue 
 ## Interview answers (2026-10-16)
 - D2, D3, D4, D5, D6, D7 approved as recommended (terrain + static scenery block; opt-in `routing` per mission; four objective kinds; early win by clearing waves when primary; separation kept only if cheap; 1000-alive stress target).
 - **No grade in M3:** the result screen lists each objective as met or failed. Grading, rewards, modifiers stay in M4.
-- **Balance debt** (m2 mission too easy, helicopter at 5 CP trapping the saving bot) is handled **once in 3.5**, after flow routing and separation change how hordes arrive. The helicopter stays untouched until then and needs the user's go.
+- **Balance debt** (m2 mission too easy, helicopter at 5 CP trapping the saving bot) is handled **once in 3.6**, after flow routing and separation change how hordes arrive. The helicopter stays untouched until then and needs the user's go.
 - **Mission map:** `m3_two_fronts` reuses `outskirts`; the two fronts stay apart (each down its own road to the core) instead of merging at the bridge. No new map art.
-- **A6 gate:** after 3.1 I write ADR-012 as *proposed* with the measured table and wait for the user's OK before 3.2.
-- **Spawn cue (added to 3.4):** a ground marker at each spawn point plus an edge arrow when it is off-screen, shown shortly before its wave starts. Presentation only, read from mission data.
+- **A6 gate:** after 3.1 I wrote ADR-012 as *proposed* with the measured table and waited for the user's OK. **Resolved 2026-10-16:** ADR-012 accepted as proposed (flow field, 4-tick steering refresh, per-enemy lane offset, waypoints stay the default).
+- **Separation (3.1 decision):** included, **on by default for flow missions**; staggered version (pushes and hash refreshed every 4th tick, 8 neighbours).
+- **Step cost (3.1 decision):** a new increment 3.2 comes first, target 1000 alive at about 10 ms per tick headless on this machine; later increments are renumbered.
+- **Spawn cue (added to 3.5):** a ground marker at each spawn point plus an edge arrow when it is off-screen, shown shortly before its wave starts. Presentation only, read from mission data.
 - **Commits:** I commit automatically when an increment's checks pass (only my files, clean-checkout test run, explicit file lists, usual trailer). **I push only when told.** This replaces "commit only when asked" for M3 increments, by the user's choice.
 
 ## 3.1 findings (2026-10-16; numbers in [BALANCE.md](../BALANCE.md), proposal in ADR-012)
 - Flow field: about 1.4-1.6x the waypoint movement step, at most 1.9 ms per tick at 2000 alive when steering refreshes every 4th tick; every-tick refresh is 4x and not worth it. Build 0.1 s on `x2_outskirts`.
 - A field alone stacks the horde into columns; a per-enemy lane offset on the sample fixes that for free. Separation fits the D6 budget (16-22 % of a tick at 1000-2000 alive) but only halves overlap at the shipped spawn density.
 - **Not in the original plan:** the whole step costs about 26 ms at 1000 alive (passes the 16.7 ms tick at roughly 600-700), dominated by per-tick candidate allocation and all-pairs target search, not by movement. D7 (1000 alive) needs a step-cost increment first.
-- Proposed change to the increments: add **3.2 Step cost** (reuse candidate lists, spatial hash for enemy queries shared by targeting and blasts, no work for empty unit lists; target 1000 alive at or under about 10 ms per tick headless on this machine), and renumber: 3.3 movement, 3.4 objective model, 3.5 objective UI + spawn markers, 3.6 two-front mission + stress, 3.7 hand-over. Needs the user's OK.
+- Resolved (user, 2026-10-16): add **3.2 Step cost** (reuse candidate lists, spatial hash for enemy queries shared by targeting and blasts, no work for empty unit lists; target 1000 alive at or under about 10 ms per tick headless on this machine), and renumber: 3.3 movement, 3.4 objective model, 3.5 objective UI + spawn markers, 3.6 two-front mission + stress, 3.7 hand-over.
 
 ## Increments (each: tests -> mutation check -> headless import -> docs/CHANGELOG -> report -> commit (automatic, see above); push when you say)
 - **3.1 Movement measurement and decision (A6).** `tools/perf_flow.gd` plus throwaway prototypes of `FlowField` and `SpatialHash` in the tool or tests. Output: BALANCE.md table, ADR-012 (proposed), your confirmation before 3.2. No game behaviour change.
-- **3.2 Movement implementation.** `FlowField` (pure, tested: reachability, obstacles, diagonal corner rules, unreachable cells, determinism), `MissionDefinition.routing`, `BattleEnemy` steering, separation if kept, `ContentDb` validation (spawn can reach core), regression: every shipped mission passes `ContentDb` and the existing battle tests unchanged under `waypoints`.
-- **3.3 Objective model.** `ObjectiveDefinition`, `ObjectiveTracker`, `MissionRules` driven by it (implicit default for old missions), content validation, tests per kind, per tie rule, "ends exactly once", restart.
-- **3.4 Objective UI and results.** HUD list, result panel breakdown, spawn markers and edge arrows, tests for the pure text/state mapping, screenshots reviewed; real clicks are a manual check.
-- **3.5 Two-front mission and stress run.** `m3_two_fronts` mission data, bot sweep (idle loses, a mix wins, over >= 10 seeds), windowed 1000-alive run, readability screenshots at default zoom.
-- **3.6 Hand-over.** Milestone checklist, BALANCE.md/ROADMAP/CHANGELOG, your **go / tune / no-go**.
+- **3.2 Step cost.** Measured in 3.1: the step costs about 26 ms at 1000 alive, mostly from building a `TargetCandidate` and dictionary entry per enemy per tick (even with no units) and all-pairs target search. Reuse candidate storage, one spatial hash of enemies shared by unit targeting and blast queries, no per-tick work when no unit can fire. Behaviour must not change: same seed gives the same battle (the existing battle and card tests unchanged, plus a test that old and new queries agree). Target: 1000 alive at about 10 ms per tick headless (`tools/perf_sim.gd`), measured and reported as measured.
+- **3.3 Movement implementation.** (Separation on by default for flow missions.) `FlowField` (pure, tested: reachability, obstacles, diagonal corner rules, unreachable cells, determinism), `MissionDefinition.routing`, `BattleEnemy` steering, separation if kept, `ContentDb` validation (spawn can reach core), regression: every shipped mission passes `ContentDb` and the existing battle tests unchanged under `waypoints`.
+- **3.4 Objective model.** `ObjectiveDefinition`, `ObjectiveTracker`, `MissionRules` driven by it (implicit default for old missions), content validation, tests per kind, per tie rule, "ends exactly once", restart.
+- **3.5 Objective UI and results.** HUD list, result panel breakdown, spawn markers and edge arrows, tests for the pure text/state mapping, screenshots reviewed; real clicks are a manual check.
+- **3.6 Two-front mission and stress run.** `m3_two_fronts` mission data, bot sweep (idle loses, a mix wins, over >= 10 seeds), windowed 1000-alive run, readability screenshots at default zoom.
+- **3.7 Hand-over.** Milestone checklist, BALANCE.md/ROADMAP/CHANGELOG, your **go / tune / no-go**.
 
 ## Acceptance criteria (Milestone 3 exit)
 1. A6 closed: ADR-012 with the measured numbers for the compared approaches.
