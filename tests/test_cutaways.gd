@@ -96,6 +96,7 @@ func test_full_the_first_time_then_short() -> void:
 	assert_eq(plan.request(d), CutawayPlan.Mode.FULL)
 	assert_near(plan.duration(), 1.5)
 	plan.skip()
+	plan.tick(0.016)  # a later tick, so "just ended" cannot be the reason it is short
 	assert_eq(plan.request(d), CutawayPlan.Mode.SHORT, "seen once, so short")
 	assert_near(plan.duration(), 0.5)
 

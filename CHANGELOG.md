@@ -1,5 +1,8 @@
 # Changelog
 
+## 3.8 Strike cutaways, slice 7 (branch m3-3.8-cutaways)
+- Seven generated strike sounds, one per clip, in a new `strike` mixer category (one voice, high priority); each clip plays its own. Mutation checks done (freeze, line order, hard cap, first-time-only full clip, beam kind); one test was too weak to catch the repeat-play mutation and was fixed. Spec updated with merge notes and the manual checklist. 3 more tests (578 in all).
+
 ## 3.8 Strike cutaways, slice 6 (branch m3-3.8-cutaways)
 - The three epic clips and cards: hypersonic missile (slim missile, plasma trail and shock cone, pitch-over and plunge), nuclear bomb (bomber, falling bomb, one fading white flash, fireball, shock ring and mushroom cloud) and satellite laser (satellite over the Earth's limb charging, a beam sweeping the surface). Cards `hypersonic_missile` (cost 8), `nuclear_bomb` (cost 10, 9-tile blast, 4 s warning) and `satellite_laser` (cost 9, a sweeping line of 36 beams); all one-of, long lockouts, in no deck yet, first-guess numbers. New projectile kind `BEAM` drawn as a bolt of light. Art by `tools/gen_cutaway_art.gd` (`hypersonic.png`, `nuke.png`, `satellite.png`). 8 more tests.
 
