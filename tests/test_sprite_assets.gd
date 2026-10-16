@@ -10,6 +10,7 @@ const SHEETS: Dictionary = {
 	"howitzer": [128, 104, 3, 6],
 	"rifle_soldier": [88, 72, 3, 10],
 	"shambler": [72, 72, 3, 10],
+	"spitter": [88, 72, 3, 10],
 	"sandbag_wall": [80, 64, 2, 4],
 	"concrete_barrier": [80, 64, 2, 4],
 	"crate_stack": [64, 56, 2, 4],

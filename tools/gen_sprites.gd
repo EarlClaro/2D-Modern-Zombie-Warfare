@@ -76,6 +76,13 @@ const MATS := {
 	"rust": ["4a2a1a", "6b3d24", "8a5434"],
 	"rustc": ["1e1410", "2a1e18", "382a22"],
 	"steelc": ["14181a", "1f2527", "2c3335"],
+	# spitter and charred wreck
+	"acid": ["5a7a10", "8fc020", "c8f050"],
+	"acidh": ["7a9a20", "b8e040", "eaff80"],
+	"acidd": ["3a5208", "567a10", "7a9e1c"],
+	"rags": ["3a2f20", "58492f", "756444"],
+	"char": ["171513", "26231f", "3a352f"],
+	"charhi": ["241f1a", "3b342c", "544a3f"],
 }
 
 const BOX := 0
@@ -87,6 +94,7 @@ var _track_phase: float = 0.0
 var _kit: String = "rifle"  # soldier weapon: "rifle" or "rpg"
 var _z_stride: float = 1.0  # zombie variants: stride multiplier
 var _z_lean: float = 0.0  # zombie variants: extra forward lean (rad)
+var _z_kind: String = ""  # zombie variants: "spitter" adds the acid sac and the spit stream
 
 
 class Prim:
@@ -116,6 +124,7 @@ func _initialize() -> void:
 		{"dir": "helicopter", "frame": Vector2i(96, 64), "origin": Vector2(48, 46), "frames": 8, "columns": 2, "ss": 1},
 		{"dir": "runner", "frame": Vector2i(72, 72), "origin": Vector2(36, 44), "frames": 10, "columns": 3, "ss": 3},
 		{"dir": "brute", "frame": Vector2i(80, 72), "origin": Vector2(40, 54), "frames": 10, "columns": 3, "ss": 3},
+		{"dir": "spitter", "frame": Vector2i(88, 72), "origin": Vector2(44, 44), "frames": 10, "columns": 3, "ss": 3},
 		{"dir": "rpg_soldier", "frame": Vector2i(124, 76), "origin": Vector2(62, 46), "frames": 10, "columns": 3, "ss": 3},
 		{"dir": "howitzer", "frame": Vector2i(128, 104), "origin": Vector2(64, 62), "frames": 6, "columns": 3, "ss": 1},
 		{"dir": "sandbag_wall", "frame": Vector2i(80, 64), "origin": Vector2(40, 42), "frames": 4, "columns": 2, "ss": 2},
@@ -172,6 +181,7 @@ func _model(unit: String, frame: int) -> Array[Prim]:
 	_kit = "rifle"
 	_z_stride = 1.0
 	_z_lean = 0.0
+	_z_kind = ""
 	match unit:
 		"rifle_soldier":
 			_soldier(m, frame)
@@ -187,6 +197,11 @@ func _model(unit: String, frame: int) -> Array[Prim]:
 			_zombie(m, frame)
 			_remap(m, {"shirt": "rshirt", "pants": "rpants"})
 			_scale(m, 0.96)
+		"spitter":  # upright, bloated throat sac, spits acid on its attack frame
+			_z_kind = "spitter"
+			_z_lean = -0.06
+			_zombie(m, frame)
+			_remap(m, {"shirt": "rags"})
 		"brute":  # hulking, slow, bare-chested
 			_z_stride = 0.75
 			_z_lean = 0.05
@@ -689,6 +704,18 @@ func _zombie(m: Array[Prim], frame: int) -> void:
 		_bone(body, ik[0], ik[1], 0.031, 0.031, "zskin")
 		for f in [-1, 0, 1]:
 			body.append(Prim.new(BOX, ik[1] + Vector3(0.035, 0.016 * f, 0.0), Vector3(0.034, 0.008, 0.008), "zskin"))
+	if _z_kind == "spitter":
+		var chest := hip + tb * Vector3(0.07, 0, 0.27)
+		body.append(Prim.new(SPH, chest, Vector3(0.1, 0.115, 0.1), "acid"))
+		body.append(Prim.new(SPH, chest + tb * Vector3(0.07, 0.05, 0.03), Vector3(0.04, 0.04, 0.04), "acidh"))
+		body.append(Prim.new(SPH, chest + tb * Vector3(0.05, -0.06, -0.04), Vector3(0.03, 0.03, 0.03), "acidh"))
+		_bone(body, head + Vector3(0.06, 0, -0.06), chest + tb * Vector3(0.0, 0, 0.05), 0.032, 0.032, "acidd")  # swollen throat
+		if attack:
+			for k in 4:  # a stream of acid leaving the open mouth
+				var r := 0.04 - 0.006 * float(k)
+				body.append(Prim.new(SPH, head + Vector3(0.14 + 0.12 * float(k), 0.0, -0.04 - 0.02 * float(k)), Vector3(r, r, r), "acid"))
+		else:
+			body.append(Prim.new(BOX, head + Vector3(0.082, 0, -0.1), Vector3(0.008, 0.008, 0.03), "acid"))  # drool
 	if d > 0:
 		var phi: float = [0.4, 0.85, 1.3, PI * 0.5][d - 1]
 		_xform(body, _ry(phi), Vector3(-0.4 * sin(phi), 0, 0.12 * sin(phi)))
@@ -703,48 +730,48 @@ func _howitzer(m: Array[Prim], frame: int) -> void:
 	var wheels: Array[Prim] = []
 	var elev := 0.42
 	var dirv := Vector3(cos(elev), 0, sin(elev))
-	var breech := Vector3(-0.02, 0, 0.30)
+	var breech := Vector3(-0.02, 0, 0.40)
 	var back := -0.1 if fire else 0.0  # the barrel slides back in the cradle when it fires
 	var rb := breech + dirv * back
 	# Split trails with spades, planted on the ground behind the gun.
 	for side in [1, -1]:
-		_bone(carriage, Vector3(-0.05, 0.08 * side, 0.1), Vector3(-0.78, 0.32 * side, 0.03), 0.028, 0.03, "steel")
-		carriage.append(Prim.new(BOX, Vector3(-0.8, 0.33 * side, 0.03), Vector3(0.05, 0.05, 0.03), "steel"))
-	carriage.append(Prim.new(BOX, Vector3(0.0, 0, 0.17), Vector3(0.16, 0.2, 0.06), "hull"))  # axle block
-	carriage.append(Prim.new(BOX, Vector3(0.1, 0, 0.27), Vector3(0.02, 0.2, 0.15), "steel"))  # gun shield
-	carriage.append(Prim.new(BOX, Vector3(-0.02, 0, 0.27), Vector3(0.07, 0.05, 0.08), "hull"))  # cradle
-	carriage.append(Prim.new(BOX, Vector3(-0.22, 0.16, 0.2), Vector3(0.05, 0.03, 0.05), "gun"))  # seat post
+		_bone(carriage, Vector3(-0.02, 0.1 * side, 0.14), Vector3(-0.58, 0.28 * side, 0.04), 0.05, 0.045, "steel")
+		carriage.append(Prim.new(BOX, Vector3(-0.6, 0.29 * side, 0.04), Vector3(0.08, 0.08, 0.04), "gun"))
+	carriage.append(Prim.new(BOX, Vector3(0.0, 0, 0.22), Vector3(0.13, 0.27, 0.07), "hull"))  # axle block
+	carriage.append(Prim.new(BOX, Vector3(0.14, 0, 0.38), Vector3(0.03, 0.3, 0.2), "steel"))  # gun shield
+	carriage.append(Prim.new(BOX, Vector3(-0.02, 0, 0.34), Vector3(0.11, 0.09, 0.1), "hull"))  # cradle
+	carriage.append(Prim.new(BOX, Vector3(-0.24, 0.18, 0.26), Vector3(0.06, 0.04, 0.06), "gun"))  # seat post
 	for side in [1, -1]:
-		wheels.append(Prim.new(SPH, Vector3(0.0, 0.25 * side, 0.115), Vector3(0.115, 0.03, 0.115), "track"))
-		wheels.append(Prim.new(SPH, Vector3(0.0, 0.25 * side, 0.115), Vector3(0.05, 0.036, 0.05), "steel"))
+		wheels.append(Prim.new(SPH, Vector3(0.0, 0.33 * side, 0.17), Vector3(0.17, 0.05, 0.17), "track"))
+		wheels.append(Prim.new(SPH, Vector3(0.0, 0.33 * side, 0.17), Vector3(0.07, 0.058, 0.07), "steel"))
 	# Barrel with a bore sleeve, thick breech and a muzzle brake.
-	_bone(barrel, rb - dirv * 0.12, rb + dirv * 0.05, 0.05, 0.05, "gun")
-	_bone(barrel, rb + dirv * 0.05, rb + dirv * 0.55, 0.036, 0.036, "steel")
-	_bone(barrel, rb + dirv * 0.55, rb + dirv * 0.85, 0.028, 0.028, "steel")
-	_bone(barrel, rb + dirv * 0.85, rb + dirv * 0.94, 0.045, 0.045, "gun")
-	barrel.append(Prim.new(BOX, Vector3(0.12, 0.17, 0.13), Vector3(0.05, 0.03, 0.03), "brass"))  # shell on the rack
+	_bone(barrel, rb - dirv * 0.14, rb + dirv * 0.05, 0.08, 0.08, "gun")
+	_bone(barrel, rb + dirv * 0.05, rb + dirv * 0.45, 0.06, 0.06, "steel")
+	_bone(barrel, rb + dirv * 0.45, rb + dirv * 0.72, 0.046, 0.046, "steel")
+	_bone(barrel, rb + dirv * 0.72, rb + dirv * 0.82, 0.068, 0.068, "gun")
+	barrel.append(Prim.new(BOX, Vector3(0.1, 0.22, 0.2), Vector3(0.07, 0.035, 0.035), "brass"))  # shell on the rack
 	var fx: Array[Prim] = []
 	if fire:
-		var muzzle := rb + dirv * 0.97
-		_blob(fx, muzzle, 0.1, "flash")
+		var muzzle := rb + dirv * 0.86
+		_blob(fx, muzzle, 0.13, "flash")
 		_blob(fx, muzzle + dirv * 0.1, 0.06, "fire")
 		_blob(fx, muzzle + Vector3(0, 0, 0.1), 0.06, "smoke")
 	match d:
 		1:
-			_blob(fx, Vector3(0.0, 0, 0.3), 0.3, "flash")
+			_blob(fx, Vector3(0.0, 0, 0.4), 0.3, "flash")
 		2:
 			_scorch(carriage)
 			_scorch(wheels)
 			_xform_about(barrel, breech, Basis(Vector3(1, 0, 0), 0.5) * _ry(0.5), Vector3(0, 0.02, 0.26))
 			_scorch(barrel)
-			_blob(fx, Vector3(0.0, 0, 0.3), 0.18, "fire")
+			_blob(fx, Vector3(0.0, 0, 0.4), 0.18, "fire")
 		3:
 			_scorch(carriage)
 			_scorch(wheels)
 			_xform_about(barrel, breech, Basis(Vector3(1, 0, 0), 1.1) * _ry(0.9), Vector3(0.1, 0.24, -0.08))
 			_scorch(barrel)
-			_blob(fx, Vector3(0.0, 0, 0.24), 0.12, "fire")
-			_blob(fx, Vector3(0.0, 0, 0.42), 0.09, "smoke")
+			_blob(fx, Vector3(0.0, 0, 0.32), 0.12, "fire")
+			_blob(fx, Vector3(0.0, 0, 0.5), 0.09, "smoke")
 		4:
 			_scorch(carriage)
 			_scorch(wheels)
@@ -756,15 +783,15 @@ func _howitzer(m: Array[Prim], frame: int) -> void:
 			wheels[n - 2].h = Vector3(0.115, 0.115, 0.03)
 			wheels[n - 1].c = Vector3(0.12, -0.42, 0.05)
 			wheels[n - 1].h = Vector3(0.05, 0.05, 0.036)
-			_blob(fx, Vector3(0.0, 0, 0.2), 0.07, "fire")
-			_blob(fx, Vector3(0.0, 0, 0.36), 0.08, "smoke")
+			_blob(fx, Vector3(0.0, 0, 0.28), 0.07, "fire")
+			_blob(fx, Vector3(0.0, 0, 0.44), 0.08, "smoke")
 	m.append_array(carriage)
 	m.append_array(wheels)
 	m.append_array(barrel)
 	m.append_array(fx)
 
 
-## Sandbag wall along local y, three courses high. Frames 0 intact, 1-3 progressively blown apart.
+## Sandbag wall along local x (rotated at the end), three courses high. Frames 0 intact, 1-3 progressively blown apart.
 func _sandbags(m: Array[Prim], frame: int) -> void:
 	var d := frame
 	var bags: Array[Prim] = []
@@ -803,12 +830,15 @@ func _sandbags(m: Array[Prim], frame: int) -> void:
 			_scorch(ground)
 			_scorch(bags)
 			_blob(fx, Vector3(0.0, 0.0, 0.14), 0.08, "smoke")
-	m.append_array(ground)
-	m.append_array(bags)
-	m.append_array(fx)
+	var all: Array[Prim] = []
+	all.append_array(ground)
+	all.append_array(bags)
+	all.append_array(fx)
+	_xform_about(all, Vector3.ZERO, Basis(Vector3(0, 0, 1), PI * 0.5), Vector3.ZERO)  # long side along local x, like the vehicles
+	m.append_array(all)
 
 
-## Jersey barrier made of three segments along local y. Frames 0 intact, 1 cracked and leaning, 2 toppled, 3 rubble.
+## Jersey barrier made of three segments along local x (rotated at the end). Frames 0 intact, 1 cracked and leaning, 2 toppled, 3 rubble.
 func _barrier(m: Array[Prim], frame: int) -> void:
 	var d := frame
 	var segs: Array[Array] = []
@@ -847,6 +877,7 @@ func _barrier(m: Array[Prim], frame: int) -> void:
 		_scorch(rubble)
 	m.append_array(rubble)
 	m.append_array(fx)
+	_xform_about(m, Vector3.ZERO, Basis(Vector3(0, 0, 1), PI * 0.5), Vector3.ZERO)  # long side along local x, like the vehicles
 
 
 static func _crate(list: Array[Prim], c: Vector3, s: float, yaw: float, tilt: float = 0.0) -> void:
@@ -1114,10 +1145,10 @@ func _truck(m: Array[Prim], frame: int) -> void:
 func _wreck_car(m: Array[Prim]) -> void:
 	var car: Array[Prim] = []
 	var wheels: Array[Prim] = []
-	car.append(Prim.new(BOX, Vector3(0, 0, 0.14), Vector3(0.4, 0.17, 0.06), "rust"))
-	car.append(Prim.new(BOX, Vector3(-0.04, 0, 0.27), Vector3(0.2, 0.15, 0.065), "rust"))  # cabin
-	car.append(Prim.new(BOX, Vector3(0.26, 0, 0.21), Vector3(0.13, 0.16, 0.03), "rust"))  # bonnet
-	car.append(Prim.new(BOX, Vector3(-0.04, 0, 0.345), Vector3(0.17, 0.12, 0.012), "gun"))  # roof
+	car.append(Prim.new(BOX, Vector3(0, 0, 0.14), Vector3(0.4, 0.17, 0.06), "char"))
+	car.append(Prim.new(BOX, Vector3(-0.04, 0, 0.27), Vector3(0.2, 0.15, 0.065), "char"))  # cabin
+	car.append(Prim.new(BOX, Vector3(0.26, 0, 0.21), Vector3(0.13, 0.16, 0.03), "char"))  # bonnet
+	car.append(Prim.new(BOX, Vector3(-0.04, 0, 0.345), Vector3(0.17, 0.12, 0.012), "charhi"))  # roof
 	car.append(Prim.new(BOX, Vector3(0.065, 0, 0.28), Vector3(0.01, 0.12, 0.045), "gun"))  # empty windscreen
 	car.append(Prim.new(BOX, Vector3(-0.04, 0.152, 0.28), Vector3(0.13, 0.006, 0.04), "gun"))
 	car.append(Prim.new(BOX, Vector3(-0.04, -0.152, 0.28), Vector3(0.13, 0.006, 0.04), "gun"))
@@ -1127,6 +1158,7 @@ func _wreck_car(m: Array[Prim]) -> void:
 				continue  # that wheel is gone: the car sits lower on its axle
 			wheels.append(Prim.new(SPH, Vector3(x, 0.18 * side, 0.085), Vector3(0.085, 0.035, 0.085), "track"))
 	_scorch(wheels)
+	_blob(m, Vector3(0.28, 0, 0.2), 0.035, "fire")  # embers under the bonnet
 	_xform_about(car, Vector3(0, 0, 0), Basis(Vector3(1, 0, 0), -0.1), Vector3(0, -0.04, 0.0))
 	m.append_array(car)
 	m.append_array(wheels)
