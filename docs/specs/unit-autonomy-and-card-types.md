@@ -75,11 +75,12 @@ Increments 3.1 and 3.2 are done. The rest is re-ordered and renumbered; each end
 - **3.5 Card framework and state cards:** new `CardKind`s, `CardEffect` base, ContentDb validation, modifiers, economy, deck and doctrine effects; examples Fortify, Supply Drop, Quick Draw, Hollow Points (doctrine through the mission/CLI).
 - **3.6 Entity cards:** mines, spawners (building and convoy), lure; examples Minefield, Barracks, Convoy, Noise Lure.
 - **3.7 High-tech support:** combat drones (autonomous air units); example Combat Drones; framework check for the rest of the roster.
-- **3.8 Difficulty:** multipliers, CLI, tests.
-- **3.9 Autonomy and card balance sweep:** re-sweep the card bots on all mission decks (smart units change every earlier number), settle the balance debt noted in the M3 spec (m2 pressure, helicopter), and tune the new cards.
-- **3.10 Flow-field movement (was 3.3):** ADR-012 as accepted; friendly Advance/Guard units reuse the field for routes around scenery.
-- **3.11 Objective model (was 3.4), 3.12 Objective UI and spawn markers (was 3.5), 3.13 Two-front mission and 1000-alive stress (was 3.6), 3.14 Hand-over (was 3.7).**
-M3 is now much larger than planned. At 3.9 I will ask whether to close M3 there and move 3.10-3.14 to a new milestone.
+- **3.8 Strike cutaways:** full-screen freezing clips for big supports (naval gunfire, close air support, missile strike, artillery barrage), three new strike cards, generated art; see [strike-cutaways.md](strike-cutaways.md).
+- **3.9 Difficulty:** multipliers, CLI, tests.
+- **3.10 Autonomy and card balance sweep:** re-sweep the card bots on all mission decks (smart units change every earlier number), settle the balance debt noted in the M3 spec (m2 pressure, helicopter), and tune the new cards.
+- **3.11 Flow-field movement (was 3.3):** ADR-012 as accepted; friendly Advance/Guard units reuse the field for routes around scenery.
+- **3.12 Objective model (was 3.4), 3.13 Objective UI and spawn markers (was 3.5), 3.14 Two-front mission and 1000-alive stress (was 3.6), 3.15 Hand-over (was 3.7).**
+M3 is now much larger than planned. At 3.10 I will ask whether to close M3 there and move 3.11-3.15 to a new milestone.
 
 ## Acceptance criteria
 1. Playing any deployment card and doing nothing else lets the units fight sensibly: Guard units engage inside their leash and come back, Advance units reach a firing position, Hold units never move; no input beyond the card is ever needed.
@@ -94,7 +95,7 @@ M3 is now much larger than planned. At 3.9 I will ask whether to close M3 there 
 
 ## Risks
 - **Scope:** about nine card types plus AI behaviours in one milestone; mitigated by one example per type and by ordering (autonomy first, framework second, entities third).
-- **Balance:** smarter units invalidate every M2/M3 sweep number; 3.9 exists for that, and until then costs are first guesses.
+- **Balance:** smarter units invalidate every M2/M3 sweep number; 3.10 exists for that, and until then costs are first guesses.
 - **Testability:** unit movement is new simulation state; it must stay pure and seed-free, with whole-battle digests as the regression net.
 - **Readability:** many auto-moving friendly units plus 1000 zombies must stay legible (checked in screenshots at 3.3 and 3.13).
 - **Rule check:** "predictable, testable behaviour, no adaptive AI" in the master prompt stands: the four behaviours and three habits are fixed rules, not learning.
