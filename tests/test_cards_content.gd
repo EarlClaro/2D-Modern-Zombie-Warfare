@@ -262,11 +262,16 @@ func test_mission_with_an_unknown_deck_is_a_reference_error() -> void:
 	assert_true(_has(db.errors, "mission 'm2_bad_deck': unknown deck_id 'ghost_deck'"))
 
 
-func test_mission_deploy_radius_must_be_positive() -> void:
+func test_mission_deploy_radius_may_be_zero_for_the_whole_map_but_not_negative() -> void:
 	var db := ContentDb.load_from("res://data")
 	var m: MissionDefinition = db.mission("m2_card_defense").duplicate()
 	m.deploy_radius = 0.0
+	assert_true(not _has(m.validate(), "deploy_radius"), "0 = no limit")
+	m.deploy_radius = -1.0
 	assert_true(_has(m.validate(), "deploy_radius"))
+	m.deploy_radius = 0.0
+	m.spawn_guard_radius = -2.0
+	assert_true(_has(m.validate(), "spawn_guard_radius"))
 
 
 func test_card_mission_shipped_data_gives_the_player_room_to_build() -> void:

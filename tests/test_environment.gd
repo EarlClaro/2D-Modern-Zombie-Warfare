@@ -58,7 +58,7 @@ func _map(rows: Array, scenery: Array = []) -> MapDefinition:
 func test_new_terrain_characters_have_the_right_rules() -> void:
 	for ch in [",", "p"]:
 		assert_true(MapDefinition.char_is_walkable(ch) and MapDefinition.char_is_buildable(ch), "'%s' is open ground" % ch)
-	assert_true(MapDefinition.char_is_walkable("x") and not MapDefinition.char_is_buildable("x"), "rubble can be crossed but not built on")
+	assert_true(MapDefinition.char_is_walkable("x") and MapDefinition.char_is_buildable("x"), "rubble can be crossed and built on")
 	assert_true(not MapDefinition.char_is_walkable("w") and not MapDefinition.char_is_buildable("w"), "water blocks")
 	assert_eq(_map(["..,pxw="]).validate().size(), 0)
 

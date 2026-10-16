@@ -335,11 +335,11 @@ func _deploy_cell(b: BattleController, card: CardDefinition, pattern: String) ->
 	var occupied := b.occupied_cells()
 	var best := Vector2i(-1000, -1000)
 	var best_score := INF
-	var rad := int(ceil(b.mission.deploy_radius))
+	var rad := int(ceil(b.mission.deploy_radius)) if b.mission.deploy_radius > 0.0 else maxi(b.mission.map.width(), b.mission.map.height())
 	for dx in range(-rad, rad + 1):
 		for dy in range(-rad, rad + 1):
 			var cell := b.mission.core_cell + Vector2i(dx, dy)
-			if PlacementRules.check_deploy(b.mission.map, cell, b.mission.core_cell, b.mission.deploy_radius, occupied) != PlacementRules.Reason.OK:
+			if PlacementRules.check_deploy(b.mission.map, cell, b.mission.core_cell, b.mission.deploy_radius, occupied, b.mission.spawn_cells, b.mission.spawn_guard_radius) != PlacementRules.Reason.OK:
 				continue
 			var rel := IsoProjection.cell_center(cell) - core_c
 			var along := rel.dot(dir)

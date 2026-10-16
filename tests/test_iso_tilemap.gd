@@ -48,7 +48,7 @@ func test_placeholder_tile_data() -> void:
 		assert_eq(grass.get_custom_data("walkable"), true)
 		assert_eq(grass.get_custom_data("buildable"), true)
 		assert_eq(road.get_custom_data("walkable"), true)
-		assert_eq(road.get_custom_data("buildable"), false)
+		assert_eq(road.get_custom_data("buildable"), true, "roads can be built on")
 		assert_eq(rock.get_custom_data("walkable"), false)
 		assert_eq(rock.get_custom_data("buildable"), false)
 	assert_true(layer.get_cell_tile_data(Vector2i(9, 9)) == null, "empty cell has no data")

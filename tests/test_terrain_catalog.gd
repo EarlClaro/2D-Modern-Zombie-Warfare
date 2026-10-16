@@ -28,8 +28,8 @@ func test_the_original_terrains_keep_their_rows_and_rules() -> void:
 		assert_eq(TerrainCatalog.row_of(ORIGINAL[i]), i, "row of original '%s'" % ORIGINAL[i])
 	for ch in [".", ",", "p"]:
 		assert_true(TerrainCatalog.is_walkable(ch) and TerrainCatalog.is_buildable(ch), "'%s' open ground" % ch)
-	assert_true(TerrainCatalog.is_walkable("=") and not TerrainCatalog.is_buildable("="), "road")
-	assert_true(TerrainCatalog.is_walkable("x") and not TerrainCatalog.is_buildable("x"), "rubble")
+	assert_true(TerrainCatalog.is_walkable("=") and TerrainCatalog.is_buildable("="), "road")
+	assert_true(TerrainCatalog.is_walkable("x") and TerrainCatalog.is_buildable("x"), "rubble")
 	for ch in ["#", "w"]:
 		assert_true(not TerrainCatalog.is_walkable(ch) and not TerrainCatalog.is_buildable(ch), "'%s' blocks" % ch)
 	assert_true(not TerrainCatalog.is_walkable("?") and not TerrainCatalog.is_buildable("?"), "unknown characters are blocked")

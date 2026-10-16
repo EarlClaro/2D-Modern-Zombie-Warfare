@@ -645,7 +645,7 @@ func _save() -> void:
 	m.core_radius = 1.2
 	m.spawn_cells = [SPAWN_A, SPAWN_B]
 	m.path_cells = PATH.duplicate()
-	m.deploy_radius = 17.0
+	m.deploy_radius = 0.0
 	m.deck_id = "fortified"
 	m.time_of_day = 0.4  # late morning; the day runs 300 s, so the 150 s battle ends at dusk
 	m.day_length_s = 300.0

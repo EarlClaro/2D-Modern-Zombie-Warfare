@@ -16,7 +16,10 @@ extends ContentDefinition
 ## Optional: the deck id the player draws from (empty = no cards, as in M1 missions).
 @export var deck_id: String = ""
 ## Deployment cards may only be placed within this many tiles of the core.
-@export var deploy_radius: float = 10.0
+@export var deploy_radius: float = 0.0
+## 0 = no limit: cards may be placed anywhere on the map (every shipped mission). Otherwise the limit above applies.
+## Enemy spawn cells: a deployment card cannot be placed closer than this to one (tiles; 0 = no guard).
+@export var spawn_guard_radius: float = 6.0
 ## Optional: ids of DOCTRINE cards in force for the whole mission (until the pre-mission picker exists, M5).
 @export var doctrines: PackedStringArray = PackedStringArray()
 ## Optional: scenery id of the command-bunker art drawn for the core (empty = the plain box), and how far
@@ -62,8 +65,10 @@ func validate() -> PackedStringArray:
 			errs.append(_err("map '%s' is invalid (%d error(s)); fix the map first" % [map.id, map_errs.size()]))
 	if map_ok:
 		_validate_geometry(errs)
-	if deploy_radius <= 0.0:
-		errs.append(_err("deploy_radius must be > 0"))
+	if deploy_radius < 0.0:
+		errs.append(_err("deploy_radius must be >= 0 (0 = the whole map)"))
+	if spawn_guard_radius < 0.0:
+		errs.append(_err("spawn_guard_radius must be >= 0"))
 	if core_radius < 0.0:
 		errs.append(_err("core_radius must be >= 0"))
 	if day_length_s < 0.0:

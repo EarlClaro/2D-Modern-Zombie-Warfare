@@ -22,5 +22,5 @@ spawn_cells = Array[Vector2i]([Vector2i(1, 8)])
 path_cells = Array[Vector2i]([Vector2i(1, 1)])
 waves = Array[ExtResource("4_poldc")]([SubResource("Resource_77h7u")])
 deck_id = "fortified"
-deploy_radius = 6.0
+deploy_radius = 0.0
 id = "dev_showcase"

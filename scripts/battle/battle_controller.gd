@@ -714,9 +714,17 @@ func _process(delta: float) -> void:
 	if deck != null:
 		targeting.sync(deck)
 	preview = targeting.preview(self, cell) if not is_ended() else null
-	_preview_node.show_preview(preview, IsoProjection.cell_center(mission.core_cell), mission.deploy_radius)
+	_preview_node.show_preview(preview, IsoProjection.cell_center(mission.core_cell), mission.deploy_radius, _spawn_centers(), mission.spawn_guard_radius)
 	_update_core_fade(delta)
 	update_scenery_fade(delta)
+
+
+## Ground centres of the enemy spawn cells (the preview draws their no-build circles).
+func _spawn_centers() -> Array[Vector2]:
+	var out: Array[Vector2] = []
+	for c in mission.spawn_cells:
+		out.append(IsoProjection.cell_center(c))
+	return out
 
 
 ## The core is tall: fade it when a unit or enemy is behind it (ADR-005).
@@ -777,7 +785,7 @@ func check_card(hand_index: int, cell: Vector2i) -> CardPlayService.Result:
 			return CardPlayService.Result.new(CardPlayService.Reason.UNAVAILABLE, def)  # never played: a mission starts with it
 		match def.card_kind:
 			CardDefinition.CardKind.DEPLOYMENT:
-				placement = PlacementRules.check_deploy(mission.map, cell, mission.core_cell, mission.deploy_radius, occupied_cells())
+				placement = PlacementRules.check_deploy(mission.map, cell, mission.core_cell, mission.deploy_radius, occupied_cells(), mission.spawn_cells, mission.spawn_guard_radius)
 			CardDefinition.CardKind.OPERATION, CardDefinition.CardKind.SORTIE:
 				placement = PlacementRules.check_ground_target(mission.map, cell)
 	var res := CardPlayService.check(deck, points, cards_by_id(), hand_index, placement == PlacementRules.Reason.OK)

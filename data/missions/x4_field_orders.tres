@@ -45,4 +45,4 @@ path_cells = Array[Vector2i]([Vector2i(3, 20)])
 waves = Array[ExtResource("3_wave")]([SubResource("Resource_w1"), SubResource("Resource_w2"), SubResource("Resource_w3"), SubResource("Resource_w4")])
 deck_id = "state_cards"
 doctrines = PackedStringArray("hollow_points")
-deploy_radius = 10.0
+deploy_radius = 0.0
