@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_t6m3e"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_4kdrb"]
+[ext_resource type="Texture2D" path="res://assets/sprites/bld_fire_station/se.png" id="3_uadjt"]
+
+[sub_resource type="Resource" id="Resource_jpl53"]
+script = ExtResource("2_4kdrb")
+textures = {
+"SE": ExtResource("3_uadjt")
+}
+frame_size = Vector2i(149, 129)
+columns = 1
+origin = Vector2(74, 90)
+
+[resource]
+script = ExtResource("1_t6m3e")
+display_name = "Fire Station"
+sprite = SubResource("Resource_jpl53")
+footprint = Vector2i(3, 2)
+fades = true
+height_units = 2.67
+id = "bld_fire_station"

@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_bkhp4"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_egbxx"]
+[ext_resource type="Texture2D" path="res://assets/sprites/base_brick_wall/sw.png" id="3_tbq57"]
+
+[sub_resource type="Resource" id="Resource_yb37j"]
+script = ExtResource("2_egbxx")
+textures = {
+"SE": ExtResource("3_tbq57")
+}
+frame_size = Vector2i(81, 87)
+columns = 1
+origin = Vector2(40, 65)
+
+[resource]
+script = ExtResource("1_bkhp4")
+display_name = "Brick Perimeter Wall (along y)"
+sprite = SubResource("Resource_yb37j")
+footprint = Vector2i(1, 2)
+fades = true
+height_units = 1.39
+id = "base_brick_wall_y"

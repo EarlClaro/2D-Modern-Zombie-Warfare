@@ -18,4 +18,5 @@ script = ExtResource("1_lvga1")
 display_name = "Broad Oak"
 sprite = SubResource("Resource_cg4s7")
 fades = true
+height_units = 2.85
 id = "oak_tree_b"

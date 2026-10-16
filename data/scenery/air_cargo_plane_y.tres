@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_5qou2"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_mrpfg"]
+[ext_resource type="Texture2D" path="res://assets/sprites/air_cargo_plane/sw.png" id="3_yd242"]
+[ext_resource type="Texture2D" path="res://assets/sprites/air_cargo_plane/ne.png" id="4_q8seo"]
+
+[sub_resource type="Resource" id="Resource_tnr7q"]
+script = ExtResource("2_mrpfg")
+textures = {
+"NW": ExtResource("4_q8seo"),
+"SE": ExtResource("3_yd242")
+}
+frame_size = Vector2i(211, 153)
+columns = 1
+origin = Vector2(105, 106)
+
+[resource]
+script = ExtResource("1_5qou2")
+display_name = "Cargo Plane (along y)"
+sprite = SubResource("Resource_tnr7q")
+footprint = Vector2i(5, 5)
+height_units = 1.63
+id = "air_cargo_plane_y"

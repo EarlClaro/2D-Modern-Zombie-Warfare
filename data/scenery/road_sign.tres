@@ -17,4 +17,5 @@ origin = Vector2(13, 54)
 script = ExtResource("1_f1cxf")
 display_name = "Road Sign"
 sprite = SubResource("Resource_wipw0")
+height_units = 1.46
 id = "road_sign"

@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_g23ss"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_dohmi"]
+[ext_resource type="Texture2D" path="res://assets/sprites/base_hq_building/se.png" id="3_nvf7q"]
+
+[sub_resource type="Resource" id="Resource_camn1"]
+script = ExtResource("2_dohmi")
+textures = {
+"SE": ExtResource("3_nvf7q")
+}
+frame_size = Vector2i(146, 114)
+columns = 1
+origin = Vector2(72, 75)
+
+[resource]
+script = ExtResource("1_g23ss")
+display_name = "Command Building"
+sprite = SubResource("Resource_camn1")
+footprint = Vector2i(3, 2)
+fades = true
+height_units = 1.78
+id = "base_hq_building"

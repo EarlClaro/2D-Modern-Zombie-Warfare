@@ -18,4 +18,5 @@ script = ExtResource("1_5fx1x")
 display_name = "Fallen Log (along y)"
 sprite = SubResource("Resource_jp5fy")
 footprint = Vector2i(1, 2)
+height_units = 0.31
 id = "fallen_log_y"

@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_47pfr"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_3havg"]
+[ext_resource type="Texture2D" path="res://assets/sprites/maple_autumn/se.png" id="3_aige8"]
+
+[sub_resource type="Resource" id="Resource_1wmce"]
+script = ExtResource("2_3havg")
+textures = {
+"SE": ExtResource("3_aige8")
+}
+frame_size = Vector2i(98, 112)
+columns = 1
+origin = Vector2(48, 96)
+
+[resource]
+script = ExtResource("1_47pfr")
+display_name = "Autumn Maple"
+sprite = SubResource("Resource_1wmce")
+fades = true
+height_units = 2.5
+id = "maple_autumn"

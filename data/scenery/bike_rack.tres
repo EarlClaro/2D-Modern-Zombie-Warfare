@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_ynuxg"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_ll4it"]
+[ext_resource type="Texture2D" path="res://assets/sprites/bike_rack/se.png" id="3_mpc7b"]
+
+[sub_resource type="Resource" id="Resource_l2ht2"]
+script = ExtResource("2_ll4it")
+textures = {
+"SE": ExtResource("3_mpc7b")
+}
+frame_size = Vector2i(45, 42)
+columns = 1
+origin = Vector2(22, 29)
+
+[resource]
+script = ExtResource("1_ynuxg")
+display_name = "Bike Rack"
+sprite = SubResource("Resource_l2ht2")
+height_units = 0.6
+id = "bike_rack"

@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_qm08p"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_ms346"]
+[ext_resource type="Texture2D" path="res://assets/sprites/reeds/se.png" id="3_jq0bl"]
+
+[sub_resource type="Resource" id="Resource_8jkn7"]
+script = ExtResource("2_ms346")
+textures = {
+"SE": ExtResource("3_jq0bl")
+}
+frame_size = Vector2i(53, 57)
+columns = 1
+origin = Vector2(26, 40)
+
+[resource]
+script = ExtResource("1_qm08p")
+display_name = "Reeds"
+sprite = SubResource("Resource_8jkn7")
+fades = true
+height_units = 1.02
+id = "reeds"

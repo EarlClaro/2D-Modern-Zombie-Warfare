@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_a6bqn"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_dewnt"]
+[ext_resource type="Texture2D" path="res://assets/sprites/ambulance/sw.png" id="3_gvka1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/ambulance/ne.png" id="4_swnci"]
+
+[sub_resource type="Resource" id="Resource_xy21d"]
+script = ExtResource("2_dewnt")
+textures = {
+"NW": ExtResource("4_swnci"),
+"SE": ExtResource("3_gvka1")
+}
+frame_size = Vector2i(70, 60)
+columns = 1
+origin = Vector2(34, 42)
+
+[resource]
+script = ExtResource("1_a6bqn")
+display_name = "Field Ambulance (along y)"
+sprite = SubResource("Resource_xy21d")
+footprint = Vector2i(1, 2)
+height_units = 1.1
+id = "ambulance_y"

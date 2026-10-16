@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_5ao1o"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_sd8sq"]
+[ext_resource type="Texture2D" path="res://assets/sprites/petrol_pump/sw.png" id="3_2d58e"]
+
+[sub_resource type="Resource" id="Resource_yw62b"]
+script = ExtResource("2_sd8sq")
+textures = {
+"SE": ExtResource("3_2d58e")
+}
+frame_size = Vector2i(63, 53)
+columns = 1
+origin = Vector2(31, 34)
+
+[resource]
+script = ExtResource("1_5ao1o")
+display_name = "Petrol Pumps (along y)"
+sprite = SubResource("Resource_yw62b")
+footprint = Vector2i(1, 2)
+height_units = 0.71
+id = "petrol_pump_y"

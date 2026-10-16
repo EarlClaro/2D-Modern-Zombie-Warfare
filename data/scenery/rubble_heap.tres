@@ -17,4 +17,5 @@ origin = Vector2(33, 34)
 script = ExtResource("1_5lnf6")
 display_name = "Rubble Heap"
 sprite = SubResource("Resource_c7kny")
+height_units = 0.65
 id = "rubble_heap"

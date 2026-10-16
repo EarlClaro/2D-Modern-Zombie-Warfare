@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_ju7fs"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_kd2c4"]
+[ext_resource type="Texture2D" path="res://assets/sprites/swing_set/se.png" id="3_dta0j"]
+
+[sub_resource type="Resource" id="Resource_x6xxl"]
+script = ExtResource("2_kd2c4")
+textures = {
+"SE": ExtResource("3_dta0j")
+}
+frame_size = Vector2i(67, 69)
+columns = 1
+origin = Vector2(33, 49)
+
+[resource]
+script = ExtResource("1_ju7fs")
+display_name = "Swing Set"
+sprite = SubResource("Resource_x6xxl")
+fades = true
+height_units = 1.13
+id = "swing_set"

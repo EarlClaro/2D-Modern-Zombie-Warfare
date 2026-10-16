@@ -18,4 +18,5 @@ script = ExtResource("1_j64kr")
 display_name = "Helipad"
 sprite = SubResource("Resource_vnthl")
 footprint = Vector2i(3, 3)
+height_units = 0.09
 id = "helipad"

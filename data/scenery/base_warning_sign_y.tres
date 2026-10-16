@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_ykk5a"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_q8o3i"]
+[ext_resource type="Texture2D" path="res://assets/sprites/base_warning_sign/sw.png" id="3_lffrn"]
+
+[sub_resource type="Resource" id="Resource_qrnw6"]
+script = ExtResource("2_q8o3i")
+textures = {
+"SE": ExtResource("3_lffrn")
+}
+frame_size = Vector2i(24, 45)
+columns = 1
+origin = Vector2(11, 38)
+
+[resource]
+script = ExtResource("1_ykk5a")
+display_name = "Hazard Warning Sign (along y)"
+sprite = SubResource("Resource_qrnw6")
+fades = true
+height_units = 1.08
+id = "base_warning_sign_y"

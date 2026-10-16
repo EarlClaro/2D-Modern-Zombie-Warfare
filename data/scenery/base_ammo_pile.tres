@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_7ig2m"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_2ici1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/base_ammo_pile/se.png" id="3_306rv"]
+
+[sub_resource type="Resource" id="Resource_di2j0"]
+script = ExtResource("2_2ici1")
+textures = {
+"SE": ExtResource("3_306rv")
+}
+frame_size = Vector2i(117, 70)
+columns = 1
+origin = Vector2(55, 39)
+
+[resource]
+script = ExtResource("1_7ig2m")
+display_name = "Ammo Pile"
+sprite = SubResource("Resource_di2j0")
+footprint = Vector2i(2, 2)
+height_units = 0.58
+id = "base_ammo_pile"

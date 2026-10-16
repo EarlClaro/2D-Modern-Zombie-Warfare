@@ -19,6 +19,7 @@ display_name = "Burning Apartment Block"
 sprite = SubResource("Resource_oh1fx")
 footprint = Vector2i(4, 4)
 fades = true
+height_units = 2.76
 glow_offset = Vector2(0, -16)
 glow_radius = 96.0
 glow_color = Color(1, 0.5, 0.15, 1)

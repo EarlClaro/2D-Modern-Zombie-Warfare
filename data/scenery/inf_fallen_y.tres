@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_jfl5o"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_1txs0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/inf_fallen/sw.png" id="3_e1n2k"]
+[ext_resource type="Texture2D" path="res://assets/sprites/inf_fallen/ne.png" id="4_5kejd"]
+
+[sub_resource type="Resource" id="Resource_5la10"]
+script = ExtResource("2_1txs0")
+textures = {
+"NW": ExtResource("4_5kejd"),
+"SE": ExtResource("3_e1n2k")
+}
+frame_size = Vector2i(69, 40)
+columns = 1
+origin = Vector2(34, 20)
+
+[resource]
+script = ExtResource("1_jfl5o")
+display_name = "Fallen Soldier (along y)"
+sprite = SubResource("Resource_5la10")
+height_units = 0.23
+id = "inf_fallen_y"

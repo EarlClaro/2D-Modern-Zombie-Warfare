@@ -18,4 +18,5 @@ script = ExtResource("1_7ulpw")
 display_name = "Radar Mast"
 sprite = SubResource("Resource_44rfi")
 fades = true
+height_units = 2.45
 id = "radar_mast"

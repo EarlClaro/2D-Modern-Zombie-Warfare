@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_tyxmk"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_digcv"]
+[ext_resource type="Texture2D" path="res://assets/sprites/bus_stop/se.png" id="3_vocod"]
+
+[sub_resource type="Resource" id="Resource_cjgs4"]
+script = ExtResource("2_digcv")
+textures = {
+"SE": ExtResource("3_vocod")
+}
+frame_size = Vector2i(82, 75)
+columns = 1
+origin = Vector2(42, 51)
+
+[resource]
+script = ExtResource("1_tyxmk")
+display_name = "Bus Stop"
+sprite = SubResource("Resource_cjgs4")
+footprint = Vector2i(2, 1)
+fades = true
+height_units = 1.26
+id = "bus_stop"

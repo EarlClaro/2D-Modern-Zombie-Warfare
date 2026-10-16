@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_oq5hq"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_gdnea"]
+[ext_resource type="Texture2D" path="res://assets/sprites/emp_trench/se.png" id="3_eev0l"]
+
+[sub_resource type="Resource" id="Resource_epfxr"]
+script = ExtResource("2_gdnea")
+textures = {
+"SE": ExtResource("3_eev0l")
+}
+frame_size = Vector2i(110, 73)
+columns = 1
+origin = Vector2(49, 38)
+
+[resource]
+script = ExtResource("1_oq5hq")
+display_name = "Trench"
+sprite = SubResource("Resource_epfxr")
+footprint = Vector2i(2, 1)
+height_units = 0.38
+id = "emp_trench"

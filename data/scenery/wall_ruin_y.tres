@@ -18,4 +18,5 @@ script = ExtResource("1_d7per")
 display_name = "Broken Wall (along y)"
 sprite = SubResource("Resource_jgu1r")
 footprint = Vector2i(1, 2)
+height_units = 0.94
 id = "wall_ruin_y"

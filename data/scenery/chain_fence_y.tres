@@ -18,4 +18,5 @@ script = ExtResource("1_s77no")
 display_name = "Chain-link Fence (along y)"
 sprite = SubResource("Resource_0awpc")
 footprint = Vector2i(1, 2)
+height_units = 1.14
 id = "chain_fence_y"

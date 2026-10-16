@@ -18,4 +18,5 @@ script = ExtResource("1_wk576")
 display_name = "Concrete Wall (along y)"
 sprite = SubResource("Resource_4q7c3")
 footprint = Vector2i(1, 2)
+height_units = 1.01
 id = "concrete_wall_y"

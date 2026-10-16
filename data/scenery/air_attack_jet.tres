@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_dcsrp"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_l3usp"]
+[ext_resource type="Texture2D" path="res://assets/sprites/air_attack_jet/se.png" id="3_tpmtu"]
+[ext_resource type="Texture2D" path="res://assets/sprites/air_attack_jet/nw.png" id="4_r5wy4"]
+
+[sub_resource type="Resource" id="Resource_f1d8m"]
+script = ExtResource("2_l3usp")
+textures = {
+"NW": ExtResource("4_r5wy4"),
+"SE": ExtResource("3_tpmtu")
+}
+frame_size = Vector2i(111, 78)
+columns = 1
+origin = Vector2(55, 55)
+
+[resource]
+script = ExtResource("1_dcsrp")
+display_name = "Attack Jet"
+sprite = SubResource("Resource_f1d8m")
+footprint = Vector2i(3, 2)
+height_units = 0.83
+id = "air_attack_jet"

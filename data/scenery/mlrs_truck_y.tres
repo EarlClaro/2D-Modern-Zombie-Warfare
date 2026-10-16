@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_qlkkq"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_k78or"]
+[ext_resource type="Texture2D" path="res://assets/sprites/mlrs_truck/sw.png" id="3_aiakd"]
+[ext_resource type="Texture2D" path="res://assets/sprites/mlrs_truck/ne.png" id="4_tmgfy"]
+
+[sub_resource type="Resource" id="Resource_woxm2"]
+script = ExtResource("2_k78or")
+textures = {
+"NW": ExtResource("4_tmgfy"),
+"SE": ExtResource("3_aiakd")
+}
+frame_size = Vector2i(78, 66)
+columns = 1
+origin = Vector2(38, 44)
+
+[resource]
+script = ExtResource("1_qlkkq")
+display_name = "Rocket Launcher Truck (along y)"
+sprite = SubResource("Resource_woxm2")
+footprint = Vector2i(1, 2)
+height_units = 1.05
+id = "mlrs_truck_y"

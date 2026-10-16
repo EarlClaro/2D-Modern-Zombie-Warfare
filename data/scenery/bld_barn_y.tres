@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_rt8jm"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_7bbys"]
+[ext_resource type="Texture2D" path="res://assets/sprites/bld_barn/sw.png" id="3_hea64"]
+
+[sub_resource type="Resource" id="Resource_xno7n"]
+script = ExtResource("2_7bbys")
+textures = {
+"SE": ExtResource("3_hea64")
+}
+frame_size = Vector2i(184, 138)
+columns = 1
+origin = Vector2(88, 87)
+
+[resource]
+script = ExtResource("1_rt8jm")
+display_name = "Barn (along y)"
+sprite = SubResource("Resource_xno7n")
+footprint = Vector2i(2, 3)
+fades = true
+height_units = 2.02
+id = "bld_barn_y"

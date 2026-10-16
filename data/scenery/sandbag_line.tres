@@ -18,4 +18,5 @@ script = ExtResource("1_mpaxl")
 display_name = "Sandbag Line"
 sprite = SubResource("Resource_pxxd5")
 footprint = Vector2i(2, 1)
+height_units = 0.44
 id = "sandbag_line"

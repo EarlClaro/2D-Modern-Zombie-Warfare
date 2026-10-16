@@ -17,4 +17,5 @@ origin = Vector2(30, 35)
 script = ExtResource("1_24asl")
 display_name = "Boulder"
 sprite = SubResource("Resource_a81mu")
+height_units = 0.57
 id = "boulder"

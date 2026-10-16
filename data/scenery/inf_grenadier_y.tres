@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_5iupe"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_kp0kl"]
+[ext_resource type="Texture2D" path="res://assets/sprites/inf_grenadier/sw.png" id="3_48les"]
+[ext_resource type="Texture2D" path="res://assets/sprites/inf_grenadier/ne.png" id="4_kooyp"]
+
+[sub_resource type="Resource" id="Resource_8u038"]
+script = ExtResource("2_kp0kl")
+textures = {
+"NW": ExtResource("4_kooyp"),
+"SE": ExtResource("3_48les")
+}
+frame_size = Vector2i(38, 58)
+columns = 1
+origin = Vector2(18, 46)
+
+[resource]
+script = ExtResource("1_5iupe")
+display_name = "Grenadier (along y)"
+sprite = SubResource("Resource_8u038")
+fades = true
+height_units = 1.13
+id = "inf_grenadier_y"

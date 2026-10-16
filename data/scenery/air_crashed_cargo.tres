@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_augne"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_g38h0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/air_crashed_cargo/se.png" id="3_x82rs"]
+[ext_resource type="Texture2D" path="res://assets/sprites/air_crashed_cargo/nw.png" id="4_tyruu"]
+
+[sub_resource type="Resource" id="Resource_fuij5"]
+script = ExtResource("2_g38h0")
+textures = {
+"NW": ExtResource("4_tyruu"),
+"SE": ExtResource("3_x82rs")
+}
+frame_size = Vector2i(277, 180)
+columns = 1
+origin = Vector2(138, 107)
+
+[resource]
+script = ExtResource("1_augne")
+display_name = "Crashed Cargo Plane"
+sprite = SubResource("Resource_fuij5")
+footprint = Vector2i(5, 5)
+height_units = 1.58
+glow_offset = Vector2(-12.8, -22.4)
+glow_radius = 110.0
+glow_color = Color(1, 0.5, 0.15, 1)
+id = "air_crashed_cargo"

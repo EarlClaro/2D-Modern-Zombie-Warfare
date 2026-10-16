@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_ex21m"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_nm32p"]
+[ext_resource type="Texture2D" path="res://assets/sprites/aa_vehicle/se.png" id="3_mgw86"]
+[ext_resource type="Texture2D" path="res://assets/sprites/aa_vehicle/nw.png" id="4_0dhxm"]
+
+[sub_resource type="Resource" id="Resource_nlhe1"]
+script = ExtResource("2_nm32p")
+textures = {
+"NW": ExtResource("4_0dhxm"),
+"SE": ExtResource("3_mgw86")
+}
+frame_size = Vector2i(76, 67)
+columns = 1
+origin = Vector2(37, 47)
+
+[resource]
+script = ExtResource("1_ex21m")
+display_name = "Anti-Aircraft Vehicle"
+sprite = SubResource("Resource_nlhe1")
+height_units = 1.05
+id = "aa_vehicle"

@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_oolad"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_n1utn"]
+[ext_resource type="Texture2D" path="res://assets/sprites/bld_farmhouse/se.png" id="3_nufq1"]
+
+[sub_resource type="Resource" id="Resource_17p53"]
+script = ExtResource("2_n1utn")
+textures = {
+"SE": ExtResource("3_nufq1")
+}
+frame_size = Vector2i(171, 99)
+columns = 1
+origin = Vector2(79, 71)
+
+[resource]
+script = ExtResource("1_oolad")
+display_name = "Farmhouse"
+sprite = SubResource("Resource_17p53")
+footprint = Vector2i(3, 3)
+fades = true
+height_units = 1.34
+id = "bld_farmhouse"

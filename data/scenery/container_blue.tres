@@ -18,4 +18,5 @@ script = ExtResource("1_r12py")
 display_name = "Blue Container"
 sprite = SubResource("Resource_qutlt")
 footprint = Vector2i(3, 2)
+height_units = 0.92
 id = "container_blue"

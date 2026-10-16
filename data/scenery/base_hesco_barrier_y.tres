@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_tcind"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_5xxxw"]
+[ext_resource type="Texture2D" path="res://assets/sprites/base_hesco_barrier/sw.png" id="3_8nkvn"]
+
+[sub_resource type="Resource" id="Resource_o8wwr"]
+script = ExtResource("2_5xxxw")
+textures = {
+"SE": ExtResource("3_8nkvn")
+}
+frame_size = Vector2i(89, 79)
+columns = 1
+origin = Vector2(44, 54)
+
+[resource]
+script = ExtResource("1_tcind")
+display_name = "HESCO Barrier (along y)"
+sprite = SubResource("Resource_o8wwr")
+footprint = Vector2i(1, 2)
+fades = true
+height_units = 1.32
+id = "base_hesco_barrier_y"

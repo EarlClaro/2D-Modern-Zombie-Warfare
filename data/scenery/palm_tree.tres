@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_0xenx"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_wps0n"]
+[ext_resource type="Texture2D" path="res://assets/sprites/palm_tree/se.png" id="3_4psrm"]
+
+[sub_resource type="Resource" id="Resource_6k7nm"]
+script = ExtResource("2_wps0n")
+textures = {
+"SE": ExtResource("3_4psrm")
+}
+frame_size = Vector2i(100, 99)
+columns = 1
+origin = Vector2(39, 90)
+
+[resource]
+script = ExtResource("1_0xenx")
+display_name = "Palm Tree"
+sprite = SubResource("Resource_6k7nm")
+fades = true
+height_units = 2.48
+id = "palm_tree"

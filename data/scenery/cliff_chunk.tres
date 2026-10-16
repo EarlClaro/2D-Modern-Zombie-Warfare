@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_es34n"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_tyxop"]
+[ext_resource type="Texture2D" path="res://assets/sprites/cliff_chunk/se.png" id="3_lxusy"]
+
+[sub_resource type="Resource" id="Resource_85r5n"]
+script = ExtResource("2_tyxop")
+textures = {
+"SE": ExtResource("3_lxusy")
+}
+frame_size = Vector2i(132, 113)
+columns = 1
+origin = Vector2(66, 76)
+
+[resource]
+script = ExtResource("1_es34n")
+display_name = "Cliff Chunk"
+sprite = SubResource("Resource_85r5n")
+footprint = Vector2i(2, 2)
+fades = true
+height_units = 1.42
+id = "cliff_chunk"

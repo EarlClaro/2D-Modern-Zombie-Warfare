@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_01jnq"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_xfqws"]
+[ext_resource type="Texture2D" path="res://assets/sprites/emp_mg_bunker/sw.png" id="3_ubhrs"]
+[ext_resource type="Texture2D" path="res://assets/sprites/emp_mg_bunker/ne.png" id="4_p4nhw"]
+
+[sub_resource type="Resource" id="Resource_xvt6f"]
+script = ExtResource("2_xfqws")
+textures = {
+"NW": ExtResource("4_p4nhw"),
+"SE": ExtResource("3_ubhrs")
+}
+frame_size = Vector2i(76, 63)
+columns = 1
+origin = Vector2(37, 41)
+
+[resource]
+script = ExtResource("1_01jnq")
+display_name = "MG Bunker (along y)"
+sprite = SubResource("Resource_xvt6f")
+height_units = 0.74
+id = "emp_mg_bunker_y"

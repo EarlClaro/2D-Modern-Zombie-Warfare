@@ -1,9 +1,8 @@
 class_name MapDefinition
 extends ContentDefinition
 ## Terrain grid as ASCII rows. Cell (x, y) is rows[y][x]; ground +X is screen down-right, +Y down-left.
-## Legend: '.' grass (walkable, buildable), ',' dirt (walkable, buildable), 'p' paved concrete (walkable, buildable),
-## '=' road (walkable), 'x' rubble (walkable), '#' rock (blocked), 'w' water (blocked).
-## The walkable/buildable flags here must match the IsoTileSet tile data (checked by a test).
+## Legend: the map characters of TerrainCatalog (the one list of ground types and their rules), e.g. '.' grass
+## (walkable, buildable), ',' dirt, 'p' paved, '=' road (walkable only), 'x' rubble, '#' rock and 'w' water (blocked).
 
 const GRASS: String = "."
 const ROAD: String = "="
@@ -12,7 +11,7 @@ const DIRT: String = ","
 const PAVED: String = "p"
 const RUBBLE: String = "x"
 const WATER: String = "w"
-const LEGEND: String = ".=#,pxw"
+const LEGEND: String = TerrainCatalog.LEGEND
 const MAX_SIZE: int = 128
 
 @export var rows: PackedStringArray = PackedStringArray()
@@ -53,11 +52,11 @@ func terrain_char(cell: Vector2i) -> String:
 
 
 static func char_is_walkable(ch: String) -> bool:
-	return ch == GRASS or ch == ROAD or ch == DIRT or ch == PAVED or ch == RUBBLE
+	return TerrainCatalog.is_walkable(ch)
 
 
 static func char_is_buildable(ch: String) -> bool:
-	return ch == GRASS or ch == DIRT or ch == PAVED
+	return TerrainCatalog.is_buildable(ch)
 
 
 func is_walkable(cell: Vector2i) -> bool:

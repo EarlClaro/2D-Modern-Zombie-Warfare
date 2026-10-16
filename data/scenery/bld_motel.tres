@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_dhpsk"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_ybu5b"]
+[ext_resource type="Texture2D" path="res://assets/sprites/bld_motel/se.png" id="3_uvhh8"]
+
+[sub_resource type="Resource" id="Resource_wprq3"]
+script = ExtResource("2_ybu5b")
+textures = {
+"SE": ExtResource("3_uvhh8")
+}
+frame_size = Vector2i(185, 134)
+columns = 1
+origin = Vector2(92, 85)
+
+[resource]
+script = ExtResource("1_dhpsk")
+display_name = "Motel"
+sprite = SubResource("Resource_wprq3")
+footprint = Vector2i(4, 2)
+fades = true
+height_units = 1.46
+glow_offset = Vector2(66, -9)
+glow_radius = 70.0
+glow_color = Color(1, 0.8, 0.5, 1)
+id = "bld_motel"

@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_dtgxn"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_8elfb"]
+[ext_resource type="Texture2D" path="res://assets/sprites/air_crashed_heli/sw.png" id="3_ghlj0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/air_crashed_heli/ne.png" id="4_mmaiq"]
+
+[sub_resource type="Resource" id="Resource_td2a7"]
+script = ExtResource("2_8elfb")
+textures = {
+"NW": ExtResource("4_mmaiq"),
+"SE": ExtResource("3_ghlj0")
+}
+frame_size = Vector2i(96, 56)
+columns = 1
+origin = Vector2(47, 31)
+
+[resource]
+script = ExtResource("1_dtgxn")
+display_name = "Crashed Helicopter (along y)"
+sprite = SubResource("Resource_td2a7")
+footprint = Vector2i(2, 2)
+height_units = 0.58
+glow_offset = Vector2(0, -6.4)
+glow_radius = 54.0
+glow_color = Color(1, 0.5, 0.15, 1)
+id = "air_crashed_heli_y"

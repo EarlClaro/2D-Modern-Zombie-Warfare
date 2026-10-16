@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_5w12m"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_km0ks"]
+[ext_resource type="Texture2D" path="res://assets/sprites/heavy_tank/sw.png" id="3_olglu"]
+[ext_resource type="Texture2D" path="res://assets/sprites/heavy_tank/ne.png" id="4_n505g"]
+
+[sub_resource type="Resource" id="Resource_53buo"]
+script = ExtResource("2_km0ks")
+textures = {
+"NW": ExtResource("4_n505g"),
+"SE": ExtResource("3_olglu")
+}
+frame_size = Vector2i(88, 69)
+columns = 1
+origin = Vector2(43, 47)
+
+[resource]
+script = ExtResource("1_5w12m")
+display_name = "Heavy Tank (along y)"
+sprite = SubResource("Resource_53buo")
+footprint = Vector2i(1, 2)
+height_units = 1.05
+id = "heavy_tank_y"

@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_dsrk2"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_woe7v"]
+[ext_resource type="Texture2D" path="res://assets/sprites/air_utility_heli/se.png" id="3_0lyvb"]
+[ext_resource type="Texture2D" path="res://assets/sprites/air_utility_heli/nw.png" id="4_06rei"]
+
+[sub_resource type="Resource" id="Resource_wftyh"]
+script = ExtResource("2_woe7v")
+textures = {
+"NW": ExtResource("4_06rei"),
+"SE": ExtResource("3_0lyvb")
+}
+frame_size = Vector2i(86, 57)
+columns = 1
+origin = Vector2(42, 44)
+
+[resource]
+script = ExtResource("1_dsrk2")
+display_name = "Utility Helicopter"
+sprite = SubResource("Resource_wftyh")
+footprint = Vector2i(2, 2)
+height_units = 0.75
+id = "air_utility_heli"

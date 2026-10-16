@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_wlcf4"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_liy6r"]
+[ext_resource type="Texture2D" path="res://assets/sprites/emp_sam_launcher/se.png" id="3_gifs6"]
+[ext_resource type="Texture2D" path="res://assets/sprites/emp_sam_launcher/nw.png" id="4_o2uv7"]
+
+[sub_resource type="Resource" id="Resource_v0wbj"]
+script = ExtResource("2_liy6r")
+textures = {
+"NW": ExtResource("4_o2uv7"),
+"SE": ExtResource("3_gifs6")
+}
+frame_size = Vector2i(61, 65)
+columns = 1
+origin = Vector2(30, 47)
+
+[resource]
+script = ExtResource("1_wlcf4")
+display_name = "SAM Launcher"
+sprite = SubResource("Resource_v0wbj")
+fades = true
+height_units = 1.12
+id = "emp_sam_launcher"

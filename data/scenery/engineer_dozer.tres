@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_gxhis"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_l8qtd"]
+[ext_resource type="Texture2D" path="res://assets/sprites/engineer_dozer/se.png" id="3_mhdb2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/engineer_dozer/nw.png" id="4_mdpdx"]
+
+[sub_resource type="Resource" id="Resource_qxpdn"]
+script = ExtResource("2_l8qtd")
+textures = {
+"NW": ExtResource("4_mdpdx"),
+"SE": ExtResource("3_mhdb2")
+}
+frame_size = Vector2i(89, 71)
+columns = 1
+origin = Vector2(44, 50)
+
+[resource]
+script = ExtResource("1_gxhis")
+display_name = "Armored Dozer"
+sprite = SubResource("Resource_qxpdn")
+footprint = Vector2i(2, 1)
+height_units = 1.1
+id = "engineer_dozer"

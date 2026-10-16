@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_jtrcf"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_vcluf"]
+[ext_resource type="Texture2D" path="res://assets/sprites/base_camo_net/se.png" id="3_co17m"]
+
+[sub_resource type="Resource" id="Resource_ayn0c"]
+script = ExtResource("2_vcluf")
+textures = {
+"SE": ExtResource("3_co17m")
+}
+frame_size = Vector2i(145, 95)
+columns = 1
+origin = Vector2(72, 56)
+
+[resource]
+script = ExtResource("1_jtrcf")
+display_name = "Camouflage Net"
+sprite = SubResource("Resource_ayn0c")
+footprint = Vector2i(2, 2)
+height_units = 0.98
+id = "base_camo_net"

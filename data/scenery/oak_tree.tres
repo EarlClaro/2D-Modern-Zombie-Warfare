@@ -18,4 +18,5 @@ script = ExtResource("1_n6uaf")
 display_name = "Oak Tree"
 sprite = SubResource("Resource_svlri")
 fades = true
+height_units = 2.43
 id = "oak_tree"

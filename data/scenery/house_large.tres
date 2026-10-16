@@ -19,4 +19,5 @@ display_name = "Large House"
 sprite = SubResource("Resource_pyjfb")
 footprint = Vector2i(4, 3)
 fades = true
+height_units = 1.56
 id = "house_large"

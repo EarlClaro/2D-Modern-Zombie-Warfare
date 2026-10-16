@@ -17,4 +17,5 @@ origin = Vector2(42, 58)
 script = ExtResource("1_24wde")
 display_name = "Fuel Tank"
 sprite = SubResource("Resource_nxfdm")
+height_units = 1.3
 id = "fuel_tank"

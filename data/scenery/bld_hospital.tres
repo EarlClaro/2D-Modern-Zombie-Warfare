@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_upuv7"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_nfdww"]
+[ext_resource type="Texture2D" path="res://assets/sprites/bld_hospital/se.png" id="3_nqhxq"]
+
+[sub_resource type="Resource" id="Resource_7ev26"]
+script = ExtResource("2_nfdww")
+textures = {
+"SE": ExtResource("3_nqhxq")
+}
+frame_size = Vector2i(173, 154)
+columns = 1
+origin = Vector2(103, 117)
+
+[resource]
+script = ExtResource("1_upuv7")
+display_name = "Hospital"
+sprite = SubResource("Resource_7ev26")
+footprint = Vector2i(3, 4)
+fades = true
+height_units = 2.16
+id = "bld_hospital"

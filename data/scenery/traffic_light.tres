@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_8bepl"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_o2fap"]
+[ext_resource type="Texture2D" path="res://assets/sprites/traffic_light/se.png" id="3_e70do"]
+
+[sub_resource type="Resource" id="Resource_m1dr7"]
+script = ExtResource("2_o2fap")
+textures = {
+"SE": ExtResource("3_e70do")
+}
+frame_size = Vector2i(38, 67)
+columns = 1
+origin = Vector2(10, 59)
+
+[resource]
+script = ExtResource("1_8bepl")
+display_name = "Traffic Light"
+sprite = SubResource("Resource_m1dr7")
+fades = true
+height_units = 1.7
+glow_offset = Vector2(14.630401, -39.571198)
+glow_radius = 30.0
+glow_color = Color(1, 0.25, 0.15, 1)
+id = "traffic_light"

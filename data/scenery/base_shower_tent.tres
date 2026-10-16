@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_1kp30"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_g8y31"]
+[ext_resource type="Texture2D" path="res://assets/sprites/base_shower_tent/se.png" id="3_ydl7q"]
+
+[sub_resource type="Resource" id="Resource_ncyaj"]
+script = ExtResource("2_g8y31")
+textures = {
+"SE": ExtResource("3_ydl7q")
+}
+frame_size = Vector2i(73, 82)
+columns = 1
+origin = Vector2(34, 60)
+
+[resource]
+script = ExtResource("1_1kp30")
+display_name = "Shower Tent"
+sprite = SubResource("Resource_ncyaj")
+footprint = Vector2i(2, 1)
+fades = true
+height_units = 1.34
+id = "base_shower_tent"

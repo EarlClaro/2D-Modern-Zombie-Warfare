@@ -18,4 +18,5 @@ script = ExtResource("1_m43uc")
 display_name = "Sandbag Line (along y)"
 sprite = SubResource("Resource_b8w2p")
 footprint = Vector2i(1, 2)
+height_units = 0.44
 id = "sandbag_line_y"

@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_sfmlc"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_io4iq"]
+[ext_resource type="Texture2D" path="res://assets/sprites/inf_radio_operator/sw.png" id="3_cmwq3"]
+[ext_resource type="Texture2D" path="res://assets/sprites/inf_radio_operator/ne.png" id="4_e85ck"]
+
+[sub_resource type="Resource" id="Resource_6g5o2"]
+script = ExtResource("2_io4iq")
+textures = {
+"NW": ExtResource("4_e85ck"),
+"SE": ExtResource("3_cmwq3")
+}
+frame_size = Vector2i(35, 57)
+columns = 1
+origin = Vector2(17, 47)
+
+[resource]
+script = ExtResource("1_sfmlc")
+display_name = "Radio Operator (along y)"
+sprite = SubResource("Resource_6g5o2")
+fades = true
+height_units = 1.19
+id = "inf_radio_operator_y"

@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_vchfg"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_q85b4"]
+[ext_resource type="Texture2D" path="res://assets/sprites/air_crashed_jet/sw.png" id="3_g02y5"]
+[ext_resource type="Texture2D" path="res://assets/sprites/air_crashed_jet/ne.png" id="4_uxa8s"]
+
+[sub_resource type="Resource" id="Resource_c73fa"]
+script = ExtResource("2_q85b4")
+textures = {
+"NW": ExtResource("4_uxa8s"),
+"SE": ExtResource("3_g02y5")
+}
+frame_size = Vector2i(123, 79)
+columns = 1
+origin = Vector2(61, 42)
+
+[resource]
+script = ExtResource("1_vchfg")
+display_name = "Crashed Jet (along y)"
+sprite = SubResource("Resource_c73fa")
+footprint = Vector2i(3, 3)
+height_units = 0.84
+glow_offset = Vector2(-3.2, -6.4)
+glow_radius = 70.0
+glow_color = Color(1, 0.5, 0.15, 1)
+id = "air_crashed_jet_y"

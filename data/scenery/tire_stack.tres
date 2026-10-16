@@ -17,4 +17,5 @@ origin = Vector2(16, 22)
 script = ExtResource("1_4lutx")
 display_name = "Tyre Stack"
 sprite = SubResource("Resource_ubguk")
+height_units = 0.45
 id = "tire_stack"

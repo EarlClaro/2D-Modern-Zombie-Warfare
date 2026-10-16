@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_bjocj"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_goprv"]
+[ext_resource type="Texture2D" path="res://assets/sprites/recovery_truck/sw.png" id="3_q3wli"]
+[ext_resource type="Texture2D" path="res://assets/sprites/recovery_truck/ne.png" id="4_rayas"]
+
+[sub_resource type="Resource" id="Resource_qdply"]
+script = ExtResource("2_goprv")
+textures = {
+"NW": ExtResource("4_rayas"),
+"SE": ExtResource("3_q3wli")
+}
+frame_size = Vector2i(86, 71)
+columns = 1
+origin = Vector2(42, 47)
+
+[resource]
+script = ExtResource("1_bjocj")
+display_name = "Recovery Truck (along y)"
+sprite = SubResource("Resource_qdply")
+footprint = Vector2i(1, 2)
+height_units = 1.0
+id = "recovery_truck_y"

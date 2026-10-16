@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_pbbvq"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_wb74v"]
+[ext_resource type="Texture2D" path="res://assets/sprites/spg/se.png" id="3_w7onw"]
+[ext_resource type="Texture2D" path="res://assets/sprites/spg/nw.png" id="4_cqwpx"]
+
+[sub_resource type="Resource" id="Resource_y4soo"]
+script = ExtResource("2_wb74v")
+textures = {
+"NW": ExtResource("4_cqwpx"),
+"SE": ExtResource("3_w7onw")
+}
+frame_size = Vector2i(83, 72)
+columns = 1
+origin = Vector2(41, 50)
+
+[resource]
+script = ExtResource("1_pbbvq")
+display_name = "Self-Propelled Gun"
+sprite = SubResource("Resource_y4soo")
+footprint = Vector2i(2, 1)
+height_units = 1.05
+id = "spg"

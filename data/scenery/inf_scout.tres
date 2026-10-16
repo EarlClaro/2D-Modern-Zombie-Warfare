@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_tjvb6"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_1f64d"]
+[ext_resource type="Texture2D" path="res://assets/sprites/inf_scout/se.png" id="3_e3inp"]
+[ext_resource type="Texture2D" path="res://assets/sprites/inf_scout/nw.png" id="4_isdf2"]
+
+[sub_resource type="Resource" id="Resource_f4kky"]
+script = ExtResource("2_1f64d")
+textures = {
+"NW": ExtResource("4_isdf2"),
+"SE": ExtResource("3_e3inp")
+}
+frame_size = Vector2i(36, 47)
+columns = 1
+origin = Vector2(17, 36)
+
+[resource]
+script = ExtResource("1_tjvb6")
+display_name = "Scout"
+sprite = SubResource("Resource_f4kky")
+height_units = 0.88
+id = "inf_scout"

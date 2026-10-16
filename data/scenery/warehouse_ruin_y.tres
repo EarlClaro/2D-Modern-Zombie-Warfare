@@ -19,4 +19,5 @@ display_name = "Ruined Warehouse (along y)"
 sprite = SubResource("Resource_ulvjj")
 footprint = Vector2i(3, 5)
 fades = true
+height_units = 0.81
 id = "warehouse_ruin_y"

@@ -18,6 +18,7 @@ script = ExtResource("1_axsxe")
 display_name = "Boom Gate"
 sprite = SubResource("Resource_3em4v")
 fades = true
+height_units = 2.0
 glow_offset = Vector2(5.1200004, -7.6799994)
 glow_radius = 20.0
 glow_color = Color(1, 0.8, 0.4, 1)

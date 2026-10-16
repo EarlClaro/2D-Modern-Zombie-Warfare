@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_8t5vh"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_q50tl"]
+[ext_resource type="Texture2D" path="res://assets/sprites/branch_pile/se.png" id="3_lhn08"]
+
+[sub_resource type="Resource" id="Resource_abdv7"]
+script = ExtResource("2_q50tl")
+textures = {
+"SE": ExtResource("3_lhn08")
+}
+frame_size = Vector2i(37, 26)
+columns = 1
+origin = Vector2(17, 16)
+
+[resource]
+script = ExtResource("1_8t5vh")
+display_name = "Branch Pile"
+sprite = SubResource("Resource_abdv7")
+height_units = 0.23
+id = "branch_pile"

@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_5uonb"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_b5v10"]
+[ext_resource type="Texture2D" path="res://assets/sprites/power_pole/se.png" id="3_iom13"]
+
+[sub_resource type="Resource" id="Resource_fk8qg"]
+script = ExtResource("2_b5v10")
+textures = {
+"SE": ExtResource("3_iom13")
+}
+frame_size = Vector2i(45, 79)
+columns = 1
+origin = Vector2(23, 72)
+
+[resource]
+script = ExtResource("1_5uonb")
+display_name = "Power Pole"
+sprite = SubResource("Resource_fk8qg")
+fades = true
+height_units = 2.03
+id = "power_pole"

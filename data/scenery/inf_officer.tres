@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_b2o02"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_j5kc5"]
+[ext_resource type="Texture2D" path="res://assets/sprites/inf_officer/se.png" id="3_61trj"]
+[ext_resource type="Texture2D" path="res://assets/sprites/inf_officer/nw.png" id="4_e7f33"]
+
+[sub_resource type="Resource" id="Resource_o6uvt"]
+script = ExtResource("2_j5kc5")
+textures = {
+"NW": ExtResource("4_e7f33"),
+"SE": ExtResource("3_61trj")
+}
+frame_size = Vector2i(40, 45)
+columns = 1
+origin = Vector2(19, 35)
+
+[resource]
+script = ExtResource("1_b2o02")
+display_name = "Officer"
+sprite = SubResource("Resource_o6uvt")
+height_units = 0.86
+id = "inf_officer"

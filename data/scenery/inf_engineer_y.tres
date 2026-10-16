@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_ijpkq"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_s7te6"]
+[ext_resource type="Texture2D" path="res://assets/sprites/inf_engineer/sw.png" id="3_y60c3"]
+[ext_resource type="Texture2D" path="res://assets/sprites/inf_engineer/ne.png" id="4_drqyh"]
+
+[sub_resource type="Resource" id="Resource_7qxjn"]
+script = ExtResource("2_s7te6")
+textures = {
+"NW": ExtResource("4_drqyh"),
+"SE": ExtResource("3_y60c3")
+}
+frame_size = Vector2i(33, 52)
+columns = 1
+origin = Vector2(16, 42)
+
+[resource]
+script = ExtResource("1_ijpkq")
+display_name = "Engineer (along y)"
+sprite = SubResource("Resource_7qxjn")
+fades = true
+height_units = 1.04
+id = "inf_engineer_y"

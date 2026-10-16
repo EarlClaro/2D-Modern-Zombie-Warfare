@@ -17,4 +17,5 @@ origin = Vector2(34, 26)
 script = ExtResource("1_fyqai")
 display_name = "Rock Pile"
 sprite = SubResource("Resource_6v253")
+height_units = 0.42
 id = "rock_pile"

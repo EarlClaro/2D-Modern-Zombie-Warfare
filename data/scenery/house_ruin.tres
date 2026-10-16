@@ -19,4 +19,5 @@ display_name = "Ruined House"
 sprite = SubResource("Resource_uxmqc")
 footprint = Vector2i(3, 3)
 fades = true
+height_units = 1.02
 id = "house_ruin"

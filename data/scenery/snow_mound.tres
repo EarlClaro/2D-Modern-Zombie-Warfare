@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_jur0e"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_4o5e1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/snow_mound/se.png" id="3_4ymb7"]
+
+[sub_resource type="Resource" id="Resource_yodr2"]
+script = ExtResource("2_4o5e1")
+textures = {
+"SE": ExtResource("3_4ymb7")
+}
+frame_size = Vector2i(84, 66)
+columns = 1
+origin = Vector2(41, 34)
+
+[resource]
+script = ExtResource("1_jur0e")
+display_name = "Snow Mound"
+sprite = SubResource("Resource_yodr2")
+height_units = 0.5
+id = "snow_mound"

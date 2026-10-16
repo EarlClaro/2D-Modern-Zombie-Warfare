@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_k7ahn"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_oujwb"]
+[ext_resource type="Texture2D" path="res://assets/sprites/bld_greenhouse/se.png" id="3_0mh8c"]
+
+[sub_resource type="Resource" id="Resource_3hojx"]
+script = ExtResource("2_oujwb")
+textures = {
+"SE": ExtResource("3_0mh8c")
+}
+frame_size = Vector2i(142, 112)
+columns = 1
+origin = Vector2(69, 74)
+
+[resource]
+script = ExtResource("1_k7ahn")
+display_name = "Greenhouse"
+sprite = SubResource("Resource_3hojx")
+footprint = Vector2i(3, 2)
+fades = true
+height_units = 1.57
+id = "bld_greenhouse"

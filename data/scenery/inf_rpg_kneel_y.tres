@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_e1u8y"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_lbwq0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/inf_rpg_kneel/sw.png" id="3_vtqby"]
+[ext_resource type="Texture2D" path="res://assets/sprites/inf_rpg_kneel/ne.png" id="4_j1uq3"]
+
+[sub_resource type="Resource" id="Resource_366ex"]
+script = ExtResource("2_lbwq0")
+textures = {
+"NW": ExtResource("4_j1uq3"),
+"SE": ExtResource("3_vtqby")
+}
+frame_size = Vector2i(66, 47)
+columns = 1
+origin = Vector2(32, 34)
+
+[resource]
+script = ExtResource("1_e1u8y")
+display_name = "Kneeling Rocketeer (along y)"
+sprite = SubResource("Resource_366ex")
+height_units = 0.77
+id = "inf_rpg_kneel_y"

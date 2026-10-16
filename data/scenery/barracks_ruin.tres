@@ -19,4 +19,5 @@ display_name = "Ruined Barracks"
 sprite = SubResource("Resource_0vdwk")
 footprint = Vector2i(4, 2)
 fades = true
+height_units = 0.92
 id = "barracks_ruin"

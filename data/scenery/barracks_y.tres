@@ -19,4 +19,5 @@ display_name = "Barracks (along y)"
 sprite = SubResource("Resource_ocrwp")
 footprint = Vector2i(2, 4)
 fades = true
+height_units = 0.99
 id = "barracks_y"

@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_42wwm"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_hkccm"]
+[ext_resource type="Texture2D" path="res://assets/sprites/base_guard_shack/se.png" id="3_jd52a"]
+
+[sub_resource type="Resource" id="Resource_dks8j"]
+script = ExtResource("2_hkccm")
+textures = {
+"SE": ExtResource("3_jd52a")
+}
+frame_size = Vector2i(79, 68)
+columns = 1
+origin = Vector2(36, 45)
+
+[resource]
+script = ExtResource("1_42wwm")
+display_name = "Guard Shack"
+sprite = SubResource("Resource_dks8j")
+height_units = 0.97
+glow_offset = Vector2(0, -27.2)
+glow_radius = 44.0
+glow_color = Color(1, 0.88, 0.5, 1)
+id = "base_guard_shack"

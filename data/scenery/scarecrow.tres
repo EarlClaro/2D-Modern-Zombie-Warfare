@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_4dtph"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_grwno"]
+[ext_resource type="Texture2D" path="res://assets/sprites/scarecrow/se.png" id="3_3ialh"]
+
+[sub_resource type="Resource" id="Resource_8k0vb"]
+script = ExtResource("2_grwno")
+textures = {
+"SE": ExtResource("3_3ialh")
+}
+frame_size = Vector2i(49, 54)
+columns = 1
+origin = Vector2(24, 47)
+
+[resource]
+script = ExtResource("1_4dtph")
+display_name = "Scarecrow"
+sprite = SubResource("Resource_8k0vb")
+fades = true
+height_units = 1.27
+id = "scarecrow"

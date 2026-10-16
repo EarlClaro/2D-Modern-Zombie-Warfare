@@ -19,4 +19,5 @@ display_name = "Army Tent (along y)"
 sprite = SubResource("Resource_gp87c")
 footprint = Vector2i(2, 3)
 fades = true
+height_units = 1.08
 id = "tent_y"

@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_67eh0"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_qxx7g"]
+[ext_resource type="Texture2D" path="res://assets/sprites/emp_radar_dish/sw.png" id="3_jqgji"]
+[ext_resource type="Texture2D" path="res://assets/sprites/emp_radar_dish/ne.png" id="4_s3seq"]
+
+[sub_resource type="Resource" id="Resource_l08xm"]
+script = ExtResource("2_qxx7g")
+textures = {
+"NW": ExtResource("4_s3seq"),
+"SE": ExtResource("3_jqgji")
+}
+frame_size = Vector2i(59, 60)
+columns = 1
+origin = Vector2(29, 44)
+
+[resource]
+script = ExtResource("1_67eh0")
+display_name = "Mobile Radar (along y)"
+sprite = SubResource("Resource_l08xm")
+fades = true
+height_units = 1.09
+id = "emp_radar_dish_y"

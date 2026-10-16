@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_7k5n3"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_tssaw"]
+[ext_resource type="Texture2D" path="res://assets/sprites/boulder_pair/se.png" id="3_78roi"]
+
+[sub_resource type="Resource" id="Resource_m0uai"]
+script = ExtResource("2_tssaw")
+textures = {
+"SE": ExtResource("3_78roi")
+}
+frame_size = Vector2i(74, 76)
+columns = 1
+origin = Vector2(40, 47)
+
+[resource]
+script = ExtResource("1_7k5n3")
+display_name = "Boulder Pair"
+sprite = SubResource("Resource_m0uai")
+height_units = 0.7
+id = "boulder_pair"

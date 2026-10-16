@@ -17,4 +17,5 @@ origin = Vector2(29, 27)
 script = ExtResource("1_kbnmr")
 display_name = "Scrap Pile"
 sprite = SubResource("Resource_gpbvd")
+height_units = 0.59
 id = "scrap_pile"

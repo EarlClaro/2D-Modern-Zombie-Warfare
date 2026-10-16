@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_8n6q0"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_jioht"]
+[ext_resource type="Texture2D" path="res://assets/sprites/fountain/se.png" id="3_r6mkn"]
+
+[sub_resource type="Resource" id="Resource_1ymm6"]
+script = ExtResource("2_jioht")
+textures = {
+"SE": ExtResource("3_r6mkn")
+}
+frame_size = Vector2i(102, 70)
+columns = 1
+origin = Vector2(50, 41)
+
+[resource]
+script = ExtResource("1_8n6q0")
+display_name = "Fountain"
+sprite = SubResource("Resource_1ymm6")
+footprint = Vector2i(2, 2)
+fades = true
+height_units = 1.14
+id = "fountain"

@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_0dacp"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_rb4pe"]
+[ext_resource type="Texture2D" path="res://assets/sprites/base_hazard_drums/se.png" id="3_v3mc2"]
+
+[sub_resource type="Resource" id="Resource_dad1n"]
+script = ExtResource("2_rb4pe")
+textures = {
+"SE": ExtResource("3_v3mc2")
+}
+frame_size = Vector2i(113, 70)
+columns = 1
+origin = Vector2(56, 39)
+
+[resource]
+script = ExtResource("1_0dacp")
+display_name = "Hazard Drums"
+sprite = SubResource("Resource_dad1n")
+footprint = Vector2i(2, 2)
+height_units = 0.6
+id = "base_hazard_drums"

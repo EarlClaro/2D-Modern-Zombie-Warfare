@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_1xq5k"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_ma3ln"]
+[ext_resource type="Texture2D" path="res://assets/sprites/troop_truck/sw.png" id="3_qdd5k"]
+[ext_resource type="Texture2D" path="res://assets/sprites/troop_truck/ne.png" id="4_umg6x"]
+
+[sub_resource type="Resource" id="Resource_ibtgt"]
+script = ExtResource("2_ma3ln")
+textures = {
+"NW": ExtResource("4_umg6x"),
+"SE": ExtResource("3_qdd5k")
+}
+frame_size = Vector2i(74, 62)
+columns = 1
+origin = Vector2(36, 43)
+
+[resource]
+script = ExtResource("1_1xq5k")
+display_name = "Troop Truck (along y)"
+sprite = SubResource("Resource_ibtgt")
+footprint = Vector2i(1, 2)
+height_units = 0.94
+id = "troop_truck_y"

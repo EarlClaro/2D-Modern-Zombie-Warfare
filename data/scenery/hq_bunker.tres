@@ -18,4 +18,5 @@ script = ExtResource("1_bkecy")
 display_name = "Command Bunker"
 sprite = SubResource("Resource_avc06")
 fades = true
+height_units = 1.86
 id = "hq_bunker"

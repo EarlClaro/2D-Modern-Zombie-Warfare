@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_6kgjy"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_a0or5"]
+[ext_resource type="Texture2D" path="res://assets/sprites/phone_booth/se.png" id="3_h2pl2"]
+
+[sub_resource type="Resource" id="Resource_kmo1o"]
+script = ExtResource("2_a0or5")
+textures = {
+"SE": ExtResource("3_h2pl2")
+}
+frame_size = Vector2i(39, 56)
+columns = 1
+origin = Vector2(19, 44)
+
+[resource]
+script = ExtResource("1_6kgjy")
+display_name = "Phone Booth"
+sprite = SubResource("Resource_kmo1o")
+fades = true
+height_units = 1.09
+id = "phone_booth"

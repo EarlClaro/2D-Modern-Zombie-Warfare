@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_jui6h"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_543nx"]
+[ext_resource type="Texture2D" path="res://assets/sprites/emp_at_gun/sw.png" id="3_jg81n"]
+[ext_resource type="Texture2D" path="res://assets/sprites/emp_at_gun/ne.png" id="4_jodgn"]
+
+[sub_resource type="Resource" id="Resource_cmar6"]
+script = ExtResource("2_543nx")
+textures = {
+"NW": ExtResource("4_jodgn"),
+"SE": ExtResource("3_jg81n")
+}
+frame_size = Vector2i(71, 50)
+columns = 1
+origin = Vector2(35, 30)
+
+[resource]
+script = ExtResource("1_jui6h")
+display_name = "Anti-Tank Gun (along y)"
+sprite = SubResource("Resource_cmar6")
+height_units = 0.65
+id = "emp_at_gun_y"

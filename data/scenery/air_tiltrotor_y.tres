@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_dvag8"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_prtni"]
+[ext_resource type="Texture2D" path="res://assets/sprites/air_tiltrotor/sw.png" id="3_w52jr"]
+[ext_resource type="Texture2D" path="res://assets/sprites/air_tiltrotor/ne.png" id="4_835p2"]
+
+[sub_resource type="Resource" id="Resource_d511w"]
+script = ExtResource("2_prtni")
+textures = {
+"NW": ExtResource("4_835p2"),
+"SE": ExtResource("3_w52jr")
+}
+frame_size = Vector2i(143, 99)
+columns = 1
+origin = Vector2(71, 68)
+
+[resource]
+script = ExtResource("1_dvag8")
+display_name = "Tiltrotor (along y)"
+sprite = SubResource("Resource_d511w")
+footprint = Vector2i(3, 3)
+height_units = 1.01
+id = "air_tiltrotor_y"

@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_m1gb7"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_mybfc"]
+[ext_resource type="Texture2D" path="res://assets/sprites/bld_church_ruin/se.png" id="3_pxm8u"]
+
+[sub_resource type="Resource" id="Resource_m5ym6"]
+script = ExtResource("2_mybfc")
+textures = {
+"SE": ExtResource("3_pxm8u")
+}
+frame_size = Vector2i(125, 105)
+columns = 1
+origin = Vector2(66, 68)
+
+[resource]
+script = ExtResource("1_m1gb7")
+display_name = "Ruined Church"
+sprite = SubResource("Resource_m5ym6")
+footprint = Vector2i(3, 2)
+fades = true
+height_units = 1.57
+id = "bld_church_ruin"

@@ -2,12 +2,14 @@ extends SceneTree
 ## Dev tool (not a test). Renders the sprite sheets (soldier, zombie, Gatling Gun, Tank, Helicopter) from
 ## simple box/cylinder/ellipsoid models: rays through the fixed 2:1 projection, 3-tone shading from one
 ## world light (all 8 facings are lit consistently, no mirroring), 1 px outline. Deterministic.
-## Run: godot --headless --path . --script tools/gen_sprites.gd [-- --units=tank,rifle_soldier]
+## Run: godot --headless --path . --script tools/gen_sprites.gd [-- --units=tank,rifle_soldier] [--packs=nature,town]
 ## Writes assets/sprites/<unit>/<facing>.png (facing = e, se, s, sw, w, nw, n, ne), one sheet per facing.
 ## Model axes (object-local, in tiles): +x forward, +y left, +z up (1.0 = Z_PX_PER_UNIT px).
+## Theme packs: every tools/sprite_packs/pack_*.gd adds specs, materials and models (see docs/specs/art-pack-2.md).
 
 const SEAM_DEPTH := 0.08  # depth gap (ray units) that draws a dark seam between two parts
 const INK := Color("12140f")
+const FOOT_MAX_Z := 0.2  # a part whose lowest point is above this does not count towards the ground footprint
 const LIGHT := Vector3(0.25, 0.7, 0.8)  # world direction toward the light (ground x, ground y, up)
 
 # material -> [dark, mid, light]
@@ -126,6 +128,8 @@ var _z_lean: float = 0.0  # zombie variants: extra forward lean (rad)
 var _spec_k: Dictionary = {}  # unit -> uniform scale, filled from the specs
 var _k: float = 1.0  # scenery: uniform enlargement applied to the finished model
 var _z_kind: String = ""  # zombie variants: "spitter" adds the acid sac and the spit stream
+var _packs: Array = []  # loaded theme-pack scripts (tools/sprite_packs/pack_*.gd)
+var _mats: Dictionary = MATS.duplicate()  # MATS plus every pack's own materials
 
 
 class Prim:
@@ -216,6 +220,7 @@ func _initialize() -> void:
 		{"dir": "barracks_ruin", "auto": true, "k": 1.3, "frames": 1, "columns": 1, "ss": 1, "facings": ["se", "sw"]},
 		{"dir": "wrecked_car", "frame": Vector2i(80, 56), "origin": Vector2(40, 38), "frames": 1, "columns": 1, "ss": 1},
 	]
+	_load_packs(specs)
 	var only: PackedStringArray = []
 	for a in OS.get_cmdline_user_args():
 		if a.begins_with("--units="):
@@ -231,12 +236,47 @@ func _initialize() -> void:
 	quit()
 
 
+## Loads tools/sprite_packs/pack_*.gd: appends each pack's specs and merges its materials (a material name that
+## already exists is an error, so packs prefix theirs).
+func _load_packs(specs: Array) -> void:
+	var dir := DirAccess.open("res://tools/sprite_packs")
+	if dir == null:
+		return
+	var wanted: PackedStringArray = []  # --packs=nature,town loads only those (a broken pack then cannot block the others)
+	for a in OS.get_cmdline_user_args():
+		if a.begins_with("--packs="):
+			wanted = a.substr(8).split(",")
+	var files := Array(dir.get_files())
+	files.sort()
+	for f in files:
+		if not (f.begins_with("pack_") and f.ends_with(".gd")):
+			continue
+		if not wanted.is_empty() and f.trim_prefix("pack_").trim_suffix(".gd") not in wanted:
+			continue
+		var pk: GDScript = load("res://tools/sprite_packs/%s" % f)
+		if pk == null:
+			push_error("cannot load pack %s" % f)
+			continue
+		var consts: Dictionary = pk.get_script_constant_map()
+		var pack_mats: Dictionary = consts.get("MATS", {})
+		for k in pack_mats:
+			if _mats.has(k):
+				push_error("pack %s: material '%s' already exists" % [f, k])
+			_mats[k] = pack_mats[k]
+		_packs.append(pk)
+		for spec in pk.specs():
+			specs.append(spec)
+
+
 ## Sizes the frame to fit every primitive of every frame and listed facing (4 px margin) and stores origin and
-## size in the spec; also writes assets/sprites/<unit>/frame.json so the data tool can read them.
+## size in the spec; also writes assets/sprites/<unit>/frame.json (frame, origin, layout, ground footprint in
+## cells, height in units) so the data tool can read them.
 func _auto_frame(spec: Dictionary) -> void:
 	var unit: String = spec["dir"]
 	var lo := Vector2(INF, INF)
 	var hi := Vector2(-INF, -INF)
+	var half := Vector2.ZERO  # largest |x|, |y| of any part in model axes (the ground footprint)
+	var top := 0.0
 	for f in 8:
 		if IsoProjection.facing_name(f).to_lower() not in spec["facings"]:
 			continue
@@ -255,6 +295,23 @@ func _auto_frame(spec: Dictionary) -> void:
 							var sp := IsoProjection.ground_to_screen_z(g, q.z)
 							lo = lo.min(sp)
 							hi = hi.max(sp)
+	for k in spec["frames"]:  # footprint: only parts that reach the ground count (a tree's crown does not)
+		for p in _model(unit, k):
+			var ext := Vector3(p.h.x, p.h.y, p.h.z)
+			if p.kind == CYL:
+				ext = Vector3(p.h.x, p.h.x, p.h.z)
+			var corners: Array[Vector3] = []
+			var zmin := INF
+			for sx in [-1.0, 1.0]:
+				for sy in [-1.0, 1.0]:
+					for sz in [-1.0, 1.0]:
+						var q: Vector3 = p.c + p.basis * Vector3(ext.x * sx, ext.y * sy, ext.z * sz)
+						corners.append(q)
+						zmin = minf(zmin, q.z)
+						top = maxf(top, q.z)
+			if zmin < FOOT_MAX_Z:
+				for q in corners:
+					half = half.max(Vector2(absf(q.x), absf(q.y)))
 	var margin := 4.0
 	lo -= Vector2(margin, margin)
 	hi += Vector2(margin, margin)
@@ -263,7 +320,9 @@ func _auto_frame(spec: Dictionary) -> void:
 	spec["origin"] = Vector2(floor(-lo.x), floor(-lo.y))
 	DirAccess.make_dir_recursive_absolute("res://assets/sprites/%s" % unit)
 	var fh := FileAccess.open("res://assets/sprites/%s/frame.json" % unit, FileAccess.WRITE)
-	fh.store_string(JSON.stringify({"frame": [size.x, size.y], "origin": [int(spec["origin"].x), int(spec["origin"].y)], "frames": spec["frames"], "columns": spec["columns"]}))
+	var foot := Vector2i(maxi(1, ceili(2.0 * half.x - 0.1)), maxi(1, ceili(2.0 * half.y - 0.1)))
+	foot = spec.get("foot", foot)  # a pack's own footprint wins over the estimate
+	fh.store_string(JSON.stringify({"frame": [size.x, size.y], "origin": [int(spec["origin"].x), int(spec["origin"].y)], "frames": spec["frames"], "columns": spec["columns"], "footprint": [foot.x, foot.y], "height": snappedf(top, 0.01)}))
 	fh.close()
 
 
@@ -351,8 +410,6 @@ func _model(unit: String, frame: int) -> Array[Prim]:
 			_truck(m, frame)
 		"wrecked_car":
 			_wreck_car(m)
-		_:
-			_scenery_model(m, unit, frame)
 		"tank":
 			_tank(m, frame)
 		"gatling_gun":
@@ -361,6 +418,8 @@ func _model(unit: String, frame: int) -> Array[Prim]:
 			_nest(m, frame)
 		"helicopter":
 			_heli(m, frame)
+		_:
+			_scenery_model(m, unit, frame)
 	return m
 
 
@@ -465,6 +524,10 @@ func _scenery_model(m: Array[Prim], unit: String, frame: int) -> void:
 			_barracks(m, 0)
 		"barracks_ruin":
 			_barracks(m, 1)
+		_:
+			for pk in _packs:
+				if pk.build(self, m, unit, frame):
+					break
 	if _k != 1.0:
 		_scale(m, _k)
 
@@ -1953,10 +2016,38 @@ func _render(model: Array[Prim], facing: int, frame_size: Vector2i, origin: Vect
 	color.resize(w * h)
 	depth.resize(w * h)
 	pid.resize(w * h)
+	# Screen box of every part, so a pixel only tests the parts that can cover it (same result, far fewer tests).
+	var bx0 := PackedInt32Array()
+	var bx1 := PackedInt32Array()
+	var by_row: Array = []
+	for y in h:
+		by_row.append(PackedInt32Array())
+	for pi in model.size():
+		var mp := model[pi]
+		var ext := mp.h if mp.kind != CYL else Vector3(mp.h.x, mp.h.x, mp.h.z)
+		var lo := Vector2(INF, INF)
+		var hi := Vector2(-INF, -INF)
+		for sx in [-1.0, 1.0]:
+			for sy in [-1.0, 1.0]:
+				for sz in [-1.0, 1.0]:
+					var q: Vector3 = mp.c + mp.basis * Vector3(ext.x * sx, ext.y * sy, ext.z * sz)
+					var sp2 := IsoProjection.ground_to_screen_z(fwd * q.x + perp * q.y, q.z) + origin
+					lo = lo.min(sp2)
+					hi = hi.max(sp2)
+		bx0.append(floori(lo.x) - 1)
+		bx1.append(ceili(hi.x) + 1)
+		for ry in range(maxi(floori(lo.y) - 1, 0), mini(ceili(hi.y) + 1, h - 1) + 1):
+			by_row[ry].append(pi)
 	for y in h:
 		for x in w:
 			var i := y * w + x
 			pid[i] = -1
+			var cands := PackedInt32Array()
+			for pi in by_row[y]:
+				if x >= bx0[pi] and x <= bx1[pi]:
+					cands.append(pi)
+			if cands.is_empty():
+				continue
 			var votes: Dictionary = {}  # Color -> [count, depth, pid]
 			var hits := 0
 			for sj in ss:
@@ -1967,7 +2058,7 @@ func _render(model: Array[Prim], facing: int, frame_size: Vector2i, origin: Vect
 					var best_t := -INF
 					var best_n := Vector3.ZERO
 					var best_p := -1
-					for pi in model.size():
+					for pi in cands:
 						var hit := _hit(model[pi], o, d)
 						if hit.is_empty():
 							continue
@@ -2068,7 +2159,7 @@ func _shade(p: Prim, n_world: Vector3, n_local: Vector3, hit_local: Vector3) -> 
 	if p.stripe > 0.0 and absf(n_local.y) > 0.5:
 		if int(floor(hit_local.x / p.stripe + _track_phase)) % 2 != 0:
 			tone = maxi(0, tone - 1)
-	return Color(MATS[p.mat][tone])
+	return Color(_mats[p.mat][tone])
 
 
 ## Seams between parts, then the 1 px silhouette outline.
@@ -2094,7 +2185,7 @@ func _finish(color: Array, depth: PackedFloat32Array, pid: PackedInt32Array, mod
 					continue
 				var j := ny * w + nx
 				if pid[j] >= 0 and pid[j] != pid[i] and depth[j] - depth[i] > SEAM_DEPTH:
-					c = Color(MATS[model[pid[i]].mat][0]).darkened(0.35)
+					c = Color(_mats[model[pid[i]].mat][0]).darkened(0.35)
 					break
 			img.set_pixel(x, y, c)
 	return img

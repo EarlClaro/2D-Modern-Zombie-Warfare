@@ -18,4 +18,5 @@ script = ExtResource("1_jys02")
 display_name = "Flag Pole"
 sprite = SubResource("Resource_egs6u")
 fades = true
+height_units = 2.63
 id = "flag_pole"

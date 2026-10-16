@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_cwdm1"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_4vsul"]
+[ext_resource type="Texture2D" path="res://assets/sprites/inf_flamethrower/se.png" id="3_4yoxu"]
+[ext_resource type="Texture2D" path="res://assets/sprites/inf_flamethrower/nw.png" id="4_cq0sp"]
+
+[sub_resource type="Resource" id="Resource_wbdx5"]
+script = ExtResource("2_4vsul")
+textures = {
+"NW": ExtResource("4_cq0sp"),
+"SE": ExtResource("3_4yoxu")
+}
+frame_size = Vector2i(65, 52)
+columns = 1
+origin = Vector2(32, 42)
+
+[resource]
+script = ExtResource("1_cwdm1")
+display_name = "Flamethrower Trooper"
+sprite = SubResource("Resource_wbdx5")
+height_units = 0.86
+id = "inf_flamethrower"

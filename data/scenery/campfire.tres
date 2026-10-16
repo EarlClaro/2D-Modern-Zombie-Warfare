@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_cq4jq"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_el074"]
+[ext_resource type="Texture2D" path="res://assets/sprites/campfire/se.png" id="3_rcprr"]
+
+[sub_resource type="Resource" id="Resource_fjl63"]
+script = ExtResource("2_el074")
+textures = {
+"SE": ExtResource("3_rcprr")
+}
+frame_size = Vector2i(65, 54)
+columns = 1
+origin = Vector2(32, 35)
+
+[resource]
+script = ExtResource("1_cq4jq")
+display_name = "Campfire"
+sprite = SubResource("Resource_fjl63")
+height_units = 0.92
+glow_offset = Vector2(0, -10.88)
+glow_radius = 56.0
+glow_color = Color(1, 0.55, 0.2, 1)
+id = "campfire"

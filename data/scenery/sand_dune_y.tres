@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_6bwgn"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_00nn5"]
+[ext_resource type="Texture2D" path="res://assets/sprites/sand_dune/sw.png" id="3_ol5md"]
+
+[sub_resource type="Resource" id="Resource_s3yx4"]
+script = ExtResource("2_00nn5")
+textures = {
+"SE": ExtResource("3_ol5md")
+}
+frame_size = Vector2i(135, 103)
+columns = 1
+origin = Vector2(67, 51)
+
+[resource]
+script = ExtResource("1_6bwgn")
+display_name = "Sand Dune (along y)"
+sprite = SubResource("Resource_s3yx4")
+footprint = Vector2i(2, 3)
+height_units = 0.5
+id = "sand_dune_y"

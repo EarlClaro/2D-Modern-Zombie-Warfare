@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_qm2v3"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_iabfb"]
+[ext_resource type="Texture2D" path="res://assets/sprites/slate_outcrop/se.png" id="3_lc3rt"]
+
+[sub_resource type="Resource" id="Resource_pe26p"]
+script = ExtResource("2_iabfb")
+textures = {
+"SE": ExtResource("3_lc3rt")
+}
+frame_size = Vector2i(78, 55)
+columns = 1
+origin = Vector2(38, 32)
+
+[resource]
+script = ExtResource("1_qm2v3")
+display_name = "Slate Outcrop"
+sprite = SubResource("Resource_pe26p")
+height_units = 0.73
+id = "slate_outcrop"

@@ -87,9 +87,9 @@ func test_the_generated_atlas_matches_the_layout_the_tileset_expects() -> void:
 	var tex := load(IsoTileSet.ATLAS_PATH) as Texture2D
 	assert_true(tex != null, "terrain.png loads")
 	if tex != null:
-		assert_eq(tex.get_size(), Vector2(IsoProjection.TILE_W * IsoTileSet.VARIANTS, IsoProjection.TILE_H * 7.0))
+		assert_eq(tex.get_size(), Vector2(IsoProjection.TILE_W * IsoTileSet.VARIANTS, IsoProjection.TILE_H * TerrainCatalog.count()))
 		var img := tex.get_image()
-		for row in 7:
+		for row in TerrainCatalog.count():
 			for v in IsoTileSet.VARIANTS:
 				assert_true(img.get_pixel(v * 64 + 32, row * 32 + 16).a > 0.9, "tile (%d, %d) is painted in the middle" % [v, row])
 				assert_true(img.get_pixel(v * 64, row * 32).a < 0.1, "tile (%d, %d) is transparent in the corner" % [v, row])

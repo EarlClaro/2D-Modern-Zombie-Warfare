@@ -18,4 +18,5 @@ script = ExtResource("1_ei807")
 display_name = "Blue Container (along y)"
 sprite = SubResource("Resource_dlf6t")
 footprint = Vector2i(2, 3)
+height_units = 0.92
 id = "container_blue_y"

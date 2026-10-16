@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_f3vms"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_csjhe"]
+[ext_resource type="Texture2D" path="res://assets/sprites/base_sliding_gate/sw.png" id="3_cr7gq"]
+
+[sub_resource type="Resource" id="Resource_4whby"]
+script = ExtResource("2_csjhe")
+textures = {
+"SE": ExtResource("3_cr7gq")
+}
+frame_size = Vector2i(113, 96)
+columns = 1
+origin = Vector2(56, 66)
+
+[resource]
+script = ExtResource("1_f3vms")
+display_name = "Sliding Gate (along y)"
+sprite = SubResource("Resource_4whby")
+footprint = Vector2i(1, 3)
+fades = true
+height_units = 1.16
+id = "base_sliding_gate_y"

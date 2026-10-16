@@ -9,6 +9,8 @@ extends ContentDefinition
 @export var footprint: Vector2i = Vector2i.ONE
 ## True for pieces tall enough to hide units behind them (trees, buildings): they fade then.
 @export var fades: bool = false
+## Height of the piece in tiles (from the rendered art): how long a shadow it casts. 0 = unknown, estimated from the art.
+@export var height_units: float = 0.0
 ## Optional night glow (lamp, searchlight, fire): offset from the piece's anchor in px, radius in px (0 = none)
 ## and colour. Drawn by Atmosphere when it is dark.
 @export var glow_offset: Vector2 = Vector2.ZERO
@@ -32,6 +34,8 @@ func validate() -> PackedStringArray:
 		errs.append(_err("footprint must be at least 1x1"))
 	if glow_radius < 0.0:
 		errs.append(_err("glow_radius must be >= 0"))
+	if height_units < 0.0:
+		errs.append(_err("height_units must be >= 0"))
 	return errs
 
 
@@ -42,6 +46,15 @@ func cells_at(origin: Vector2i) -> Array[Vector2i]:
 		for x in footprint.x:
 			out.append(origin + Vector2i(x, y))
 	return out
+
+
+## Height used for the shadow: the stored value, else about what the art's height above its base point suggests.
+func shadow_height() -> float:
+	if height_units > 0.0:
+		return height_units
+	if sprite == null:
+		return 0.0
+	return sprite.origin.y / IsoProjection.Z_PX_PER_UNIT
 
 
 ## Ground position of the piece's centre (its y-sort anchor and the origin pixel of its art).

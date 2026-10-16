@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_hsyt7"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_5oxhh"]
+[ext_resource type="Texture2D" path="res://assets/sprites/ifv_tracked/sw.png" id="3_8yq7c"]
+[ext_resource type="Texture2D" path="res://assets/sprites/ifv_tracked/ne.png" id="4_l7tlj"]
+
+[sub_resource type="Resource" id="Resource_cn45b"]
+script = ExtResource("2_5oxhh")
+textures = {
+"NW": ExtResource("4_l7tlj"),
+"SE": ExtResource("3_8yq7c")
+}
+frame_size = Vector2i(72, 69)
+columns = 1
+origin = Vector2(35, 49)
+
+[resource]
+script = ExtResource("1_hsyt7")
+display_name = "Tracked IFV (along y)"
+sprite = SubResource("Resource_cn45b")
+footprint = Vector2i(1, 2)
+height_units = 1.05
+id = "ifv_tracked_y"

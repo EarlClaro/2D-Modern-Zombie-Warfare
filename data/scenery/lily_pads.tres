@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_xw8kx"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_n5epb"]
+[ext_resource type="Texture2D" path="res://assets/sprites/lily_pads/se.png" id="3_1dx5a"]
+
+[sub_resource type="Resource" id="Resource_6rquw"]
+script = ExtResource("2_n5epb")
+textures = {
+"SE": ExtResource("3_1dx5a")
+}
+frame_size = Vector2i(43, 27)
+columns = 1
+origin = Vector2(21, 13)
+
+[resource]
+script = ExtResource("1_xw8kx")
+display_name = "Lily Pads"
+sprite = SubResource("Resource_6rquw")
+height_units = 0.08
+id = "lily_pads"

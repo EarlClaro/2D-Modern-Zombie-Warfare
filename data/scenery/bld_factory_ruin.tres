@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_nlb0n"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_fkfjc"]
+[ext_resource type="Texture2D" path="res://assets/sprites/bld_factory_ruin/se.png" id="3_ejgmy"]
+
+[sub_resource type="Resource" id="Resource_d3a07"]
+script = ExtResource("2_fkfjc")
+textures = {
+"SE": ExtResource("3_ejgmy")
+}
+frame_size = Vector2i(190, 133)
+columns = 1
+origin = Vector2(94, 83)
+
+[resource]
+script = ExtResource("1_nlb0n")
+display_name = "Ruined Factory"
+sprite = SubResource("Resource_d3a07")
+footprint = Vector2i(4, 3)
+fades = true
+height_units = 1.46
+id = "bld_factory_ruin"

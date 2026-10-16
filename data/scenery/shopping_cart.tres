@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_otkms"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_amcvo"]
+[ext_resource type="Texture2D" path="res://assets/sprites/shopping_cart/se.png" id="3_qlanq"]
+
+[sub_resource type="Resource" id="Resource_0hf5b"]
+script = ExtResource("2_amcvo")
+textures = {
+"SE": ExtResource("3_qlanq")
+}
+frame_size = Vector2i(31, 37)
+columns = 1
+origin = Vector2(18, 27)
+
+[resource]
+script = ExtResource("1_otkms")
+display_name = "Shopping Cart"
+sprite = SubResource("Resource_0hf5b")
+height_units = 0.52
+id = "shopping_cart"

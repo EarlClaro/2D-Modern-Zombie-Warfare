@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_atxg4"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_o53ht"]
+[ext_resource type="Texture2D" path="res://assets/sprites/billboard/se.png" id="3_45cpk"]
+
+[sub_resource type="Resource" id="Resource_1dms8"]
+script = ExtResource("2_o53ht")
+textures = {
+"SE": ExtResource("3_45cpk")
+}
+frame_size = Vector2i(57, 79)
+columns = 1
+origin = Vector2(30, 66)
+
+[resource]
+script = ExtResource("1_atxg4")
+display_name = "Billboard"
+sprite = SubResource("Resource_1dms8")
+footprint = Vector2i(2, 1)
+fades = true
+height_units = 1.62
+id = "billboard"

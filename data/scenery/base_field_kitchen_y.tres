@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_cle8a"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_qe011"]
+[ext_resource type="Texture2D" path="res://assets/sprites/base_field_kitchen/sw.png" id="3_54smr"]
+
+[sub_resource type="Resource" id="Resource_nmeie"]
+script = ExtResource("2_qe011")
+textures = {
+"SE": ExtResource("3_54smr")
+}
+frame_size = Vector2i(90, 83)
+columns = 1
+origin = Vector2(44, 57)
+
+[resource]
+script = ExtResource("1_cle8a")
+display_name = "Field Kitchen (along y)"
+sprite = SubResource("Resource_nmeie")
+footprint = Vector2i(1, 2)
+fades = true
+height_units = 1.33
+id = "base_field_kitchen_y"

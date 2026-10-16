@@ -106,6 +106,8 @@ var preview: CardTargeting.Preview
 
 ## Decorations of the current map (see _spawn_scenery) and the cells they occupy.
 var scenery_nodes: Array[BattleScenery] = []
+## The decorations' ground shadows (one node on the Shadows layer); the Atmosphere dims it with the time of day.
+var scenery_shadows: SceneryShadows
 var _scenery_cells: Array[Vector2i] = []
 var _fade_pieces: Array[BattleScenery] = []  # the pieces that can fade
 var _fade_lookup: Dictionary = {}  # cell -> Array[BattleScenery]: pieces that could hide something standing on that cell
@@ -740,6 +742,7 @@ func _clear_dynamic() -> void:
 	units.clear()
 	enemies.clear()
 	scenery_nodes.clear()
+	scenery_shadows = null
 	_scenery_cells.clear()
 	_fade_pieces.clear()
 	_fade_lookup.clear()
@@ -774,6 +777,10 @@ func _spawn_scenery() -> void:
 		if def.fades:
 			_fade_pieces.append(node)
 			_register_fade_cells(node)
+	scenery_shadows = SceneryShadows.new()
+	scenery_shadows.name = "SceneryShadows"
+	_shadows.add_child(scenery_shadows)
+	scenery_shadows.build(scenery_nodes)
 
 
 const FADE_PERIOD_S: float = 0.1

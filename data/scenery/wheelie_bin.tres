@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_mtsgp"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_lubu8"]
+[ext_resource type="Texture2D" path="res://assets/sprites/wheelie_bin/se.png" id="3_uqax1"]
+
+[sub_resource type="Resource" id="Resource_glg8v"]
+script = ExtResource("2_lubu8")
+textures = {
+"SE": ExtResource("3_uqax1")
+}
+frame_size = Vector2i(47, 42)
+columns = 1
+origin = Vector2(21, 30)
+
+[resource]
+script = ExtResource("1_mtsgp")
+display_name = "Wheelie Bins"
+sprite = SubResource("Resource_glg8v")
+height_units = 0.6
+id = "wheelie_bin"

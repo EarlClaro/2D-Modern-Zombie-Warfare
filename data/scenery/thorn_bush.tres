@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_t4i2l"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_gn7e3"]
+[ext_resource type="Texture2D" path="res://assets/sprites/thorn_bush/se.png" id="3_2vlbw"]
+
+[sub_resource type="Resource" id="Resource_wfk4e"]
+script = ExtResource("2_gn7e3")
+textures = {
+"SE": ExtResource("3_2vlbw")
+}
+frame_size = Vector2i(37, 33)
+columns = 1
+origin = Vector2(18, 22)
+
+[resource]
+script = ExtResource("1_t4i2l")
+display_name = "Thorn Bush"
+sprite = SubResource("Resource_wfk4e")
+height_units = 0.49
+id = "thorn_bush"

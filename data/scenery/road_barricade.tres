@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_sxgdd"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_yswhd"]
+[ext_resource type="Texture2D" path="res://assets/sprites/road_barricade/se.png" id="3_c6ou7"]
+
+[sub_resource type="Resource" id="Resource_5f6r7"]
+script = ExtResource("2_yswhd")
+textures = {
+"SE": ExtResource("3_c6ou7")
+}
+frame_size = Vector2i(43, 42)
+columns = 1
+origin = Vector2(21, 29)
+
+[resource]
+script = ExtResource("1_sxgdd")
+display_name = "Road Barricade"
+sprite = SubResource("Resource_5f6r7")
+height_units = 0.58
+glow_offset = Vector2(-10.752001, -23.296001)
+glow_radius = 22.0
+glow_color = Color(1, 0.7, 0.2, 1)
+id = "road_barricade"

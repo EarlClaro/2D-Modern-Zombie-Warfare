@@ -19,4 +19,5 @@ display_name = "Small House"
 sprite = SubResource("Resource_3qcqe")
 footprint = Vector2i(3, 3)
 fades = true
+height_units = 1.74
 id = "house_small"

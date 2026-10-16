@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_tobuv"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_6aymp"]
+[ext_resource type="Texture2D" path="res://assets/sprites/grass_tuft/se.png" id="3_4aqn4"]
+
+[sub_resource type="Resource" id="Resource_ykmsv"]
+script = ExtResource("2_6aymp")
+textures = {
+"SE": ExtResource("3_4aqn4")
+}
+frame_size = Vector2i(18, 19)
+columns = 1
+origin = Vector2(8, 12)
+
+[resource]
+script = ExtResource("1_tobuv")
+display_name = "Grass Tuft"
+sprite = SubResource("Resource_ykmsv")
+height_units = 0.22
+id = "grass_tuft"

@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_i53yv"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_m482i"]
+[ext_resource type="Texture2D" path="res://assets/sprites/base_weapon_rack/sw.png" id="3_18awr"]
+
+[sub_resource type="Resource" id="Resource_rwk7o"]
+script = ExtResource("2_m482i")
+textures = {
+"SE": ExtResource("3_18awr")
+}
+frame_size = Vector2i(74, 67)
+columns = 1
+origin = Vector2(36, 48)
+
+[resource]
+script = ExtResource("1_i53yv")
+display_name = "Weapon Rack (along y)"
+sprite = SubResource("Resource_rwk7o")
+footprint = Vector2i(1, 2)
+height_units = 0.99
+id = "base_weapon_rack_y"

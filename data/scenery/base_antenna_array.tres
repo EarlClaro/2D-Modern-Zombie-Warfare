@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_yywh6"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_ugn1t"]
+[ext_resource type="Texture2D" path="res://assets/sprites/base_antenna_array/se.png" id="3_n3uje"]
+
+[sub_resource type="Resource" id="Resource_u61k5"]
+script = ExtResource("2_ugn1t")
+textures = {
+"SE": ExtResource("3_n3uje")
+}
+frame_size = Vector2i(78, 111)
+columns = 1
+origin = Vector2(39, 85)
+
+[resource]
+script = ExtResource("1_yywh6")
+display_name = "Antenna Array"
+sprite = SubResource("Resource_u61k5")
+fades = true
+height_units = 2.53
+id = "base_antenna_array"

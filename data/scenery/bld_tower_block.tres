@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_6jjos"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_rbbd3"]
+[ext_resource type="Texture2D" path="res://assets/sprites/bld_tower_block/se.png" id="3_n0lfc"]
+
+[sub_resource type="Resource" id="Resource_oh1ru"]
+script = ExtResource("2_rbbd3")
+textures = {
+"SE": ExtResource("3_n0lfc")
+}
+frame_size = Vector2i(127, 227)
+columns = 1
+origin = Vector2(63, 193)
+
+[resource]
+script = ExtResource("1_6jjos")
+display_name = "Tower Block"
+sprite = SubResource("Resource_oh1ru")
+footprint = Vector2i(2, 2)
+fades = true
+height_units = 5.83
+id = "bld_tower_block"

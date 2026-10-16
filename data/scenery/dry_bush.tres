@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_61ima"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_cbvqe"]
+[ext_resource type="Texture2D" path="res://assets/sprites/dry_bush/se.png" id="3_aeudp"]
+
+[sub_resource type="Resource" id="Resource_khdr3"]
+script = ExtResource("2_cbvqe")
+textures = {
+"SE": ExtResource("3_aeudp")
+}
+frame_size = Vector2i(24, 22)
+columns = 1
+origin = Vector2(11, 16)
+
+[resource]
+script = ExtResource("1_61ima")
+display_name = "Tumbleweed"
+sprite = SubResource("Resource_khdr3")
+height_units = 0.36
+id = "dry_bush"

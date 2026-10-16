@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_qnvu1"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_da5n8"]
+[ext_resource type="Texture2D" path="res://assets/sprites/base_latrine/se.png" id="3_332l7"]
+
+[sub_resource type="Resource" id="Resource_gwt1d"]
+script = ExtResource("2_da5n8")
+textures = {
+"SE": ExtResource("3_332l7")
+}
+frame_size = Vector2i(119, 91)
+columns = 1
+origin = Vector2(59, 59)
+
+[resource]
+script = ExtResource("1_qnvu1")
+display_name = "Latrine Row"
+sprite = SubResource("Resource_gwt1d")
+footprint = Vector2i(2, 1)
+fades = true
+height_units = 1.33
+id = "base_latrine"

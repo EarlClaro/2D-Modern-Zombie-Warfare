@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_eh0yx"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_dn8vc"]
+[ext_resource type="Texture2D" path="res://assets/sprites/air_transport_heli/sw.png" id="3_7i42y"]
+[ext_resource type="Texture2D" path="res://assets/sprites/air_transport_heli/ne.png" id="4_3hee1"]
+
+[sub_resource type="Resource" id="Resource_qhqhq"]
+script = ExtResource("2_dn8vc")
+textures = {
+"NW": ExtResource("4_3hee1"),
+"SE": ExtResource("3_7i42y")
+}
+frame_size = Vector2i(109, 87)
+columns = 1
+origin = Vector2(54, 58)
+
+[resource]
+script = ExtResource("1_eh0yx")
+display_name = "Transport Helicopter (along y)"
+sprite = SubResource("Resource_qhqhq")
+footprint = Vector2i(2, 3)
+height_units = 1.01
+id = "air_transport_heli_y"

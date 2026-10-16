@@ -18,6 +18,7 @@ script = ExtResource("1_kf8x4")
 display_name = "Floodlight Tower"
 sprite = SubResource("Resource_jfsg6")
 fades = true
+height_units = 2.84
 glow_offset = Vector2(4.352, -85.951996)
 glow_radius = 72.0
 glow_color = Color(1, 0.95, 0.8, 1)

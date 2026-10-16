@@ -17,4 +17,5 @@ origin = Vector2(13, 54)
 script = ExtResource("1_lymsh")
 display_name = "Road Sign (along y)"
 sprite = SubResource("Resource_ynmj2")
+height_units = 1.46
 id = "road_sign_y"

@@ -17,4 +17,5 @@ origin = Vector2(28, 32)
 script = ExtResource("1_xvv5q")
 display_name = "Dumpster (along y)"
 sprite = SubResource("Resource_sc4kn")
+height_units = 0.52
 id = "dumpster_y"

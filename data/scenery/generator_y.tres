@@ -17,4 +17,5 @@ origin = Vector2(33, 52)
 script = ExtResource("1_82gi5")
 display_name = "Generator (along y)"
 sprite = SubResource("Resource_1w1s6")
+height_units = 1.23
 id = "generator_y"

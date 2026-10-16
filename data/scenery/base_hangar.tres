@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_mgtyl"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_oaaor"]
+[ext_resource type="Texture2D" path="res://assets/sprites/base_hangar/se.png" id="3_oj0bg"]
+
+[sub_resource type="Resource" id="Resource_qqht4"]
+script = ExtResource("2_oaaor")
+textures = {
+"SE": ExtResource("3_oj0bg")
+}
+frame_size = Vector2i(198, 124)
+columns = 1
+origin = Vector2(98, 71)
+
+[resource]
+script = ExtResource("1_mgtyl")
+display_name = "Aircraft Hangar"
+sprite = SubResource("Resource_qqht4")
+footprint = Vector2i(4, 3)
+fades = true
+height_units = 1.04
+id = "base_hangar"

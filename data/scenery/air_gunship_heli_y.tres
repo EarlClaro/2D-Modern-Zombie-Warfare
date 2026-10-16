@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_jy47a"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_uud5j"]
+[ext_resource type="Texture2D" path="res://assets/sprites/air_gunship_heli/sw.png" id="3_qe5cn"]
+[ext_resource type="Texture2D" path="res://assets/sprites/air_gunship_heli/ne.png" id="4_schs5"]
+
+[sub_resource type="Resource" id="Resource_j7nji"]
+script = ExtResource("2_uud5j")
+textures = {
+"NW": ExtResource("4_schs5"),
+"SE": ExtResource("3_qe5cn")
+}
+frame_size = Vector2i(85, 57)
+columns = 1
+origin = Vector2(42, 43)
+
+[resource]
+script = ExtResource("1_jy47a")
+display_name = "Gunship Helicopter (along y)"
+sprite = SubResource("Resource_j7nji")
+footprint = Vector2i(2, 2)
+height_units = 0.72
+id = "air_gunship_heli_y"

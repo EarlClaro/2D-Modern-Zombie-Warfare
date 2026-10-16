@@ -18,4 +18,5 @@ script = ExtResource("1_qae6c")
 display_name = "Rubble Field"
 sprite = SubResource("Resource_bqqk3")
 footprint = Vector2i(3, 3)
+height_units = 0.66
 id = "rubble_field"

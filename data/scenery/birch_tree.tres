@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_oyudg"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_uxhcx"]
+[ext_resource type="Texture2D" path="res://assets/sprites/birch_tree/se.png" id="3_8pgwo"]
+
+[sub_resource type="Resource" id="Resource_tus4y"]
+script = ExtResource("2_uxhcx")
+textures = {
+"SE": ExtResource("3_8pgwo")
+}
+frame_size = Vector2i(73, 97)
+columns = 1
+origin = Vector2(36, 89)
+
+[resource]
+script = ExtResource("1_oyudg")
+display_name = "Birch Tree"
+sprite = SubResource("Resource_tus4y")
+fades = true
+height_units = 2.27
+id = "birch_tree"

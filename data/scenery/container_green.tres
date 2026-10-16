@@ -18,4 +18,5 @@ script = ExtResource("1_ku08l")
 display_name = "Green Container"
 sprite = SubResource("Resource_ded6w")
 footprint = Vector2i(3, 2)
+height_units = 0.92
 id = "container_green"

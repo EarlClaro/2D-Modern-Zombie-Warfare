@@ -18,4 +18,5 @@ script = ExtResource("1_wj708")
 display_name = "Pine Tree"
 sprite = SubResource("Resource_orjsv")
 fades = true
+height_units = 2.52
 id = "pine_tree"

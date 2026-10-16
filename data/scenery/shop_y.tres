@@ -19,4 +19,5 @@ display_name = "Shop (along y)"
 sprite = SubResource("Resource_mtf44")
 footprint = Vector2i(3, 4)
 fades = true
+height_units = 1.42
 id = "shop_y"

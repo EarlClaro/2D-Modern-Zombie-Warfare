@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_ptvwm"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_xf1nx"]
+[ext_resource type="Texture2D" path="res://assets/sprites/emp_field_artillery/se.png" id="3_y03oh"]
+[ext_resource type="Texture2D" path="res://assets/sprites/emp_field_artillery/nw.png" id="4_rl6px"]
+
+[sub_resource type="Resource" id="Resource_mk1gb"]
+script = ExtResource("2_xf1nx")
+textures = {
+"NW": ExtResource("4_rl6px"),
+"SE": ExtResource("3_y03oh")
+}
+frame_size = Vector2i(76, 75)
+columns = 1
+origin = Vector2(37, 55)
+
+[resource]
+script = ExtResource("1_ptvwm")
+display_name = "Field Artillery"
+sprite = SubResource("Resource_mk1gb")
+footprint = Vector2i(2, 1)
+fades = true
+height_units = 1.11
+id = "emp_field_artillery"

@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_htfj1"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_3ykxp"]
+[ext_resource type="Texture2D" path="res://assets/sprites/base_sandbag_corner/se.png" id="3_2hu1q"]
+
+[sub_resource type="Resource" id="Resource_0csuu"]
+script = ExtResource("2_3ykxp")
+textures = {
+"SE": ExtResource("3_2hu1q")
+}
+frame_size = Vector2i(135, 77)
+columns = 1
+origin = Vector2(69, 46)
+
+[resource]
+script = ExtResource("1_htfj1")
+display_name = "Sandbag Bastion"
+sprite = SubResource("Resource_0csuu")
+footprint = Vector2i(2, 2)
+height_units = 0.66
+id = "base_sandbag_corner"

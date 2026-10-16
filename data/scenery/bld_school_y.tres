@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_b444x"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_0d5k2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/bld_school/sw.png" id="3_n3snh"]
+
+[sub_resource type="Resource" id="Resource_86usy"]
+script = ExtResource("2_0d5k2")
+textures = {
+"SE": ExtResource("3_n3snh")
+}
+frame_size = Vector2i(169, 130)
+columns = 1
+origin = Vector2(84, 85)
+
+[resource]
+script = ExtResource("1_b444x")
+display_name = "School (along y)"
+sprite = SubResource("Resource_86usy")
+footprint = Vector2i(2, 4)
+fades = true
+height_units = 2.08
+id = "bld_school_y"

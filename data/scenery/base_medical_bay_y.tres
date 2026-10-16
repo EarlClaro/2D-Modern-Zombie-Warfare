@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_bdysp"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_eus3v"]
+[ext_resource type="Texture2D" path="res://assets/sprites/base_medical_bay/sw.png" id="3_n53d8"]
+
+[sub_resource type="Resource" id="Resource_xkd4v"]
+script = ExtResource("2_eus3v")
+textures = {
+"SE": ExtResource("3_n53d8")
+}
+frame_size = Vector2i(151, 95)
+columns = 1
+origin = Vector2(78, 55)
+
+[resource]
+script = ExtResource("1_bdysp")
+display_name = "Medical Bay (along y)"
+sprite = SubResource("Resource_xkd4v")
+footprint = Vector2i(2, 3)
+height_units = 0.71
+id = "base_medical_bay_y"

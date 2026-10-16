@@ -18,4 +18,5 @@ script = ExtResource("1_uul35")
 display_name = "Chain-link Fence"
 sprite = SubResource("Resource_d8smq")
 footprint = Vector2i(2, 1)
+height_units = 1.14
 id = "chain_fence"

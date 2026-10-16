@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_t88lw"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_wripe"]
+[ext_resource type="Texture2D" path="res://assets/sprites/bld_hospital_ruin/se.png" id="3_jiecc"]
+
+[sub_resource type="Resource" id="Resource_uojjo"]
+script = ExtResource("2_wripe")
+textures = {
+"SE": ExtResource("3_jiecc")
+}
+frame_size = Vector2i(175, 139)
+columns = 1
+origin = Vector2(102, 102)
+
+[resource]
+script = ExtResource("1_t88lw")
+display_name = "Ruined Hospital"
+sprite = SubResource("Resource_uojjo")
+footprint = Vector2i(3, 4)
+fades = true
+height_units = 1.98
+id = "bld_hospital_ruin"

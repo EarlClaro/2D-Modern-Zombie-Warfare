@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_y4ldt"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_gnlqf"]
+[ext_resource type="Texture2D" path="res://assets/sprites/bld_silo_complex/se.png" id="3_8cixp"]
+
+[sub_resource type="Resource" id="Resource_b671e"]
+script = ExtResource("2_gnlqf")
+textures = {
+"SE": ExtResource("3_8cixp")
+}
+frame_size = Vector2i(133, 149)
+columns = 1
+origin = Vector2(64, 111)
+
+[resource]
+script = ExtResource("1_y4ldt")
+display_name = "Grain Silos"
+sprite = SubResource("Resource_b671e")
+footprint = Vector2i(3, 2)
+fades = true
+height_units = 2.58
+id = "bld_silo_complex"

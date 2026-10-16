@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_ss8gi"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_oib73"]
+[ext_resource type="Texture2D" path="res://assets/sprites/emp_searchlight_post/se.png" id="3_qndgq"]
+
+[sub_resource type="Resource" id="Resource_36jdi"]
+script = ExtResource("2_oib73")
+textures = {
+"SE": ExtResource("3_qndgq")
+}
+frame_size = Vector2i(58, 52)
+columns = 1
+origin = Vector2(28, 35)
+
+[resource]
+script = ExtResource("1_ss8gi")
+display_name = "Searchlight Post"
+sprite = SubResource("Resource_36jdi")
+fades = true
+height_units = 1.01
+glow_offset = Vector2(8.32, -24.128)
+glow_radius = 64.0
+glow_color = Color(1, 0.95, 0.75, 1)
+id = "emp_searchlight_post"

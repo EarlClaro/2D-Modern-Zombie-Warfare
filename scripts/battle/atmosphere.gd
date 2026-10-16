@@ -54,12 +54,20 @@ func _refresh(force: bool) -> void:
 		_last_weather = m.weather
 		_glow.refresh(_battle, dark)
 		_weather_view.set_weather(m.weather)
+	# Shadows are crisp in the sun and soften into the dark.
+	if is_instance_valid(_battle.scenery_shadows):
+		_battle.scenery_shadows.modulate.a = lerpf(1.0, 0.55, dark)
 
 
-## Soft additive glows at the lamps and fires of the scenery, scaled by how dark it is.
+## Soft additive light at the lamps and fires of the scenery, scaled by how dark it is: a warm pool on the ground
+## (flattened to the 2:1 view) and a small bright halo at the bulb. (Real PointLight2D lights look better but cost
+## 5 to 10 times the frame time on the big map, since every sprite is re-drawn per light.)
 class GlowLayer:
 	extends Node2D
 
+	const HALO_SHARE: float = 0.3  # the bulb's halo is a part of the glow radius; the pool is larger
+	const POOL_SHARE: float = 1.5
+	const POOL_FLATTEN: float = 0.55  # a circle on the ground is an ellipse on the 2:1 screen
 	static var _tex: ImageTexture  # one soft round falloff shared by every glow
 
 	var _items: Array[Dictionary] = []
@@ -89,7 +97,7 @@ class GlowLayer:
 		_items.clear()
 		for s in battle.scenery_nodes:
 			if s.def.glow_radius > 0.0:
-				_items.append({"pos": s.position + s.def.glow_offset, "r": s.def.glow_radius, "c": s.def.glow_color})
+				_items.append({"pos": s.position + s.def.glow_offset, "ground": s.position + Vector2(0.0, -4.0), "r": s.def.glow_radius, "c": s.def.glow_color})
 		visible = darkness > 0.05 and not _items.is_empty()
 		queue_redraw()
 
@@ -98,8 +106,14 @@ class GlowLayer:
 		for it in _items:
 			var col: Color = it["c"]
 			var r: float = it["r"]
+			var ground: Vector2 = it["ground"]
+			var pr := r * POOL_SHARE
+			draw_set_transform(ground, 0.0, Vector2(1.0, POOL_FLATTEN))
+			draw_texture_rect(tex, Rect2(Vector2(-pr, -pr), Vector2(pr, pr) * 2.0), false, Color(col.r, col.g, col.b, 0.36 * _darkness * col.a))
+			draw_set_transform(Vector2.ZERO)
+			var hr := r * HALO_SHARE
 			var pos: Vector2 = it["pos"]
-			draw_texture_rect(tex, Rect2(pos - Vector2(r, r), Vector2(r, r) * 2.0), false, Color(col.r, col.g, col.b, 0.55 * _darkness * col.a))
+			draw_texture_rect(tex, Rect2(pos - Vector2(hr, hr), Vector2(hr, hr) * 2.0), false, Color(col.r, col.g, col.b, 0.85 * _darkness * col.a))
 
 
 ## Rain streaks, fog banks or dust drifting over the screen (screen space, so it does not move with the camera).
@@ -132,7 +146,7 @@ class WeatherView:
 		var size := get_viewport_rect().size
 		match weather:
 			"rain":
-				draw_rect(Rect2(Vector2.ZERO, size), Color(0.1, 0.14, 0.2, 0.12))
+				draw_rect(Rect2(Vector2.ZERO, size), Color(0.1, 0.14, 0.2, 0.05))
 				var pts := PackedVector2Array()
 				for i in STREAKS:  # one draw call for every streak
 					var speed := 900.0 + 400.0 * _hash(i, 1)

@@ -18,6 +18,7 @@ script = ExtResource("1_ks768")
 display_name = "Street Lamp"
 sprite = SubResource("Resource_j4013")
 fades = true
+height_units = 2.32
 glow_offset = Vector2(17.28, -62.4)
 glow_radius = 46.0
 id = "street_lamp"

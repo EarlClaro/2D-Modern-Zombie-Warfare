@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_1oj7h"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_r5v5f"]
+[ext_resource type="Texture2D" path="res://assets/sprites/emp_foxhole/se.png" id="3_1tg46"]
+
+[sub_resource type="Resource" id="Resource_shnr2"]
+script = ExtResource("2_r5v5f")
+textures = {
+"SE": ExtResource("3_1tg46")
+}
+frame_size = Vector2i(65, 40)
+columns = 1
+origin = Vector2(32, 21)
+
+[resource]
+script = ExtResource("1_1oj7h")
+display_name = "Foxhole"
+sprite = SubResource("Resource_shnr2")
+height_units = 0.55
+id = "emp_foxhole"

@@ -19,4 +19,5 @@ display_name = "Army Tent"
 sprite = SubResource("Resource_jampq")
 footprint = Vector2i(3, 2)
 fades = true
+height_units = 1.08
 id = "tent"

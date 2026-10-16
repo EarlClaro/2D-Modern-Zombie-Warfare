@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="MissionDefinition" format=3]
+
+[ext_resource type="Resource" path="res://data/maps/showcase.tres" id="1_m6jdb"]
+[ext_resource type="Script" path="res://scripts/missions/mission_definition.gd" id="2_ounwq"]
+[ext_resource type="Script" path="res://scripts/missions/start_unit.gd" id="3_vrm7v"]
+[ext_resource type="Script" path="res://scripts/missions/wave_entry.gd" id="4_poldc"]
+
+[sub_resource type="Resource" id="Resource_77h7u"]
+script = ExtResource("4_poldc")
+start_s = 3000.0
+enemy_id = "shambler"
+interval_s = 0.0
+
+[resource]
+script = ExtResource("2_ounwq")
+display_name = "Showcase (dev)"
+map = ExtResource("1_m6jdb")
+core_cell = Vector2i(1, 1)
+core_health = 1000.0
+duration_s = 3600.0
+spawn_cells = Array[Vector2i]([Vector2i(1, 8)])
+path_cells = Array[Vector2i]([Vector2i(1, 1)])
+waves = Array[ExtResource("4_poldc")]([SubResource("Resource_77h7u")])
+deck_id = "fortified"
+deploy_radius = 6.0
+id = "dev_showcase"

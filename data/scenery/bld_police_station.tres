@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_qr5vf"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_fvmq3"]
+[ext_resource type="Texture2D" path="res://assets/sprites/bld_police_station/se.png" id="3_sgw1f"]
+
+[sub_resource type="Resource" id="Resource_3cjlt"]
+script = ExtResource("2_fvmq3")
+textures = {
+"SE": ExtResource("3_sgw1f")
+}
+frame_size = Vector2i(153, 128)
+columns = 1
+origin = Vector2(76, 87)
+
+[resource]
+script = ExtResource("1_qr5vf")
+display_name = "Police Station"
+sprite = SubResource("Resource_3cjlt")
+footprint = Vector2i(4, 2)
+fades = true
+height_units = 2.2
+glow_offset = Vector2(30.783997, -12.896004)
+glow_radius = 46.0
+glow_color = Color(0.55, 0.7, 1, 1)
+id = "bld_police_station"

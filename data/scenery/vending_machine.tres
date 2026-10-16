@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_ykdkd"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_n2xvo"]
+[ext_resource type="Texture2D" path="res://assets/sprites/vending_machine/se.png" id="3_ajgrv"]
+
+[sub_resource type="Resource" id="Resource_rft7g"]
+script = ExtResource("2_n2xvo")
+textures = {
+"SE": ExtResource("3_ajgrv")
+}
+frame_size = Vector2i(38, 52)
+columns = 1
+origin = Vector2(18, 40)
+
+[resource]
+script = ExtResource("1_ykdkd")
+display_name = "Vending Machine"
+sprite = SubResource("Resource_rft7g")
+height_units = 0.9
+glow_offset = Vector2(7.168, -13.824001)
+glow_radius = 40.0
+glow_color = Color(0.7, 0.9, 1, 1)
+id = "vending_machine"

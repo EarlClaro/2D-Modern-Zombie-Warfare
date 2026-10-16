@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_6228n"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_vvrsd"]
+[ext_resource type="Texture2D" path="res://assets/sprites/newspaper_stand/se.png" id="3_pjw74"]
+
+[sub_resource type="Resource" id="Resource_ticu3"]
+script = ExtResource("2_vvrsd")
+textures = {
+"SE": ExtResource("3_pjw74")
+}
+frame_size = Vector2i(29, 35)
+columns = 1
+origin = Vector2(14, 27)
+
+[resource]
+script = ExtResource("1_6228n")
+display_name = "Newspaper Stand"
+sprite = SubResource("Resource_ticu3")
+height_units = 0.58
+id = "newspaper_stand"

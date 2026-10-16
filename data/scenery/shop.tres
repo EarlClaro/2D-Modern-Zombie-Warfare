@@ -19,4 +19,5 @@ display_name = "Shop"
 sprite = SubResource("Resource_46w63")
 footprint = Vector2i(4, 3)
 fades = true
+height_units = 1.42
 id = "shop"

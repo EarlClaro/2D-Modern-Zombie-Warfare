@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_nxree"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_b6npd"]
+[ext_resource type="Texture2D" path="res://assets/sprites/bld_office_block_burnt/se.png" id="3_hmjaj"]
+
+[sub_resource type="Resource" id="Resource_argct"]
+script = ExtResource("2_b6npd")
+textures = {
+"SE": ExtResource("3_hmjaj")
+}
+frame_size = Vector2i(144, 201)
+columns = 1
+origin = Vector2(71, 154)
+
+[resource]
+script = ExtResource("1_nxree")
+display_name = "Burnt Office Block"
+sprite = SubResource("Resource_argct")
+footprint = Vector2i(2, 2)
+fades = true
+height_units = 4.41
+glow_offset = Vector2(4, -58)
+glow_radius = 100.0
+glow_color = Color(1, 0.5, 0.15, 1)
+id = "bld_office_block_burnt"

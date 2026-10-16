@@ -19,4 +19,5 @@ display_name = "Brick House"
 sprite = SubResource("Resource_ij43w")
 footprint = Vector2i(3, 3)
 fades = true
+height_units = 1.74
 id = "house_small_brick"

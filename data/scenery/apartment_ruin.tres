@@ -19,4 +19,5 @@ display_name = "Ruined Apartment Block"
 sprite = SubResource("Resource_r6p60")
 footprint = Vector2i(4, 4)
 fades = true
+height_units = 2.76
 id = "apartment_ruin"

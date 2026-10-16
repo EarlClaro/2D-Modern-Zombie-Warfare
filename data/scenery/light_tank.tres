@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_m6m0c"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_ykkwd"]
+[ext_resource type="Texture2D" path="res://assets/sprites/light_tank/se.png" id="3_ouun4"]
+[ext_resource type="Texture2D" path="res://assets/sprites/light_tank/nw.png" id="4_hvb62"]
+
+[sub_resource type="Resource" id="Resource_7fjny"]
+script = ExtResource("2_ykkwd")
+textures = {
+"NW": ExtResource("4_hvb62"),
+"SE": ExtResource("3_ouun4")
+}
+frame_size = Vector2i(69, 67)
+columns = 1
+origin = Vector2(34, 47)
+
+[resource]
+script = ExtResource("1_m6m0c")
+display_name = "Light Tank"
+sprite = SubResource("Resource_7fjny")
+height_units = 1.09
+id = "light_tank"

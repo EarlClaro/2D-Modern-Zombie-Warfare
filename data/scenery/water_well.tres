@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_qm7e6"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_bo665"]
+[ext_resource type="Texture2D" path="res://assets/sprites/water_well/se.png" id="3_gcio8"]
+
+[sub_resource type="Resource" id="Resource_wxge0"]
+script = ExtResource("2_bo665")
+textures = {
+"SE": ExtResource("3_gcio8")
+}
+frame_size = Vector2i(66, 68)
+columns = 1
+origin = Vector2(32, 49)
+
+[resource]
+script = ExtResource("1_qm7e6")
+display_name = "Water Well"
+sprite = SubResource("Resource_wxge0")
+fades = true
+height_units = 1.14
+id = "water_well"

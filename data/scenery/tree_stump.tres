@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_uy5j6"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_bnbeu"]
+[ext_resource type="Texture2D" path="res://assets/sprites/tree_stump/se.png" id="3_uheo5"]
+
+[sub_resource type="Resource" id="Resource_37gtg"]
+script = ExtResource("2_bnbeu")
+textures = {
+"SE": ExtResource("3_uheo5")
+}
+frame_size = Vector2i(32, 29)
+columns = 1
+origin = Vector2(15, 19)
+
+[resource]
+script = ExtResource("1_uy5j6")
+display_name = "Tree Stump"
+sprite = SubResource("Resource_37gtg")
+height_units = 0.4
+id = "tree_stump"

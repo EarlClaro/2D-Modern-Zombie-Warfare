@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_2kyhw"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_8ebrn"]
+[ext_resource type="Texture2D" path="res://assets/sprites/air_parked_fighter_camo/se.png" id="3_uj73m"]
+[ext_resource type="Texture2D" path="res://assets/sprites/air_parked_fighter_camo/nw.png" id="4_acb82"]
+
+[sub_resource type="Resource" id="Resource_pc0y1"]
+script = ExtResource("2_8ebrn")
+textures = {
+"NW": ExtResource("4_acb82"),
+"SE": ExtResource("3_uj73m")
+}
+frame_size = Vector2i(107, 69)
+columns = 1
+origin = Vector2(53, 45)
+
+[resource]
+script = ExtResource("1_2kyhw")
+display_name = "Camouflaged Fighter"
+sprite = SubResource("Resource_pc0y1")
+footprint = Vector2i(3, 2)
+height_units = 0.78
+id = "air_parked_fighter_camo"

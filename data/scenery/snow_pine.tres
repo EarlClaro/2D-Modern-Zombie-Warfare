@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_l2ih8"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_fhip8"]
+[ext_resource type="Texture2D" path="res://assets/sprites/snow_pine/se.png" id="3_a61hi"]
+
+[sub_resource type="Resource" id="Resource_bdwlc"]
+script = ExtResource("2_fhip8")
+textures = {
+"SE": ExtResource("3_a61hi")
+}
+frame_size = Vector2i(105, 111)
+columns = 1
+origin = Vector2(52, 86)
+
+[resource]
+script = ExtResource("1_l2ih8")
+display_name = "Snowy Pine"
+sprite = SubResource("Resource_bdwlc")
+fades = true
+height_units = 2.48
+id = "snow_pine"

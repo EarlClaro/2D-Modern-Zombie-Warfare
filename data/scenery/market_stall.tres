@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_mqrio"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_vtckj"]
+[ext_resource type="Texture2D" path="res://assets/sprites/market_stall/se.png" id="3_qh420"]
+
+[sub_resource type="Resource" id="Resource_5kson"]
+script = ExtResource("2_vtckj")
+textures = {
+"SE": ExtResource("3_qh420")
+}
+frame_size = Vector2i(72, 69)
+columns = 1
+origin = Vector2(35, 49)
+
+[resource]
+script = ExtResource("1_mqrio")
+display_name = "Market Stall"
+sprite = SubResource("Resource_5kson")
+footprint = Vector2i(2, 1)
+height_units = 0.92
+id = "market_stall"

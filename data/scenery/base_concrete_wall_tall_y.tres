@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_2mjrr"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_fccee"]
+[ext_resource type="Texture2D" path="res://assets/sprites/base_concrete_wall_tall/sw.png" id="3_posy6"]
+
+[sub_resource type="Resource" id="Resource_mb5cm"]
+script = ExtResource("2_fccee")
+textures = {
+"SE": ExtResource("3_posy6")
+}
+frame_size = Vector2i(85, 100)
+columns = 1
+origin = Vector2(42, 76)
+
+[resource]
+script = ExtResource("1_2mjrr")
+display_name = "Tall Concrete Wall (along y)"
+sprite = SubResource("Resource_mb5cm")
+footprint = Vector2i(1, 2)
+fades = true
+height_units = 1.76
+id = "base_concrete_wall_tall_y"

@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_rl8a0"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_tlsu5"]
+[ext_resource type="Texture2D" path="res://assets/sprites/emp_razor_wire/sw.png" id="3_ktexp"]
+
+[sub_resource type="Resource" id="Resource_em0of"]
+script = ExtResource("2_tlsu5")
+textures = {
+"SE": ExtResource("3_ktexp")
+}
+frame_size = Vector2i(91, 66)
+columns = 1
+origin = Vector2(45, 41)
+
+[resource]
+script = ExtResource("1_rl8a0")
+display_name = "Razor Wire (along y)"
+sprite = SubResource("Resource_em0of")
+footprint = Vector2i(1, 2)
+height_units = 0.66
+id = "emp_razor_wire_y"

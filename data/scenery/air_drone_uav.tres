@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_t5c17"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_u034h"]
+[ext_resource type="Texture2D" path="res://assets/sprites/air_drone_uav/se.png" id="3_jf4s1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/air_drone_uav/nw.png" id="4_yn62y"]
+
+[sub_resource type="Resource" id="Resource_rpnyf"]
+script = ExtResource("2_u034h")
+textures = {
+"NW": ExtResource("4_yn62y"),
+"SE": ExtResource("3_jf4s1")
+}
+frame_size = Vector2i(90, 59)
+columns = 1
+origin = Vector2(44, 40)
+
+[resource]
+script = ExtResource("1_t5c17")
+display_name = "Drone"
+sprite = SubResource("Resource_rpnyf")
+footprint = Vector2i(2, 3)
+height_units = 0.53
+id = "air_drone_uav"

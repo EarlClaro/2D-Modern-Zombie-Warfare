@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_b5d7w"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_n4g6d"]
+[ext_resource type="Texture2D" path="res://assets/sprites/mossy_boulder/se.png" id="3_pagqr"]
+
+[sub_resource type="Resource" id="Resource_2pqgn"]
+script = ExtResource("2_n4g6d")
+textures = {
+"SE": ExtResource("3_pagqr")
+}
+frame_size = Vector2i(62, 55)
+columns = 1
+origin = Vector2(30, 35)
+
+[resource]
+script = ExtResource("1_b5d7w")
+display_name = "Mossy Boulder"
+sprite = SubResource("Resource_2pqgn")
+height_units = 0.6
+id = "mossy_boulder"

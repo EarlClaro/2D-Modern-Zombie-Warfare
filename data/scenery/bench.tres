@@ -17,4 +17,5 @@ origin = Vector2(20, 26)
 script = ExtResource("1_savwb")
 display_name = "Bench"
 sprite = SubResource("Resource_xfrn6")
+height_units = 0.44
 id = "bench"

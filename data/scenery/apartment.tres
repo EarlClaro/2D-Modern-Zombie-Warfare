@@ -19,4 +19,5 @@ display_name = "Apartment Block"
 sprite = SubResource("Resource_1ej27")
 footprint = Vector2i(4, 4)
 fades = true
+height_units = 3.78
 id = "apartment"

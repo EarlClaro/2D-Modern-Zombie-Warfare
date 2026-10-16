@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_y3ffc"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_30wnv"]
+[ext_resource type="Texture2D" path="res://assets/sprites/emp_mortar_pit/se.png" id="3_b3jrj"]
+[ext_resource type="Texture2D" path="res://assets/sprites/emp_mortar_pit/nw.png" id="4_gj4pk"]
+
+[sub_resource type="Resource" id="Resource_v7pui"]
+script = ExtResource("2_30wnv")
+textures = {
+"NW": ExtResource("4_gj4pk"),
+"SE": ExtResource("3_b3jrj")
+}
+frame_size = Vector2i(75, 52)
+columns = 1
+origin = Vector2(37, 31)
+
+[resource]
+script = ExtResource("1_y3ffc")
+display_name = "Mortar Pit"
+sprite = SubResource("Resource_v7pui")
+height_units = 0.76
+id = "emp_mortar_pit"

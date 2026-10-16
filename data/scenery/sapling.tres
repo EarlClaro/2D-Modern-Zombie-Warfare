@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="SceneryDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/scenery_definition.gd" id="1_qmac2"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_7w41s"]
+[ext_resource type="Texture2D" path="res://assets/sprites/sapling/se.png" id="3_fcwmi"]
+
+[sub_resource type="Resource" id="Resource_pigag"]
+script = ExtResource("2_7w41s")
+textures = {
+"SE": ExtResource("3_fcwmi")
+}
+frame_size = Vector2i(29, 46)
+columns = 1
+origin = Vector2(13, 36)
+
+[resource]
+script = ExtResource("1_qmac2")
+display_name = "Sapling"
+sprite = SubResource("Resource_pigag")
+height_units = 0.94
+id = "sapling"
