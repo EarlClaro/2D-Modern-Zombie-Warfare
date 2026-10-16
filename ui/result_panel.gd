@@ -44,6 +44,11 @@ func _ready() -> void:
 	button.add_theme_font_size_override("font_size", 26)
 	button.pressed.connect(func() -> void: _battle.restart())
 	box.add_child(button)
+	var menu := Button.new()
+	menu.text = "Main menu"
+	menu.add_theme_font_size_override("font_size", 26)
+	menu.pressed.connect(func() -> void: GameSession.go_to_menu(get_tree()))
+	box.add_child(menu)
 	_root.visible = false
 
 

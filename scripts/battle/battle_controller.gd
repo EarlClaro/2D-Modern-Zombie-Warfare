@@ -27,6 +27,9 @@ signal strike_called(center: Vector2, reach: float, duration: float)
 signal projectile_launched(shooter: BattleUnit, weapon: WeaponDefinition, from_ground: Vector2, target_ground: Vector2)
 ## A played card has a full-screen clip (a CutawayDefinition id). The CutawayPlayer freezes the battle while it runs.
 signal cutaway_requested(cutaway_id: String)
+## Esc was pressed with nothing selected: the pause menu opens (presentation; the battle itself does not pause).
+signal pause_requested
+
 ## A play was refused (no CP, locked, bad cell...). `slot` is the hand slot; the result says why.
 signal card_rejected(slot: int, result: CardPlayService.Result)
 
@@ -171,6 +174,9 @@ func _ready() -> void:
 	if mission != null:
 		return  # already set up by a test or caller
 	var cli := parse_user_args(OS.get_cmdline_user_args())
+	var pending := GameSession.take_pending()
+	if not String(pending["mission"]).is_empty():
+		mission_id = pending["mission"]
 	if cli.has("mission"):
 		mission_id = cli["mission"]
 	if cli.has("seed"):
@@ -195,6 +201,11 @@ func _ready() -> void:
 	var panel := ResultPanel.new()
 	add_child(panel)
 	panel.bind(self)
+	var pause_menu := PauseMenu.new()
+	pause_menu.name = "PauseMenu"
+	add_child(pause_menu)
+	pause_menu.bind(self)
+	GameSession.settings().apply()
 	var feedback := BattleFeedback.new()
 	feedback.name = "Feedback"
 	add_child(feedback)
@@ -202,7 +213,7 @@ func _ready() -> void:
 	var cutaways := CutawayPlayer.new()
 	add_child(cutaways)
 	cutaways.bind(self, feedback.sfx)
-	cutaways.plan.enabled = bool(cli.get("cutaways", true))
+	cutaways.plan.enabled = bool(cli.get("cutaways", GameSession.settings().cutaways))
 	var atmosphere := Atmosphere.new()
 	atmosphere.name = "Atmosphere"
 	add_child(atmosphere)
@@ -662,7 +673,10 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_RIGHT:
 		cancel_selection()
 	elif event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
-		cancel_selection()
+		if targeting.is_selecting():
+			cancel_selection()
+		else:
+			pause_requested.emit()
 	elif event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_R:
 		restart()
 	elif event is InputEventKey and event.pressed and not event.echo and deck != null and not is_ended():

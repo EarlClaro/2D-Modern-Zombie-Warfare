@@ -2,8 +2,8 @@ class_name BattleHud
 extends CanvasLayer
 ## Read-only presentation of battle state. Never changes rules.
 
-const HINT_BASIC := "WASD / MMB: pan   |   wheel: zoom   |   R: restart"
-const HINT_CARDS := "1-5 or click a card: select   |   LMB: place   |   RMB / Esc: cancel   |   WASD / MMB: pan   |   wheel: zoom   |   R: restart"
+const HINT_BASIC := "WASD / MMB: pan   |   wheel: zoom   |   Esc: pause   |   R: restart"
+const HINT_CARDS := "1-5 or click a card: select   |   LMB: place   |   RMB: cancel   |   Esc: cancel or pause   |   WASD / MMB: pan   |   wheel: zoom   |   R: restart"
 
 var _battle: BattleController
 var _core_bar: ProgressBar
@@ -45,6 +45,7 @@ func _ready() -> void:
 	_fps_label.add_theme_color_override("font_outline_color", Color.BLACK)
 	_fps_label.add_theme_constant_override("outline_size", 5)
 	_fps_label.position = Vector2(1780, 16)
+	_fps_label.visible = GameSession.settings().show_fps
 	add_child(_fps_label)
 
 

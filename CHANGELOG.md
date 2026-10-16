@@ -1,5 +1,9 @@
 # Changelog
 
+## Game shell (2026-10-17; branch m3-menu; spec docs/specs/menus.md, ADR-015)
+- The game now opens on a start menu: Play (mission select), Settings, Quit. Mission select lists every mission in `data/missions/` (Missions first, Test missions after), shows its facts from data (duration, core health, enemies, deck, time and weather) and pre-selects the last mission played. Settings: master volume, fullscreen, strike clips on/off, FPS counter, reset to defaults; applied at once, saved in `user://settings.cfg` (a missing, corrupt or hand-edited file falls back to defaults). In a battle Esc (with no card selected) opens a pause menu that really pauses the game (Resume, Restart, Settings, Main menu, Quit); the result panel gains a Main menu button. `-- --mission=<id>` still skips the menu.
+- New: `GameSettings`, `GameSession` (static session state, no autoload), `MissionListing`, `UiKit`, `MainMenu`, `MissionSelect`, `SettingsScreen`, `PauseMenu`, `tools/menu_shots.gd`. New test deck `strikes` and test mission `dev_strike_range` (Strike Range) holding all six new strike cards, so every cutaway clip can be tried in the real game. 24 new tests; mutation checks done (session hand-over, pause, corrupt settings, mission grouping).
+
 ## 3.8 Strike cutaways, slice 7 (branch m3-3.8-cutaways)
 - Seven generated strike sounds, one per clip, in a new `strike` mixer category (one voice, high priority); each clip plays its own. Mutation checks done (freeze, line order, hard cap, first-time-only full clip, beam kind); one test was too weak to catch the repeat-play mutation and was fixed. Spec updated with merge notes and the manual checklist. 3 more tests (578 in all).
 

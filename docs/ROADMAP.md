@@ -20,6 +20,8 @@ Legend: ☐ not started · ◐ in progress · ☑ done (acceptance criteria chec
 
 ## Next tasks
 
+0. **Game shell (user request 2026-10-17, ADR-015, [spec](specs/menus.md)):** start menu, mission select, settings, pause menu and a strike test mission are built on branch `m3-menu`; needs your look-and-feel check (mouse and keyboard, fullscreen, volume, pause) before merging.
+
 1. **Now:** 3.5 (card framework and the first state cards). 3.3, 3.4 and 3.8 are on `main` (pushed as `a6df704`, 637 tests passing); the other session's 3.5 work is still uncommitted in the main folder and it must `git pull origin main` after committing.
 2. **You (manual checks, never verified by me):** play `godot --path . -- --mission=m2_card_defense` and see how placed units behave on their own (Guard/Advance), whether previews and the hand bar read, real mouse/number-key input, sound and feel; the freezing strike cutaways (3.8) need your eyes and ears too: the seven clips, the freeze, the skip keys and `C`, the seven code-made sounds and the nuclear flash (checklist at the end of [strike-cutaways](specs/strike-cutaways.md)). To try them, the six new strike cards (`naval_gunfire`, `close_air_support`, `missile_strike`, `hypersonic_missile`, `nuclear_bomb`, `satellite_laser`) have to be put into a deck first.
 3. **Open for 3.10:** the six strike cards' costs, lockouts, damage and blast sizes are first guesses (table in BALANCE.md).

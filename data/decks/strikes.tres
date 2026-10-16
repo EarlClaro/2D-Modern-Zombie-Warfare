@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="DeckDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/cards/deck_definition.gd" id="1_deck"]
+
+[resource]
+script = ExtResource("1_deck")
+id = "strikes"
+display_name = "Strike Test Deck"
+card_ids = PackedStringArray("naval_gunfire", "close_air_support", "missile_strike", "hypersonic_missile", "nuclear_bomb", "satellite_laser", "artillery_strike", "artillery_strike", "artillery_strike", "rifle_squad", "rifle_squad", "rifle_squad")
