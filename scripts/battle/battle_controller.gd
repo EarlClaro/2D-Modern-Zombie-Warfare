@@ -122,6 +122,11 @@ var _next_uid: int = 1
 var _wave_spawned: Array[int] = []
 var _waypoints: Array[Vector2] = []
 var _pending: Array[Hit] = []
+var _enemy_index: EnemyIndex = EnemyIndex.new()  # filled by the enemy phase; queried by unit targeting and blasts
+var _enemy_index_valid: bool = false  # false once `enemies` changed after the index was built
+var _target_pos: PackedVector2Array = PackedVector2Array()  # what enemies can hit this tick (ground units), reused
+var _target_id: PackedInt32Array = PackedInt32Array()
+var _target_obj: Array[BattleUnit] = []
 
 var _ground: TileMapLayer
 var _decals: Node2D
@@ -302,26 +307,59 @@ func _spawn_due_enemies() -> void:
 			_wave_spawned[i] += 1
 
 
+## Each enemy attacks the nearest thing in its attack range (smallest ground distance, ties to the lowest target id; the
+## core is id 0) or else walks on. The same rule as TargetingService.pick, but without building a candidate object per
+## target per tick and with cheap rejects: an enemy outside the box around all targets (grown by its range) cannot hit
+## anything. Also fills the enemy index (after the enemy moved) that unit targeting and blasts use later in the tick.
 func _enemy_phase(delta: float) -> void:
-	var candidates: Array[TargetCandidate] = []
-	var by_id: Dictionary = {}  # target id -> entity
-	var core_cand: TargetCandidate = null
-	if core.is_alive():
-		core_cand = TargetCandidate.new(CORE_ID, core.ground_pos)
-		candidates.append(core_cand)
-		by_id[CORE_ID] = core
+	_target_pos.clear()
+	_target_id.clear()
+	_target_obj.clear()
+	var lo := Vector2(INF, INF)
+	var hi := Vector2(-INF, -INF)
 	for u in units:
 		if u.is_alive() and not u.def.is_air():  # ground enemies cannot hit aircraft
-			candidates.append(TargetCandidate.new(u.uid, u.ground_pos))
-			by_id[u.uid] = u
+			var up := u.ground_pos
+			_target_pos.append(up)
+			_target_id.append(u.uid)
+			_target_obj.append(u)
+			lo = lo.min(up)
+			hi = hi.max(up)
+	var unit_targets := _target_pos.size()
+	var core_alive := core.is_alive()
+	var core_pos := core.ground_pos
+	var core_radius := core.radius
+	_enemy_index.begin(float(mission.map.width()), float(mission.map.height()))
 	for e in enemies:
-		if not e.is_alive():
+		if e.health.hp <= 0.0:
 			continue
-		if core_cand != null and core.radius > 0.0:  # the core's walls reach `radius` out: aim at the nearest point of them
-			core_cand.pos = core.ground_pos + (e.ground_pos - core.ground_pos).limit_length(core.radius)
-		var tid := TargetingService.pick(e.ground_pos, e.def.attack_range, candidates)
-		if tid != TargetingService.NO_TARGET:
-			var target: Object = by_id[tid]
+		var ep := e.ground_pos
+		var reach := e.def.attack_range
+		var reach2 := reach * reach
+		var target: Object = null
+		var best_id := TargetingService.NO_TARGET
+		var best_d2 := reach2
+		if core_alive:
+			var to_core := ep - core_pos
+			var margin := reach + core_radius + 0.001
+			if to_core.length_squared() <= margin * margin:
+				# the core's walls reach `radius` out: aim at the nearest point of them
+				var aim := core_pos + to_core.limit_length(core_radius) if core_radius > 0.0 else core_pos
+				var d2 := ep.distance_squared_to(aim)
+				if d2 <= reach2:
+					target = core
+					best_id = CORE_ID
+					best_d2 = d2
+		if unit_targets > 0 and ep.x >= lo.x - reach - 0.001 and ep.x <= hi.x + reach + 0.001 and ep.y >= lo.y - reach - 0.001 and ep.y <= hi.y + reach + 0.001:
+			for k in unit_targets:
+				var du2 := ep.distance_squared_to(_target_pos[k])
+				if du2 > reach2:
+					continue
+				if target == null or du2 < best_d2 or (du2 == best_d2 and _target_id[k] < best_id):
+					target = _target_obj[k]
+					best_id = _target_id[k]
+					best_d2 = du2
+		if target != null:
 			e.face_toward((target as IsoEntity).ground_pos)
 			if e.attack_state.tick(delta, true):
 				var armor: float = (target as BattleUnit).def.armor if target is BattleUnit else 0.0
@@ -330,42 +368,54 @@ func _enemy_phase(delta: float) -> void:
 		else:
 			e.attack_state.tick(delta, false)
 			e.advance_path(delta)
+		_enemy_index.add(e, e.ground_pos)
+	_enemy_index_valid = true
 
 
 func _unit_phase(delta: float) -> void:
-	var candidates: Array[TargetCandidate] = []
-	var by_id: Dictionary = {}
-	for e in enemies:
-		if e.is_alive():
-			candidates.append(TargetCandidate.new(e.uid, e.ground_pos))
-			by_id[e.uid] = e
 	for u in units:
 		if not u.is_alive():
 			continue
 		if u.weapon == null:  # a structure: nothing to move or fire
 			continue
 		u.advance_move(delta)
-		var tid := TargetingService.NO_TARGET
+		var target: BattleEnemy = null
 		if not u.is_moving():  # units must stand still to fire
-			tid = TargetingService.pick(u.ground_pos, u.weapon.range_tiles, candidates)
-		if u.weapon_state.tick(delta, tid != TargetingService.NO_TARGET):
-			_fire(u, u.weapon, by_id[tid])
+			target = _nearest_enemy(u.ground_pos, u.weapon.range_tiles)
+		if u.weapon_state.tick(delta, target != null):
+			_fire(u, u.weapon, target)
 		if u is BattleAircraft:
-			_fire_secondary(u as BattleAircraft, delta, candidates, by_id)
+			_fire_secondary(u as BattleAircraft, delta)
 
 
 ## The aircraft's second weapon (missiles): own range, cooldown and limited ammo. It may fire on the move, so the
 ## gunship empties its missiles on the way in and then hovers to use its guns.
-func _fire_secondary(u: BattleAircraft, delta: float, candidates: Array[TargetCandidate], by_id: Dictionary) -> void:
+func _fire_secondary(u: BattleAircraft, delta: float) -> void:
 	if not u.secondary_ready_to_fire():
 		return
-	var tid := TargetingService.NO_TARGET
+	var target: BattleEnemy = null
 	if not u.is_moving() or u.secondary.can_fire_moving:
-		tid = TargetingService.pick(u.ground_pos, u.secondary.range_tiles, candidates)
-	if u.secondary_state.tick(delta, tid != TargetingService.NO_TARGET):
+		target = _nearest_enemy(u.ground_pos, u.secondary.range_tiles)
+	if u.secondary_state.tick(delta, target != null):
 		if u.secondary_ammo > 0:
 			u.secondary_ammo -= 1
-		_fire(u, u.secondary, by_id[tid])
+		_fire(u, u.secondary, target)
+
+
+## The nearest living enemy within `range_tiles` of `origin` (ties to the lowest uid), or null.
+func _nearest_enemy(origin: Vector2, range_tiles: float) -> BattleEnemy:
+	return _index_ready().nearest(origin, range_tiles)
+
+
+## The enemy index, rebuilt from `enemies` only if it is stale (normally the enemy phase just filled it).
+func _index_ready() -> EnemyIndex:
+	if not _enemy_index_valid:
+		_enemy_index.begin(float(mission.map.width()), float(mission.map.height()))
+		for e in enemies:
+			if e.health.hp > 0.0:
+				_enemy_index.add(e, e.ground_pos)
+		_enemy_index_valid = true
+	return _enemy_index
 
 
 ## One shot: hitscan weapons queue their damage now (area damage if they have a blast radius); projectile
@@ -393,8 +443,10 @@ func _fire(u: BattleUnit, weapon: WeaponDefinition, target: BattleEnemy) -> void
 ## Area damage on the ground plane: every living enemy within the radius takes the weapon's damage
 ## with armor, then distance falloff. Friendly fire is off (only enemies are hit).
 func _queue_blast(center: Vector2, damage: float, radius: float) -> void:
-	for e in enemies:
-		if not e.is_alive():
+	var index := _index_ready()
+	for i in index.box_candidates(center, radius):  # only enemies in the cells around the blast, in `enemies` order
+		var e := index.enemy_at(i)
+		if e.health.hp <= 0.0:
 			continue
 		var falloff := DamageService.blast_falloff(e.ground_pos.distance_to(center), radius)
 		if falloff > 0.0:
@@ -454,8 +506,9 @@ func _apply_damage() -> void:
 	# Remove the dead only after every hit this tick has landed.
 	for i in range(enemies.size() - 1, -1, -1):
 		var e := enemies[i]
-		if not e.is_alive():
+		if e.health.hp <= 0.0:
 			enemies.remove_at(i)
+			_enemy_index_valid = false
 			stats["kills"] += 1
 			enemy_died.emit(e)
 			_dispose(e, e.shadow)
@@ -741,6 +794,7 @@ func _clear_dynamic() -> void:
 			child.free()
 	units.clear()
 	enemies.clear()
+	_enemy_index_valid = false
 	scenery_nodes.clear()
 	scenery_shadows = null
 	_scenery_cells.clear()
@@ -875,6 +929,7 @@ func _spawn_enemy(w: WaveEntry) -> void:
 	_entities.add_child(e)
 	e.shadow = _add_shadow(e, def.footprint_radius + 0.1)
 	enemies.append(e)
+	_enemy_index_valid = false
 	stats["spawned"] += 1
 
 
