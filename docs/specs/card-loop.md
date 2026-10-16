@@ -20,7 +20,7 @@ Prove pillar 2: **playing cards creates meaningful tactical choices.** The playe
 - Battle integration: `BattleController` owns a `DeckState` and `CommandPoints`, ticks them in `step()` (same fixed tick, seeded RNG), and executes a successful play (spawn units / start an operation / launch a sortie). Rules stay out of UI.
 - `ProjectileSystem` (first use of PROJECTILE delivery): array-based, ground position + altitude arc, impact → blast query → `DamageService` falloff. Used by artillery shells only (see D1). Not one node per shell.
 - UI: hand bar (5 slots, cost, lockout shading, number-key hints), CP bar, draw-timer, deck/discard counts; targeting preview = ground cell highlight or ground circle (ellipse via `IsoProjection`), green valid / red invalid; invalid play or too little CP leaves the card in hand and gives feedback.
-- Input: `1`–`5` or click a card to select; LMB on the field to confirm; RMB / `Esc` cancels. Existing "click to move" now applies only when no card is selected.
+- Input: `1`–`5` or click a card to select; LMB on the field to confirm; RMB / `Esc` cancels. "Click to move" was removed in M3.3 (ADR-013): placed units act on their own.
 - New mission `m2_card_defense` (same `crossing` map, no pre-placed defenders, a deck, waves tuned for card play). `m1_hold_the_crossing` stays untouched as a regression scenario.
 - `UnitDefinition.armor` (needed by the tank; enemies already reduced by `DamageService`).
 

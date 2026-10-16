@@ -1,6 +1,6 @@
 # Game Design Document — Last Defense (working title)
 
-Status: draft v0.1 (Milestone 0). Source: [MasterPrompt.md](../MasterPrompt.md). Tuning values live in [BALANCE.md](BALANCE.md) / data files.
+Status: draft v0.2 (updated 2026-10-16 for ADR-013 and ADR-014). Source: [MasterPrompt.md](../MasterPrompt.md). Tuning values live in [BALANCE.md](BALANCE.md) / data files.
 
 ## 1. Vision
 Real-time, mission-based, high-view isometric military **combined-arms deckbuilder**. The player commands modern/near-future forces against huge mutant hordes. Not a conventional tower defense: structures exist, but the identity is combined arms, doctrine/deck building, and mission variety.
@@ -25,6 +25,12 @@ One isometric map per mission. Base on one side or center; hordes spawn from edg
 Fields: stable `id`, name, description/flavor, category, tags, rarity (separate from power), icon, cost, cooldown/use limit, targeting mode (`ground_cell`, `ground_circle`, `unit`, `area`, `global`) + valid targets, effect id (+params), unlock condition, upgrade level/branches, doctrine requirement (later), synergy tags, audio/VFX refs, balance notes. Definitions are `Resource`s; effects are code keyed by `effect_id`.
 
 Categories: Infantry, Armor, Artillery/Ordnance, Aviation, Naval, Drones, Command/Intel/Logistics, Experimental. MVP implements a small subset (§11).
+
+**Card kinds (ADR-013, spec [unit-autonomy-and-card-types.md](specs/unit-autonomy-and-card-types.md)):** besides Deployment, Operation and Sortie, the card system gains data-driven kinds: **Orders** (timed buffs on everything deployed), **Traps and structures** (mines, wire), **Logistics** (supply drop, hospital, command post), **Intel and lures** (recon, flare, decoy), **Reinforcements** (a squad arriving from a map edge), **Buildings** (timed unit spawners with a cap), **High-tech support** (combat drones, orbital/railgun, EMP, satellite scan, missiles, close air support, laser, chemical and nuclear strikes), **Doctrine** (mission-long passive bonuses, chosen before the mission) and **Deck tricks** (draw, cycle, discount, reset a lockout). Roster beyond the first nine example cards belongs to later milestones.
+
+**Units act on their own (ADR-013):** once a card is played the player gives no move orders and no rally point. Each unit has a fixed behaviour (Hold, Guard, Advance, Support) plus small habits (cover, retreat when hurt, focus fire on dangerous targets). Positioned cards keep exact-cell placement.
+
+**Strike cutaways (ADR-014, spec [strike-cutaways.md](specs/strike-cutaways.md)):** heavy support calls show a short full-screen clip that freezes the game (about 1.5 s the first time per support per mission, shorter after, tiered epic/large/small, skippable and switchable off), then the effect lands.
 
 ### Deck and economy rules (recommended defaults — detail: [specs/deck-and-economy.md](specs/deck-and-economy.md))
 | Rule | Default |
@@ -77,4 +83,5 @@ Pixel or hybrid pixel art, 2:1 iso, modern lighting/particles, placeholders (col
 | A7 | Occlusion approach | fade occluders (ADR-005) | validate in spike steps 5+ |
 | A8 | Sprite directions | 8 | assumed; 5-mirrored is fallback |
 | A9 | Real title | Last Defense is placeholder | open |
+| A11 | Selectable difficulty | easy / normal / hard scale enemy counts only (user, 2026-10-16) | decided, built in 3.9 |
 | A10 | Starting deck contents | 4× Rifle Squad, 3× Gatling, 2× Tank, 3× Artillery Strike, 2× Helicopter, 2× Ammo Resupply = 16 (tune later) | proposed |

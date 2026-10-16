@@ -2,7 +2,7 @@
 
 A 2D, high-view isometric, high-tech military combined-arms **deckbuilder**. Command humanity's forces against mutant zombie hordes in real-time missions: build a deck of units, weapons, orders and support operations, deploy them on an isometric battlefield, complete mission objectives, and grow your arsenal.
 
-**Status:** Milestone 1 (combat vertical slice) is built — a playable defend-the-core battle with feedback effects, generated placeholder sounds, a result screen and a 100-zombie stress scenario — and awaits the owner's go / tune / no-go. Cards/deck are not implemented yet (Milestone 2). See [docs/ROADMAP.md](docs/ROADMAP.md).
+**Status:** Milestones 0.5, 1 and 2 are closed. Milestone 3 is in progress: horde movement measured and the step made faster, placed units now act on their own (no move orders), and specs are approved for new card types and freezing strike cutaways (see [docs/ROADMAP.md](docs/ROADMAP.md)).
 
 ## Prerequisites
 - Godot **4.7.2** (4.x; typed GDScript). Installed via WinGet on the dev machine.
@@ -19,7 +19,7 @@ godot --headless --path . --script tests/run_tests.gd   # run tests
 (Use the full path to the Godot console binary if it is not on PATH — see [AGENTS.md](AGENTS.md).)
 
 ## Controls
-Battle: **LMB** move the soldier (click a walkable cell), **R** restart, **WASD/arrows** or **middle-mouse drag** pan, **wheel** zoom (toward cursor). The MG nest and core are fixed; combat is automatic. Cards come in Milestone 2.
+Battle: units act on their own once placed (no move orders, ADR-013); **R** restart, **WASD/arrows** or **middle-mouse drag** pan, **wheel** zoom (toward cursor). The MG nest and core are fixed; combat is automatic. Cards come in Milestone 2.
 
 ## Documentation
 | Doc | Purpose |

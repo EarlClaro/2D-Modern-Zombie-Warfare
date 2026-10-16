@@ -15,3 +15,4 @@ projectile_arc = 0.0
 projectile_accel = 0.6
 projectile_drop = 0.0
 sfx_id = "missile"
+anti_armor = true

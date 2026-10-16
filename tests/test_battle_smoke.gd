@@ -245,27 +245,6 @@ func test_enemy_spawn_jitter_follows_the_seed() -> void:
 
 # --- orders and firing rules ---------------------------------------------------------------------
 
-func test_move_orders_affect_only_mobile_units_and_valid_cells() -> void:
-	var b := _battle(_get_db().mission(MISSION_ID))
-	var soldier: BattleUnit
-	var nest: BattleUnit
-	for u in b.units:
-		if u.def.is_fixed():
-			nest = u
-		else:
-			soldier = u
-	var nest_start := nest.ground_pos
-	var soldier_start := soldier.ground_pos
-	assert_eq(b.order_move_all(Vector2i(7, 20)), 1, "only the soldier accepts")
-	_run_for(b, 1.0)
-	assert_near(soldier.ground_pos.distance_to(soldier_start), soldier.def.move_speed, 0.01, "moved 1 s at its speed")
-	assert_vec_near(nest.ground_pos, nest_start, 1e-6, "fixed unit never moves")
-	assert_eq(b.order_move_all(b.mission.core_cell), 0, "can't order onto the core")
-	assert_eq(b.order_move_all(Vector2i(10, 10)), 0, "rock wall cell")
-	assert_eq(b.order_move_all(Vector2i(99, 99)), 0, "outside the map")
-	_release()
-
-
 func test_soldier_does_not_fire_while_moving() -> void:
 	var soldier_only := _variant([_su("rifle_soldier", Vector2i(18, 5))])
 	# Control: standing soldier with an enemy in range fires on the first tick.
@@ -273,10 +252,12 @@ func test_soldier_does_not_fire_while_moving() -> void:
 	_inject_enemy(control, control.units[0].ground_pos + Vector2(2.0, 0.0))
 	control.step(DT)
 	assert_true(control.stats["shots"] >= 1, "standing unit fires")
-	# Same setup, but the soldier is ordered to move: no shots while moving.
+	# Same setup, but the soldier is made to walk (the brain would stop it, so use the raw move primitive): no shots.
 	var moving := _battle(soldier_only)
 	_inject_enemy(moving, moving.units[0].ground_pos + Vector2(2.0, 0.0))
-	assert_eq(moving.order_move_all(Vector2i(18, 12)), 1)
+	moving.units[0].order_move(IsoProjection.cell_center(Vector2i(18, 12)))
+	moving.units[0].def = moving.units[0].def.duplicate()
+	moving.units[0].def.behavior = UnitBrain.Behavior.HOLD
 	for i in 5:
 		moving.step(DT)
 	assert_true(moving.units[0].is_moving())

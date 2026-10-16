@@ -14,6 +14,8 @@ extends ContentDefinition
 @export var placeholder_color: Color = Color.WHITE
 ## Ranged acid attacker: its (long-range) attack is shown as a spat glob. Damage still lands on the swing.
 @export var spits: bool = false
+## How dangerous this enemy is to shoot first (focus fire): higher is shot first among enemies in range. 0 = ordinary.
+@export var threat: int = 0
 ## Optional pixel-art sheet; enemies without one keep drawing the placeholder.
 @export var sprite: SpriteSheet
 
@@ -42,4 +44,6 @@ func validate() -> PackedStringArray:
 		errs.append(_err("a spitter needs attack_range >= 2 (it is a ranged attacker)"))
 	if footprint_radius <= 0.0:
 		errs.append(_err("footprint_radius must be > 0"))
+	if threat < 0:
+		errs.append(_err("threat must be >= 0"))
 	return errs

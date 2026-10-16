@@ -35,6 +35,7 @@ attack_damage = 9.0
 attack_interval_s = 2.0
 attack_range = 4.5
 spits = true
+threat = 2
 footprint_radius = 0.3
 placeholder_color = Color(0.6, 0.8, 0.15, 1)
 sprite = SubResource("Resource_sheet")

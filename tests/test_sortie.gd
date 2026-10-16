@@ -313,13 +313,12 @@ func test_enemies_still_attack_ground_units_when_an_aircraft_is_nearer() -> void
 	_release()
 
 
-func test_move_orders_and_building_ignore_aircraft() -> void:
+func test_aircraft_follow_their_flight_plan_and_never_block_building() -> void:
 	var b := _battle()
 	_arm(b)
 	b.play_card(0, TARGET)
 	var h := _heli(b)
 	var before := h.ground_pos
-	assert_eq(b.order_move_all(Vector2i(5, 5)), 0, "no ground unit to order")
 	b.step(DT)
 	assert_true(h.ground_pos != before, "it is flying its own route")
 	assert_true(not b.occupied_cells().has(IsoProjection.cell_of(h.ground_pos)) or IsoProjection.cell_of(h.ground_pos) == b.mission.core_cell, "an aircraft never blocks a build cell")

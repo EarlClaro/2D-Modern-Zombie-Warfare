@@ -1,7 +1,8 @@
 extends SceneTree
 ## Dev tool (not a test). Does where the player parks the soldier change the outcome? Uses the shipped waves;
 ## the soldier is ordered at t=0 to each cell and 10 seeds are run per cell.
-## Run: godot --headless --path . --script tools/tune_pos.gd
+## Since ADR-013 the player gives no move orders: the soldier is placed on each cell at t=0 and then acts on its own
+## (Guard). Run: godot --headless --path . --script tools/tune_pos.gd
 
 const SEEDS := [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 const CELLS: Array[Vector2i] = [Vector2i(7, 17), Vector2i(8, 15), Vector2i(9, 13), Vector2i(10, 15), Vector2i(6, 14), Vector2i(5, 19), Vector2i(7, 21), Vector2i(12, 16), Vector2i(4, 17)]
@@ -33,7 +34,10 @@ func _init() -> void:
 			var b := BattleController.new()
 			b.auto_step = false
 			b.setup(db, m, s)
-			b.order_move_all(cell)
+			for u in b.units:
+				if not u.def.is_fixed():
+					u.ground_pos = IsoProjection.cell_center(cell)
+					u.anchor = u.ground_pos
 			var steps := 0
 			while not b.is_ended() and steps < 20000:
 				b.step(1.0 / 60.0)

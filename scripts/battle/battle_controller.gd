@@ -135,6 +135,9 @@ var _enemy_index_valid: bool = false  # false once `enemies` changed after the i
 var _target_pos: PackedVector2Array = PackedVector2Array()  # what enemies can hit this tick (ground units), reused
 var _target_id: PackedInt32Array = PackedInt32Array()
 var _target_obj: Array[BattleUnit] = []
+var _front_pos: Vector2 = Vector2.ZERO  # the enemy closest to the core after this tick's movement (for ADVANCE units)
+var _has_front: bool = false
+var _blocked_cells: Dictionary = {}  # scenery cells (cell -> true): units do not walk through them
 
 var _ground: TileMapLayer
 var _decals: Node2D
@@ -142,7 +145,6 @@ var _shadows: Node2D
 var _entities: Node2D
 var _air: Node2D
 var _fx: Node2D
-var _highlight: IsoCellHighlight
 var _preview_node: CardPreview
 var _camera: IsoCamera
 
@@ -345,6 +347,8 @@ func _enemy_phase(delta: float) -> void:
 	var core_pos := core.ground_pos
 	var core_radius := core.radius
 	_enemy_index.begin(float(mission.map.width()), float(mission.map.height()))
+	_has_front = false
+	var front_d2 := INF
 	for e in enemies:
 		if e.health.hp <= 0.0:
 			continue
@@ -384,6 +388,11 @@ func _enemy_phase(delta: float) -> void:
 			e.attack_state.tick(delta, false)
 			e.advance_path(delta)
 		_enemy_index.add(e, e.ground_pos)
+		var core_d2 := e.ground_pos.distance_squared_to(core_pos)
+		if core_d2 < front_d2:
+			front_d2 = core_d2
+			_front_pos = e.ground_pos
+			_has_front = true
 	_enemy_index_valid = true
 
 
@@ -393,14 +402,107 @@ func _unit_phase(delta: float) -> void:
 			continue
 		if u.weapon == null:  # a structure: nothing to move or fire
 			continue
-		u.advance_move(delta)
 		var target: BattleEnemy = null
-		if not u.is_moving():  # units must stand still to fire
-			target = _nearest_enemy(u.ground_pos, u.weapon.range_tiles)
+		if u.def.is_air():  # sortie aircraft follow their flight plan, not the unit brain
+			u.advance_move(delta)
+			if not u.is_moving():  # units must stand still to fire
+				target = _nearest_enemy(u.ground_pos, u.weapon.range_tiles)
+		else:
+			target = _think_and_move(u, delta)
 		if u.weapon_state.tick(delta, target != null):
 			_fire(u, u.weapon, target)
 		if u is BattleAircraft:
 			_fire_secondary(u as BattleAircraft, delta)
+
+
+## One ground unit's tick: the brain decides (stay, or walk to a spot), the unit walks, and the enemy it may shoot at
+## afterwards is returned (null while it is still walking: units must stand still to fire).
+func _think_and_move(u: BattleUnit, delta: float) -> BattleEnemy:
+	var weapon_range := u.weapon.range_tiles
+	var target := _pick_target(u)
+	var decision: UnitBrain.Decision = null
+	if _should_retreat(u):
+		decision = UnitBrain.retreat(u.ground_pos, core.ground_pos, _nearest_enemy(u.ground_pos, UnitBrain.RETREAT_DANGER) != null)
+	else:
+		match u.def.effective_behavior():
+			UnitBrain.Behavior.GUARD:
+				var engage := _nearest_enemy(u.anchor, u.def.leash + weapon_range * UnitBrain.RANGE_MARGIN)
+				var cover := _structure_positions() if u.def.seeks_cover and engage != null else PackedVector2Array()
+				var threatened := not cover.is_empty() and _nearest_enemy(u.ground_pos, UnitBrain.COVER_ABORT) != null
+				decision = UnitBrain.guard(u.ground_pos, u.anchor, weapon_range, u.def.leash, target != null, engage != null, engage.ground_pos if engage != null else Vector2.ZERO, cover, threatened)
+			UnitBrain.Behavior.ADVANCE:
+				decision = UnitBrain.advance(u.ground_pos, core.ground_pos, weapon_range, u.def.advance_limit, target != null, _has_front, _front_pos)
+			UnitBrain.Behavior.SUPPORT:
+				var friend := _nearest_friend(u)
+				decision = UnitBrain.support(u.ground_pos, friend != null, friend.ground_pos if friend != null else Vector2.ZERO)
+	if decision != null:
+		_carry_out(u, decision)
+	var before := u.ground_pos
+	u.advance_move(delta)
+	if u.is_moving():
+		return null
+	if u.ground_pos != before:  # it arrived this tick: the target may have changed
+		target = _pick_target(u)
+	return target
+
+
+## Focus fire (when the unit has the habit): the most dangerous enemy in range, else the nearest.
+func _pick_target(u: BattleUnit) -> BattleEnemy:
+	if u.def.focus_fire:
+		return _index_ready().best_in_range(u.ground_pos, u.weapon.range_tiles, u.weapon.anti_armor)
+	return _nearest_enemy(u.ground_pos, u.weapon.range_tiles)
+
+
+## True for a mobile unit with the retreat habit whose health fraction is below its threshold.
+func _should_retreat(u: BattleUnit) -> bool:
+	return u.def.retreats and not u.def.is_fixed() and u.health.fraction() < u.def.retreat_below
+
+
+## Positions of the living friendly structures (what a unit may take cover behind).
+func _structure_positions() -> PackedVector2Array:
+	var out := PackedVector2Array()
+	for o in units:
+		if o.def.structure and o.is_alive():
+			out.append(o.ground_pos)
+	return out
+
+
+func _carry_out(u: BattleUnit, d: UnitBrain.Decision) -> void:
+	if d.action == UnitBrain.Action.STAY:
+		if u.is_moving():
+			u.stop()
+		return
+	if u.is_moving() and u.move_target().distance_squared_to(d.dest) < 0.0625:
+		return  # already walking to (about) there
+	if not _walk_is_clear(u.ground_pos, d.dest):
+		if u.is_moving():
+			u.stop()
+		return
+	u.order_move(d.dest)
+
+
+## True if the straight walk from `a` to `b` stays on walkable ground, off scenery and off the core's cell.
+func _walk_is_clear(a: Vector2, b: Vector2) -> bool:
+	var n := maxi(1, ceili(a.distance_to(b) / 0.25))
+	for i in n + 1:
+		var cell := IsoProjection.cell_of(a.lerp(b, float(i) / n))
+		if not mission.map.is_walkable(cell) or cell == mission.core_cell or _blocked_cells.has(cell):
+			return false
+	return true
+
+
+## The nearest living friendly ground fighter (not a support unit itself) within the unit's follow range, or null.
+func _nearest_friend(u: BattleUnit) -> BattleUnit:
+	var best: BattleUnit = null
+	var best_d2 := u.def.follow_range * u.def.follow_range
+	for o in units:
+		if o == u or not o.is_alive() or o.weapon == null or o.def.is_air() or o.def.effective_behavior() == UnitBrain.Behavior.SUPPORT:
+			continue
+		var d2 := u.ground_pos.distance_squared_to(o.ground_pos)
+		if d2 < best_d2 or (d2 == best_d2 and best != null and o.uid < best.uid):
+			best = o
+			best_d2 = d2
+	return best
 
 
 ## The aircraft's second weapon (missiles): own range, cooldown and limited ammo. It may fire on the move, so the
@@ -548,29 +650,15 @@ func _on_rules_ended(res: MissionRules.Result) -> void:
 	battle_ended.emit(res)
 
 
-# --- player input / orders -----------------------------------------------------------------------
+# --- player input -------------------------------------------------------------------------------
 
-## Orders every mobile unit to walk to the centre of `cell`. Returns how many accepted the order.
-func order_move_all(cell: Vector2i) -> int:
-	if mission == null or not mission.map.is_walkable(cell) or cell == mission.core_cell:
-		return 0
-	var n := 0
-	for u in units:
-		if u.def.is_air():
-			continue  # sortie aircraft follow their own flight plan
-		if u.order_move(IsoProjection.cell_center(cell)):
-			n += 1
-	return n
-
-
+## The player gives no move orders: placed units act on their own (ADR-013, UnitBrain). Input here is cards only.
 func _unhandled_input(event: InputEvent) -> void:
 	if mission == null:
 		return
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT and not is_ended():
 		if targeting.is_selecting():
 			confirm_at(IsoPicking.cell_under_mouse(self))
-		else:
-			order_move_all(IsoPicking.cell_under_mouse(self))
 	elif event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_RIGHT:
 		cancel_selection()
 	elif event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
@@ -590,8 +678,6 @@ func _process(delta: float) -> void:
 	if deck != null:
 		targeting.sync(deck)
 	preview = targeting.preview(self, cell) if not is_ended() else null
-	_highlight.visible = preview == null and mission.map.is_walkable(cell) and not is_ended()
-	_highlight.cell = cell
 	_preview_node.show_preview(preview, IsoProjection.cell_center(mission.core_cell), mission.deploy_radius)
 	_update_core_fade(delta)
 	update_scenery_fade(delta)
@@ -785,9 +871,6 @@ func _ensure_layers() -> void:
 	_entities = _add_layer("Entities", true)
 	_air = _add_layer("Air", false)
 	_fx = _add_layer("Fx", false)
-	_highlight = IsoCellHighlight.new()
-	_highlight.name = "HoverHighlight"
-	_decals.add_child(_highlight)
 	var telegraph := StrikeTelegraph.new()
 	telegraph.name = "StrikeTelegraph"
 	telegraph.bind(self)
@@ -833,6 +916,7 @@ func _clear_dynamic() -> void:
 	scenery_nodes.clear()
 	scenery_shadows = null
 	_scenery_cells.clear()
+	_blocked_cells.clear()
 	_fade_pieces.clear()
 	_fade_lookup.clear()
 	core = null
@@ -851,6 +935,7 @@ func _build_map() -> void:
 func _spawn_scenery() -> void:
 	scenery_nodes.clear()
 	_scenery_cells.clear()
+	_blocked_cells.clear()
 	_fade_pieces.clear()
 	_fade_lookup.clear()
 	for p in mission.map.placements():
@@ -863,6 +948,8 @@ func _spawn_scenery() -> void:
 		_entities.add_child(node)
 		scenery_nodes.append(node)
 		_scenery_cells.append_array(def.cells_at(p.cell))
+		for c in def.cells_at(p.cell):
+			_blocked_cells[c] = true
 		if def.fades:
 			_fade_pieces.append(node)
 			_register_fade_cells(node)
@@ -939,6 +1026,7 @@ func _spawn_unit_at(unit_id: String, ground: Vector2) -> BattleUnit:
 	u.name = "Unit%d" % _next_uid
 	u.setup(_next_uid, def, db.weapon(def.weapon_id), IsoProjection.cell_of(ground))
 	u.ground_pos = ground
+	u.anchor = ground
 	if def.structure and not mission.spawn_cells.is_empty():
 		u.face_toward(IsoProjection.cell_center(mission.spawn_cells[0]))  # its long side lies across the approach
 	if u is BattleAircraft:

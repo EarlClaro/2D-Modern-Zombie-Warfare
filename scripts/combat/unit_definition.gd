@@ -22,6 +22,20 @@ const HIGH_AIR_ALTITUDE: float = 6.0
 ## Area blast that goes off where this entity dies (explosive barrels, a fuel truck); both 0 = none.
 @export var death_blast_damage: float = 0.0
 @export var death_blast_radius: float = 0.0
+## What the unit does on its own once played (ADR-013, see UnitBrain). Fixed units and structures always hold; sortie
+## aircraft follow their flight plan. `leash`: how far a GUARD may stray from its anchor; `advance_limit`: how far from
+## the core an ADVANCE unit may go; `follow_range`: how far a SUPPORT unit looks for a friend to follow (tiles).
+@export var behavior: UnitBrain.Behavior = UnitBrain.Behavior.GUARD
+@export var leash: float = 6.0
+@export var advance_limit: float = 12.0
+@export var follow_range: float = 8.0
+## Habits (ADR-013), each switchable: a GUARD that has to move takes a spot behind a friendly structure when one is in
+## reach; a mobile unit below `retreat_below` of its health falls back toward the core while enemies are near; a unit
+## shoots the most dangerous enemy in range first instead of the nearest.
+@export var seeks_cover: bool = true
+@export var retreats: bool = true
+@export_range(0.0, 1.0) var retreat_below: float = 0.35
+@export var focus_fire: bool = true
 ## Optional second weapon (aircraft only for now), fired independently of the first.
 @export var secondary_weapon_id: String = ""
 @export var placeholder_color: Color = Color.WHITE
@@ -54,6 +68,10 @@ func validate() -> PackedStringArray:
 			errs.append(_err("a structure must not have a weapon"))
 		if is_air():
 			errs.append(_err("a structure must be a ground entity"))
+	if retreat_below < 0.0 or retreat_below >= 1.0:
+		errs.append(_err("retreat_below must be within 0..1 (exclusive of 1)"))
+	if leash <= 0.0 or advance_limit <= 0.0 or follow_range <= 0.0:
+		errs.append(_err("leash, advance_limit and follow_range must be > 0"))
 	if death_blast_damage < 0.0 or death_blast_radius < 0.0:
 		errs.append(_err("death_blast_damage and death_blast_radius must be >= 0"))
 	if (death_blast_damage > 0.0) != (death_blast_radius > 0.0):
@@ -80,3 +98,10 @@ func has_death_blast() -> bool:
 
 func is_fixed() -> bool:
 	return move_speed <= 0.0
+
+
+## The behaviour that actually runs: anything fixed or without a weapon holds, whatever `behavior` says.
+func effective_behavior() -> UnitBrain.Behavior:
+	if is_fixed() or structure:
+		return UnitBrain.Behavior.HOLD
+	return behavior

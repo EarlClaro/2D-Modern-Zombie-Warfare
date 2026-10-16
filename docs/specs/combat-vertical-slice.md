@@ -9,7 +9,7 @@ Prove that core combat is **satisfying and readable** on the isometric view with
 **Battlefield.** One 24x24 map: a base **core** in one corner area, one **enemy spawn** at the opposite edge, and one **chokepoint** (3-cell gap in a rock wall) on the route. Terrain from `MapDefinition` (grass / road / rock; same walkable/buildable data as the spike TileSet).
 
 **Player forces (pre-placed by mission data, no cards).**
-- `rifle_soldier` — mobile (LMB = move order, reuses spike click-to-move), hitscan rifle, fires when it has a target (while standing; see tick rules).
+- `rifle_soldier` — mobile (LMB = move order in M1; replaced by the Guard behaviour in M3.3, ADR-013), hitscan rifle, fires when it has a target (while standing; see tick rules).
 - `mg_nest` — fixed (`move_speed = 0`), hitscan machine gun, higher rate of fire, shorter lifespan pressure (it can be attacked). One code path: "fixed" is just speed 0.
 
 **Enemy.** `shambler` only: follows mission waypoints (cell centres, straight segments on the ground plane) toward the core; if a player entity (unit or core) is within its attack range it stops and attacks it, otherwise keeps walking.
@@ -109,7 +109,7 @@ No targets → idle, cooldown still recovers; target dies/leaves range mid-coold
 ## Decisions needing your call (defaults recommended — will proceed with these unless you say otherwise)
 - **D1 — Hitscan only in M1.** Defer the arcing `ProjectileSystem` (and its render strategy decision) to M2 where artillery/rockets need it. Rationale: M1 weapons are small arms where travel time is not tactically important (master prompt §9), and it avoids building an unproven system.
 - **D2 — Enemies attack units as well as the core** (nearest player entity in attack range). Gives units tension and makes unit placement matter. Alternative: core only.
-- **D3 — Soldier is player-controlled by click-to-move; MG nest is fixed.** Gives the slice minimal agency without cards. Alternative: both fixed (fully passive).
+- **D3 — Soldier is player-controlled by click-to-move; MG nest is fixed.** *(Superseded in M3.3: no move orders, the soldier guards its spot on its own.)* Gives the slice minimal agency without cards. Alternative: both fixed (fully passive).
 - **D4 — Placeholder audio generated in code** (no external files, no licensing issues). Replace in M7.
 - **D5 — Map from ASCII rows in a `.tres`** (diff-friendly, no editor tile painting). The scene builds the `TileMapLayer` from it with the existing `IsoTileSet`.
 

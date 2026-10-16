@@ -17,6 +17,8 @@ var health: Health
 var facing: int = IsoProjection.Facing.SE
 var shadow: IsoShadow
 var _recoil: Vector2 = Vector2.ZERO  # draw-only offset; never moves the sort anchor
+## Where the unit was placed: a GUARD returns here, and its leash is measured from here.
+var anchor: Vector2 = Vector2.ZERO
 var _move_target: Vector2 = Vector2.ZERO
 var _moving: bool = false
 var _anim_t: float = 0.0  # walk-cycle clock; only advances while moving
@@ -42,13 +44,24 @@ func is_moving() -> bool:
 	return _moving
 
 
-## Mobile units walk a straight ground-plane line at constant speed; fixed units ignore orders.
+## Mobile units walk a straight ground-plane line at constant speed; fixed units ignore orders. Only the unit brain
+## and the sortie flight issue these; the player gives no move orders (ADR-013).
 func order_move(target_ground: Vector2) -> bool:
 	if def.is_fixed() or not is_alive():
 		return false
 	_move_target = target_ground
 	_moving = ground_pos.distance_to(target_ground) > ARRIVE_EPS
 	return _moving
+
+
+## Where the unit is walking to (meaningful only while `is_moving()`).
+func move_target() -> Vector2:
+	return _move_target
+
+
+## Stops walking where it stands (the unit brain does this the moment something is in range).
+func stop() -> void:
+	_moving = false
 
 
 func face_toward(target_ground: Vector2) -> void:

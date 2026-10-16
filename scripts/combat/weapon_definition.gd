@@ -17,6 +17,8 @@ enum Delivery { HITSCAN, PROJECTILE }
 @export var ammo: int = 0
 ## True: may fire while its carrier is moving (otherwise units must stand still to fire).
 @export var can_fire_moving: bool = false
+## True for a weapon made for armour (rocket launcher, tank gun): its carrier's focus fire prefers armoured targets.
+@export var anti_armor: bool = false
 ## 0 = constant speed; 1 = accelerates from rest like a rocket motor. `projectile_speed` stays the AVERAGE speed.
 @export var projectile_accel: float = 0.0
 ## Altitude (tile-height units) the projectile falls away from its pylon before the motor takes over.

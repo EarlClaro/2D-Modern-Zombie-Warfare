@@ -11,3 +11,4 @@ range_tiles = 9.0
 delivery = 0
 blast_radius = 1.6
 sfx_id = "shot_rifle"
+anti_armor = true
