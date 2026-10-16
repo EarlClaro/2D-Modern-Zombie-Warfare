@@ -404,17 +404,22 @@ func _unit_phase(delta: float) -> void:
 ## afterwards is returned (null while it is still walking: units must stand still to fire).
 func _think_and_move(u: BattleUnit, delta: float) -> BattleEnemy:
 	var weapon_range := u.weapon.range_tiles
-	var target := _nearest_enemy(u.ground_pos, weapon_range)
+	var target := _pick_target(u)
 	var decision: UnitBrain.Decision = null
-	match u.def.effective_behavior():
-		UnitBrain.Behavior.GUARD:
-			var engage := _nearest_enemy(u.anchor, u.def.leash + weapon_range * UnitBrain.RANGE_MARGIN)
-			decision = UnitBrain.guard(u.ground_pos, u.anchor, weapon_range, u.def.leash, target != null, engage != null, engage.ground_pos if engage != null else Vector2.ZERO)
-		UnitBrain.Behavior.ADVANCE:
-			decision = UnitBrain.advance(u.ground_pos, core.ground_pos, weapon_range, u.def.advance_limit, target != null, _has_front, _front_pos)
-		UnitBrain.Behavior.SUPPORT:
-			var friend := _nearest_friend(u)
-			decision = UnitBrain.support(u.ground_pos, friend != null, friend.ground_pos if friend != null else Vector2.ZERO)
+	if _should_retreat(u):
+		decision = UnitBrain.retreat(u.ground_pos, core.ground_pos, _nearest_enemy(u.ground_pos, UnitBrain.RETREAT_DANGER) != null)
+	else:
+		match u.def.effective_behavior():
+			UnitBrain.Behavior.GUARD:
+				var engage := _nearest_enemy(u.anchor, u.def.leash + weapon_range * UnitBrain.RANGE_MARGIN)
+				var cover := _structure_positions() if u.def.seeks_cover and engage != null else PackedVector2Array()
+				var threatened := not cover.is_empty() and _nearest_enemy(u.ground_pos, UnitBrain.COVER_ABORT) != null
+				decision = UnitBrain.guard(u.ground_pos, u.anchor, weapon_range, u.def.leash, target != null, engage != null, engage.ground_pos if engage != null else Vector2.ZERO, cover, threatened)
+			UnitBrain.Behavior.ADVANCE:
+				decision = UnitBrain.advance(u.ground_pos, core.ground_pos, weapon_range, u.def.advance_limit, target != null, _has_front, _front_pos)
+			UnitBrain.Behavior.SUPPORT:
+				var friend := _nearest_friend(u)
+				decision = UnitBrain.support(u.ground_pos, friend != null, friend.ground_pos if friend != null else Vector2.ZERO)
 	if decision != null:
 		_carry_out(u, decision)
 	var before := u.ground_pos
@@ -422,8 +427,29 @@ func _think_and_move(u: BattleUnit, delta: float) -> BattleEnemy:
 	if u.is_moving():
 		return null
 	if u.ground_pos != before:  # it arrived this tick: the target may have changed
-		target = _nearest_enemy(u.ground_pos, weapon_range)
+		target = _pick_target(u)
 	return target
+
+
+## Focus fire (when the unit has the habit): the most dangerous enemy in range, else the nearest.
+func _pick_target(u: BattleUnit) -> BattleEnemy:
+	if u.def.focus_fire:
+		return _index_ready().best_in_range(u.ground_pos, u.weapon.range_tiles, u.weapon.anti_armor)
+	return _nearest_enemy(u.ground_pos, u.weapon.range_tiles)
+
+
+## True for a mobile unit with the retreat habit whose health fraction is below its threshold.
+func _should_retreat(u: BattleUnit) -> bool:
+	return u.def.retreats and not u.def.is_fixed() and u.health.fraction() < u.def.retreat_below
+
+
+## Positions of the living friendly structures (what a unit may take cover behind).
+func _structure_positions() -> PackedVector2Array:
+	var out := PackedVector2Array()
+	for o in units:
+		if o.def.structure and o.is_alive():
+			out.append(o.ground_pos)
+	return out
 
 
 func _carry_out(u: BattleUnit, d: UnitBrain.Decision) -> void:

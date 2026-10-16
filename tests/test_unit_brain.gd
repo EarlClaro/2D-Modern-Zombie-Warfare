@@ -138,3 +138,82 @@ func test_behaviour_distances_must_be_positive() -> void:
 	u.advance_limit = 12.0
 	u.follow_range = 0.0
 	assert_true(not u.validate().is_empty(), "follow_range")
+
+
+# --- cover -----------------------------------------------------------------------------------------
+
+func test_cover_spot_is_behind_the_structure_as_seen_from_the_enemy() -> void:
+	var c: Variant = Brain.cover_spot(ANCHOR, Vector2(20, 10), 8.0, ANCHOR, 6.0, PackedVector2Array([Vector2(14, 10)]))
+	assert_true(c != null)
+	assert_vec_near(c, Vector2(14.0 - Brain.COVER_BEHIND, 10.0), 1e-4)
+
+
+func test_cover_spot_needs_range_leash_and_a_short_walk() -> void:
+	var wall := PackedVector2Array([Vector2(14, 10)])
+	assert_true(Brain.cover_spot(ANCHOR, Vector2(23, 10), 8.0, ANCHOR, 6.0, wall) == null, "the spot would be out of weapon range")
+	assert_true(Brain.cover_spot(ANCHOR, Vector2(20, 10), 8.0, ANCHOR, 2.0, wall) == null, "the spot would be outside the leash")
+	assert_true(Brain.cover_spot(Vector2(2, 10), Vector2(20, 10), 8.0, Vector2(2, 10), 20.0, wall) == null, "too long a walk")
+	assert_true(Brain.cover_spot(ANCHOR, Vector2(14.2, 10), 8.0, ANCHOR, 6.0, wall) == null, "a structure on top of the enemy is no cover")
+	assert_true(Brain.cover_spot(ANCHOR, Vector2(20, 10), 8.0, ANCHOR, 6.0, PackedVector2Array()) == null, "no structures")
+
+
+func test_cover_spot_takes_the_shorter_walk() -> void:
+	var walls := PackedVector2Array([Vector2(14, 10), Vector2(14, 12)])
+	var near_first: Variant = Brain.cover_spot(Vector2(10, 10), Vector2(20, 10), 8.0, ANCHOR, 6.0, walls)
+	assert_vec_near(near_first, Vector2(13.1, 10.0), 1e-3)
+	var near_second: Variant = Brain.cover_spot(Vector2(10, 13), Vector2(20, 10), 8.0, ANCHOR, 6.0, walls)
+	assert_true(near_second.y > 12.0, "from the south the second wall is the shorter walk")
+
+
+func test_in_cover_needs_a_close_structure_that_is_nearer_the_enemy() -> void:
+	var wall := PackedVector2Array([Vector2(14, 10)])
+	assert_true(Brain.in_cover(Vector2(13.5, 10), Vector2(20, 10), wall))
+	assert_true(not Brain.in_cover(Vector2(10, 10), Vector2(20, 10), wall), "too far from the wall")
+	assert_true(not Brain.in_cover(Vector2(14.5, 10), Vector2(20, 10), wall), "in front of the wall, not behind it")
+
+
+func test_guard_walks_to_cover_even_when_it_could_already_fire() -> void:
+	var wall := PackedVector2Array([Vector2(14, 10)])
+	var d := Brain.guard(ANCHOR, ANCHOR, 8.0, 6.0, true, true, Vector2(17.5, 10), wall)
+	assert_true(_moves(d), "in range, but not in cover")
+	assert_vec_near(d.dest, Vector2(13.1, 10.0), 1e-3)
+
+
+func test_guard_fights_where_it_stands_when_an_enemy_is_already_on_it() -> void:
+	var wall := PackedVector2Array([Vector2(14, 10)])
+	assert_true(not _moves(Brain.guard(ANCHOR, ANCHOR, 8.0, 6.0, true, true, Vector2(17.5, 10), wall, true)))
+
+
+func test_guard_in_cover_with_a_target_stays() -> void:
+	var wall := PackedVector2Array([Vector2(14, 10)])
+	assert_true(not _moves(Brain.guard(Vector2(13.1, 10), ANCHOR, 8.0, 6.0, true, true, Vector2(17.5, 10), wall)))
+
+
+func test_guard_without_structures_ignores_the_cover_habit() -> void:
+	assert_true(not _moves(Brain.guard(ANCHOR, ANCHOR, 8.0, 6.0, true, true, Vector2(17.5, 10))))
+
+
+# --- retreat ---------------------------------------------------------------------------------------
+
+func test_retreat_stays_when_no_enemy_is_near() -> void:
+	assert_true(not _moves(Brain.retreat(Vector2(12, 10), Vector2(3, 10), false)))
+
+
+func test_retreat_walks_toward_the_core_and_stops_a_short_way_out() -> void:
+	var d := Brain.retreat(Vector2(12, 10), Vector2(3, 10), true)
+	assert_true(_moves(d))
+	assert_vec_near(d.dest, Vector2(3.0 + Brain.RETREAT_STAND, 10.0), 1e-4)
+	assert_true(not _moves(Brain.retreat(Vector2(3.0 + Brain.RETREAT_STAND + 0.1, 10), Vector2(3, 10), true)), "already as close as it goes")
+	assert_true(not _moves(Brain.retreat(Vector2(3, 10), Vector2(3, 10), true)), "standing on the core")
+	assert_true(not _moves(Brain.retreat(Vector2(4, 10), Vector2(3, 10), true)), "closer than the stand-off already: it does not back away from the core")
+
+
+func test_habits_are_on_by_default_and_checked() -> void:
+	var u := ContentDb.load_from().unit("rifle_soldier").duplicate()
+	assert_true(u.seeks_cover and u.retreats and u.focus_fire)
+	assert_true(u.retreat_below > 0.0 and u.retreat_below < 1.0)
+	u.retreat_below = 1.0
+	assert_true(not u.validate().is_empty(), "retreat_below of 1 would make a full-health unit run")
+	u.retreat_below = -0.1
+	assert_true(not u.validate().is_empty())
+

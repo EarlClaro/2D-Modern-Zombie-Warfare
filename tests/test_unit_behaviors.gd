@@ -292,3 +292,160 @@ func test_a_card_squad_acts_on_its_own_with_no_further_input() -> void:
 	assert_true(b.stats["shots"] > 0, "the squad fired with no orders")
 	assert_true(b.stats["kills"] > 0, "and killed something")
 	_release()
+
+
+# --- habits ------------------------------------------------------------------------------------------
+
+func _enemy_of(b: BattleController, kind: String, pos: Vector2, hp: float = 1.0e7, speed: float = -1.0) -> BattleEnemy:
+	var w := WaveEntry.new()
+	w.enemy_id = kind
+	b._spawn_enemy(w)
+	var e: BattleEnemy = b.enemies.back()
+	e.ground_pos = pos
+	e.health.hp = hp
+	e.health.max_hp = maxf(e.health.max_hp, hp)
+	if speed >= 0.0:
+		e.def = e.def.duplicate()
+		e.def.move_speed = maxf(speed, 0.0001)
+	return e
+
+
+## The first target each unit shoots at, by shooter id.
+func _first_targets(b: BattleController) -> Dictionary:
+	var seen: Dictionary = {}
+	b.shot_fired.connect(func(shooter: BattleUnit, target: BattleEnemy) -> void:
+		if not seen.has(shooter.def.id):
+			seen[shooter.def.id] = target.def.id)
+	b.projectile_launched.connect(func(shooter: BattleUnit, _w: WeaponDefinition, _f: Vector2, _t: Vector2) -> void:
+		if not seen.has(shooter.def.id):
+			seen[shooter.def.id] = "(projectile)")
+	return seen
+
+
+func test_a_hurt_soldier_with_enemies_near_falls_back_toward_the_core() -> void:
+	var b := _battle([["rifle_soldier", SOLDIER_CELL]])
+	var s := _unit(b, "rifle_soldier")
+	s.health.hp = s.health.max_hp * 0.2
+	_enemy_of(b, "shambler", s.anchor + Vector2(0.0, -6.0), 1.0e7, 0.0)
+	var start := s.ground_pos.distance_to(b.core.ground_pos)
+	_run(b, 4.0)
+	var now := s.ground_pos.distance_to(b.core.ground_pos)
+	assert_true(now < start - 0.8, "it moved toward the core (%.2f -> %.2f)" % [start, now])
+	assert_true(now <= UnitBrain.RETREAT_STAND + 0.3, "and stands close to it (%.2f)" % now)
+	_release()
+
+
+func test_a_healthy_soldier_does_not_fall_back() -> void:
+	var b := _battle([["rifle_soldier", SOLDIER_CELL]])
+	var s := _unit(b, "rifle_soldier")
+	_enemy_of(b, "shambler", s.anchor + Vector2(0.0, -6.0), 1.0e7, 0.0)
+	_run(b, 4.0)
+	assert_true(s.ground_pos.distance_to(s.anchor) < 1.0)
+	_release()
+
+
+func test_a_hurt_soldier_with_nothing_near_stays_put() -> void:
+	var b := _battle([["rifle_soldier", SOLDIER_CELL]])
+	var s := _unit(b, "rifle_soldier")
+	s.health.hp = s.health.max_hp * 0.2
+	_enemy_of(b, "shambler", s.anchor + Vector2(0.0, -15.0), 1.0e7, 0.0)
+	_run(b, 3.0)
+	assert_vec_near(s.ground_pos, s.anchor, 1e-6)
+	_release()
+
+
+func test_the_retreat_habit_can_be_switched_off_and_fixed_units_never_retreat() -> void:
+	var b := _battle([["rifle_soldier", SOLDIER_CELL], ["mg_nest", Vector2i(9, 22)]])
+	var s := _unit(b, "rifle_soldier")
+	var nest := _unit(b, "mg_nest")
+	s.def = s.def.duplicate()
+	s.def.retreats = false
+	s.health.hp = s.health.max_hp * 0.2
+	nest.health.hp = nest.health.max_hp * 0.2
+	_enemy_of(b, "shambler", s.anchor + Vector2(0.0, -6.0), 1.0e7, 0.0)
+	var nest_start := nest.ground_pos
+	_run(b, 3.0)
+	assert_true(s.ground_pos.distance_to(b.core.ground_pos) > UnitBrain.RETREAT_STAND + 1.0, "no retreat with the habit off")
+	assert_vec_near(nest.ground_pos, nest_start, 1e-6)
+	_release()
+
+
+func test_a_rifle_shoots_the_spitter_first_and_an_rpg_the_brute() -> void:
+	for armed in [["rifle_soldier", "spitter"], ["rpg_soldier", "brute"]]:
+		var b := _battle([[armed[0], SOLDIER_CELL]])
+		var seen := _first_targets(b)
+		var s := _unit(b, armed[0])
+		_enemy_of(b, "shambler", s.anchor + Vector2(0.0, -3.0), 1.0e7, 0.0)
+		_enemy_of(b, "spitter", s.anchor + Vector2(0.0, -6.0), 1.0e7, 0.0)
+		_enemy_of(b, "brute", s.anchor + Vector2(0.0, -5.0), 1.0e7, 0.0)
+		_run(b, 1.0)
+		if armed[0] == "rifle_soldier":
+			assert_eq(seen.get("rifle_soldier", ""), "spitter", "rifle: spitter before the nearer shambler and brute")
+		else:
+			assert_true(seen.has("rpg_soldier"), "the rocket launcher fired")
+			assert_eq(b.enemies.filter(func(e: BattleEnemy) -> bool: return e.def.id == "brute")[0].health.hp < 1.0e7, true, "and hit the brute")
+	_release()
+
+
+func test_focus_fire_can_be_switched_off() -> void:
+	var b := _battle([["rifle_soldier", SOLDIER_CELL]])
+	var seen := _first_targets(b)
+	var s := _unit(b, "rifle_soldier")
+	s.def = s.def.duplicate()
+	s.def.focus_fire = false
+	_enemy_of(b, "shambler", s.anchor + Vector2(0.0, -3.0), 1.0e7, 0.0)
+	_enemy_of(b, "spitter", s.anchor + Vector2(0.0, -6.0), 1.0e7, 0.0)
+	_run(b, 1.0)
+	assert_eq(seen.get("rifle_soldier", ""), "shambler", "nearest first without the habit")
+	_release()
+
+
+func test_a_guard_takes_cover_behind_a_friendly_wall_and_fights_from_there() -> void:
+	var b := _battle([["rifle_soldier", SOLDIER_CELL], ["sandbag_wall", Vector2i(7, 15)]])
+	var s := _unit(b, "rifle_soldier")
+	var wall := _unit(b, "sandbag_wall")
+	_enemy_of(b, "shambler", Vector2(7.5, 10.0), 1.0e7, 0.0)
+	_run(b, 5.0)
+	assert_true(s.ground_pos.distance_to(wall.ground_pos) <= UnitBrain.COVER_OK, "it stands right behind the wall (%.2f)" % s.ground_pos.distance_to(wall.ground_pos))
+	assert_true(wall.ground_pos.distance_to(Vector2(7.5, 10.0)) < s.ground_pos.distance_to(Vector2(7.5, 10.0)), "with the wall nearer the enemy")
+	assert_true(b.stats["shots"] > 0, "and it fires from there")
+	_release()
+
+
+func test_a_guard_with_an_enemy_on_top_of_it_fights_instead_of_walking_to_cover() -> void:
+	var b := _battle([["rifle_soldier", SOLDIER_CELL], ["sandbag_wall", Vector2i(7, 15)]])
+	var s := _unit(b, "rifle_soldier")
+	_enemy_of(b, "shambler", s.anchor + Vector2(0.0, -2.5), 1.0e7, 0.0)  # 2.5 tiles away: inside the 3-tile alarm
+	_run(b, 1.0)
+	assert_vec_near(s.ground_pos, s.anchor, 1e-6)
+	assert_true(b.stats["shots"] > 0, "it shot from where it stood")
+	_release()
+
+
+func test_without_the_cover_habit_the_guard_stops_as_soon_as_it_is_in_range() -> void:
+	var b := _battle([["rifle_soldier", SOLDIER_CELL], ["sandbag_wall", Vector2i(7, 15)]])
+	var s := _unit(b, "rifle_soldier")
+	s.def = s.def.duplicate()
+	s.def.seeks_cover = false
+	var wall := _unit(b, "sandbag_wall")
+	_enemy_of(b, "shambler", Vector2(7.5, 10.0), 1.0e7, 0.0)
+	_run(b, 5.0)
+	assert_true(s.ground_pos.distance_to(wall.ground_pos) > 2.0, "it did not go to the wall (%.2f)" % s.ground_pos.distance_to(wall.ground_pos))
+	_release()
+
+
+func test_a_guard_in_cover_does_not_shuffle_while_the_enemy_creeps_along() -> void:
+	var b := _battle([["rifle_soldier", SOLDIER_CELL], ["sandbag_wall", Vector2i(7, 15)]])
+	var s := _unit(b, "rifle_soldier")
+	_enemy_of(b, "shambler", Vector2(7.5, 10.0), 1.0e7, 0.05)
+	_run(b, 4.0)
+	var settled := s.ground_pos
+	var moves := 0
+	for i in 60 * 6:
+		b.step(DT)
+		if s.is_moving():
+			moves += 1
+	assert_true(moves < 10, "it stood still and shot (%d ticks of walking)" % moves)
+	assert_true(s.ground_pos.distance_to(settled) < 0.6)
+	_release()
+

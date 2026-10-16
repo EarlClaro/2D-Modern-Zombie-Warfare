@@ -316,3 +316,111 @@ func test_an_enemy_between_two_equally_near_units_hits_the_lower_id() -> void:
 	assert_true(first.health.hp < first.health.max_hp, "the lower id was attacked")
 	assert_eq(second.health.hp, second.health.max_hp, "the other was not")
 	_release()
+
+
+# --- focus fire: best_in_range ----------------------------------------------------------------------
+
+const KINDS: Array[String] = ["shambler", "runner", "brute", "spitter"]
+
+
+func _typed_enemy(uid: int, kind: String) -> BattleEnemy:
+	var e := BattleEnemy.new()
+	e.uid = uid
+	e.def = _get_db().enemy(kind)
+	_made.append(e)
+	return e
+
+
+## The rule written out the slow way: highest score, then nearest, then lowest uid.
+func _reference_best(enemies: Array, origin: Vector2, range_tiles: float, anti_armor: bool) -> int:
+	var best_uid := -1
+	var best_score := -1
+	var best_d2 := 0.0
+	for e in enemies:
+		var d2: float = origin.distance_squared_to(e.ground_pos)
+		if d2 > range_tiles * range_tiles:
+			continue
+		var score: int = e.def.threat + (EnemyIndex.ARMOR_BONUS if anti_armor and e.def.armor > 0.0 else 0)
+		if best_uid == -1 or score > best_score or (score == best_score and (d2 < best_d2 or (d2 == best_d2 and e.uid < best_uid))):
+			best_uid = e.uid
+			best_score = score
+			best_d2 = d2
+	return best_uid
+
+
+func _index_of(enemies: Array) -> EnemyIndex:
+	var index := EnemyIndex.new()
+	index.begin(MAP_W, MAP_H)
+	for e in enemies:
+		index.add(e, e.ground_pos)
+	return index
+
+
+func test_best_in_range_matches_the_slow_rule_on_random_mixed_crowds() -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 17
+	var mismatches := 0
+	for n in [4, 60, 500, 1200]:
+		var enemies: Array = []
+		for i in n:
+			var e := _typed_enemy(i + 1, KINDS[rng.randi() % KINDS.size()])
+			e.ground_pos = Vector2(rng.randf_range(-4.0, MAP_W + 4.0), rng.randf_range(-4.0, MAP_H + 4.0))
+			enemies.append(e)
+		var index := _index_of(enemies)
+		for q in 120:
+			var origin := Vector2(rng.randf_range(-4.0, MAP_W + 4.0), rng.randf_range(-4.0, MAP_H + 4.0))
+			var range_tiles: float = [1.0, 4.0, 8.0, 14.0, 40.0][rng.randi() % 5]
+			var anti: bool = rng.randi() % 2 == 0
+			var got := index.best_in_range(origin, range_tiles, anti)
+			if (got.uid if got != null else -1) != _reference_best(enemies, origin, range_tiles, anti):
+				mismatches += 1
+	_release()
+	assert_eq(mismatches, 0)
+
+
+func test_threats_are_shot_first_and_armour_matters_only_to_anti_armour_weapons() -> void:
+	var shambler := _typed_enemy(1, "shambler")
+	shambler.ground_pos = Vector2(10, 10)
+	var brute := _typed_enemy(2, "brute")
+	brute.ground_pos = Vector2(14, 10)
+	var spitter := _typed_enemy(3, "spitter")
+	spitter.ground_pos = Vector2(15, 10)
+	var index := _index_of([shambler, brute, spitter])
+	var origin := Vector2(9, 10)
+	assert_eq(index.best_in_range(origin, 8.0, false).uid, 3, "a rifle takes the spitter first")
+	assert_eq(index.best_in_range(origin, 8.0, true).uid, 2, "an anti-armour weapon takes the armoured brute first")
+	assert_eq(index.best_in_range(origin, 4.5, false).uid, 1, "out of range, the others do not count")
+	_release()
+
+
+func test_without_threats_best_in_range_is_just_the_nearest() -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 2
+	var enemies: Array = []
+	for i in 300:
+		var e := _typed_enemy(i + 1, "shambler" if i % 2 == 0 else "runner")
+		e.ground_pos = Vector2(rng.randf_range(0.0, 30.0), rng.randf_range(0.0, 30.0))
+		enemies.append(e)
+	var index := _index_of(enemies)
+	var mismatches := 0
+	for q in 100:
+		var origin := Vector2(rng.randf_range(0.0, 30.0), rng.randf_range(0.0, 30.0))
+		var a := index.best_in_range(origin, 7.0, true)
+		var b := index.nearest(origin, 7.0)
+		if a != b:
+			mismatches += 1
+	_release()
+	assert_eq(mismatches, 0)
+
+
+func test_best_in_range_ties_go_to_the_nearest_then_the_lowest_uid() -> void:
+	var far := _typed_enemy(1, "spitter")
+	far.ground_pos = Vector2(16, 10)
+	var near_high := _typed_enemy(9, "spitter")
+	near_high.ground_pos = Vector2(14, 10)
+	var near_low := _typed_enemy(4, "spitter")
+	near_low.ground_pos = Vector2(14, 10)
+	var index := _index_of([far, near_high, near_low])
+	assert_eq(index.best_in_range(Vector2(10, 10), 8.0, false).uid, 4)
+	_release()
+

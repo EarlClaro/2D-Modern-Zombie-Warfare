@@ -22,6 +22,16 @@ const ARRIVE_EPS: float = 0.15
 ## A support unit stands this far from the unit it follows, and starts walking when it is farther than FOLLOW_GAP.
 const FOLLOW_STAND: float = 1.2
 const FOLLOW_GAP: float = 2.2
+## Habit constants. A hurt unit runs when an enemy is within RETREAT_DANGER and stops RETREAT_STAND tiles from the core.
+const RETREAT_DANGER: float = 7.0
+const RETREAT_STAND: float = 2.5
+## Cover: the spot is this far behind the structure (seen from the enemy); structures farther than COVER_MAX_WALK away are ignored.
+const COVER_BEHIND: float = 0.9
+const COVER_MAX_WALK: float = 6.0
+## A unit within COVER_OK of a structure that is nearer the enemy counts as in cover and stays put; with an enemy
+## within COVER_ABORT it fights where it stands instead of walking to cover.
+const COVER_OK: float = 1.5
+const COVER_ABORT: float = 3.0
 
 
 class Decision:
@@ -40,7 +50,14 @@ class Decision:
 
 
 ## Guard: `enemy` is the enemy to deal with (the nearest one near the anchor) if `has_enemy`.
-static func guard(pos: Vector2, anchor: Vector2, weapon_range: float, leash: float, in_range: bool, has_enemy: bool, enemy: Vector2) -> Decision:
+## `structures` are the positions of friendly structures (empty = the cover habit is off or none exist): a unit that is
+## not yet in cover walks to a spot behind one, even if it could already fire from where it stands, unless an enemy is
+## already `threatened`-close. Once in cover it stays (so a moving enemy does not make it shuffle).
+static func guard(pos: Vector2, anchor: Vector2, weapon_range: float, leash: float, in_range: bool, has_enemy: bool, enemy: Vector2, structures: PackedVector2Array = PackedVector2Array(), threatened: bool = false) -> Decision:
+	if has_enemy and not threatened and not structures.is_empty() and not in_cover(pos, enemy, structures):
+		var behind: Variant = cover_spot(pos, enemy, weapon_range, anchor, leash, structures)
+		if behind != null:
+			return _go_or_stay(pos, behind)
 	if in_range:
 		return Decision.stay()
 	if has_enemy:
@@ -52,6 +69,49 @@ static func guard(pos: Vector2, anchor: Vector2, weapon_range: float, leash: flo
 			return Decision.stay()  # the leash keeps it too far away to ever reach this one
 		return _go_or_stay(pos, spot)
 	return _go_or_stay(pos, anchor)
+
+
+## True if a friendly structure is close to `pos` and nearer the enemy than `pos` is.
+static func in_cover(pos: Vector2, enemy: Vector2, structures: PackedVector2Array) -> bool:
+	var own := pos.distance_to(enemy)
+	for st in structures:
+		if pos.distance_to(st) <= COVER_OK and st.distance_to(enemy) < own - 0.2:
+			return true
+	return false
+
+
+## A spot just behind the nearest suitable friendly structure as seen from the enemy: in weapon range of the enemy,
+## within the leash of the anchor and a short walk away. Enemies go for the nearest thing, so the structure takes the
+## blows first. Returns null when no structure qualifies.
+static func cover_spot(pos: Vector2, enemy: Vector2, weapon_range: float, anchor: Vector2, leash: float, structures: PackedVector2Array) -> Variant:
+	var best: Variant = null
+	var best_walk := INF
+	for st in structures:
+		var from_enemy := st - enemy
+		var d := from_enemy.length()
+		if d < 0.5:
+			continue
+		var spot := st + from_enemy / d * COVER_BEHIND
+		if spot.distance_to(enemy) > weapon_range or spot.distance_to(anchor) > leash:
+			continue
+		var walk := pos.distance_to(spot)
+		if walk > COVER_MAX_WALK:
+			continue
+		if walk < best_walk:
+			best_walk = walk
+			best = spot
+	return best
+
+
+## Retreat (a hurt, mobile unit): with an enemy near, walk back toward the core and stand RETREAT_STAND out from it;
+## with none near, stay where it is.
+static func retreat(pos: Vector2, core: Vector2, danger: bool) -> Decision:
+	if not danger:
+		return Decision.stay()
+	var out := pos - core
+	if out.length() <= RETREAT_STAND + ARRIVE_EPS:
+		return Decision.stay()
+	return _go_or_stay(pos, core + out.normalized() * RETREAT_STAND)
 
 
 ## Advance: `front` is the enemy closest to the core, if `has_front`.

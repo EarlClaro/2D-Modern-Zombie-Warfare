@@ -34,6 +34,7 @@ move_speed = 0.7
 attack_damage = 30.0
 attack_interval_s = 1.4
 attack_range = 1.0
+threat = 1
 footprint_radius = 0.45
 placeholder_color = Color(0.3, 0.5, 0.25, 1)
 sprite = SubResource("Resource_sheet")

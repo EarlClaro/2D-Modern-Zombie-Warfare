@@ -11,6 +11,8 @@ extends RefCounted
 ## Built by BattleController during the enemy phase; see docs/BALANCE.md (M3.2) for why it exists.
 
 const CELL_TILES: float = 2.0
+## Added to the score of an armoured enemy for an anti-armour weapon (more than any `threat`).
+const ARMOR_BONUS: int = 3
 
 var _inv: float = 1.0 / CELL_TILES
 var _cw: int = 1
@@ -19,6 +21,8 @@ var _head: PackedInt32Array = PackedInt32Array()
 var _next: PackedInt32Array = PackedInt32Array()
 var _pos: PackedVector2Array = PackedVector2Array()
 var _uid: PackedInt32Array = PackedInt32Array()
+var _threat: PackedInt32Array = PackedInt32Array()
+var _armored: PackedByteArray = PackedByteArray()
 var _who: Array[BattleEnemy] = []
 var _count: int = 0
 var _best: int = -1  # scratch state of the ring search in `nearest`
@@ -37,6 +41,8 @@ func begin(map_w_tiles: float, map_h_tiles: float) -> void:
 	_next.clear()
 	_pos.clear()
 	_uid.clear()
+	_threat.clear()
+	_armored.clear()
 	_who.clear()
 	_count = 0
 
@@ -48,6 +54,8 @@ func add(e: BattleEnemy, p: Vector2) -> void:
 	_head[cell] = _count
 	_pos.append(p)
 	_uid.append(e.uid)
+	_threat.append(e.def.threat if e.def != null else 0)
+	_armored.append(1 if e.def != null and e.def.armor > 0.0 else 0)
 	_who.append(e)
 	_count += 1
 
@@ -114,6 +122,46 @@ func _scan(cx: int, cy: int, origin: Vector2, r2: float) -> void:
 			_best_d2 = d2
 			_best_uid = _uid[j]
 		j = _next[j]
+
+
+## Focus fire: among the enemies within `range_tiles` of `origin` (inclusive), the one to shoot first. Score = the enemy's
+## `threat`, plus ARMOR_BONUS if the weapon is anti-armour and the enemy is armoured; highest score wins, then nearest,
+## then lowest uid. With no threats and no anti-armour it is exactly `nearest`.
+func best_in_range(origin: Vector2, range_tiles: float, anti_armor: bool) -> BattleEnemy:
+	if range_tiles <= 0.0 or _count == 0:
+		return null
+	var r2 := range_tiles * range_tiles
+	var best := -1
+	var best_score := -1
+	var best_d2 := 0.0
+	var x0 := clampi(int((origin.x - range_tiles) * _inv), 0, _cw - 1)
+	var x1 := clampi(int((origin.x + range_tiles) * _inv), 0, _cw - 1)
+	var y0 := clampi(int((origin.y - range_tiles) * _inv), 0, _ch - 1)
+	var y1 := clampi(int((origin.y + range_tiles) * _inv), 0, _ch - 1)
+	if (x1 - x0 + 1) * (y1 - y0 + 1) > _count:  # fewer enemies than cells in the box: scan the packed arrays
+		for j in _count:
+			var d2 := origin.distance_squared_to(_pos[j])
+			if d2 > r2:
+				continue
+			var score := _threat[j] + (ARMOR_BONUS if anti_armor and _armored[j] == 1 else 0)
+			if best == -1 or score > best_score or (score == best_score and (d2 < best_d2 or (d2 == best_d2 and _uid[j] < _uid[best]))):
+				best = j
+				best_score = score
+				best_d2 = d2
+		return _who[best] if best != -1 else null
+	for cy in range(y0, y1 + 1):
+		for cx in range(x0, x1 + 1):
+			var j := _head[cy * _cw + cx]
+			while j != -1:
+				var d2 := origin.distance_squared_to(_pos[j])
+				if d2 <= r2:
+					var score := _threat[j] + (ARMOR_BONUS if anti_armor and _armored[j] == 1 else 0)
+					if best == -1 or score > best_score or (score == best_score and (d2 < best_d2 or (d2 == best_d2 and _uid[j] < _uid[best]))):
+						best = j
+						best_score = score
+						best_d2 = d2
+				j = _next[j]
+	return _who[best] if best != -1 else null
 
 
 ## Indices (into insertion order, ascending) of every enemy in the cells overlapping the square around `center`
