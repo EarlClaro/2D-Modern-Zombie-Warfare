@@ -12,7 +12,7 @@ extends SceneTree
 ##                   to SAVE_PATIENCE_S for the most expensive card it could play, unless the horde is at the core
 ## Run:  godot --headless --path . --script tools/tune_cards.gd -- [--patterns=idle,spam,mix] [--seeds=10] [--mission=m2_card_defense]
 ##                                                         [--set=card.tank.cost=5 --set=op.artillery_strike.warning_s=1.0 ...]
-##                                                         [--wavescale=0.8] [--ratescale=2] [--core=700] [--verbose] [--trace] [--drop=card_id,card_id] [--bench] [--benchgap=0.5] [--card=ID]
+##                                                         [--wavescale=0.8] [--ratescale=2] [--core=700] [--verbose] [--trace] [--drop=card_id,card_id] [--bench] [--benchgap=0.5] [--benchenemy=shambler] [--benchcount=60] [--benchtime=60] [--card=ID]
 ## --bench: one card at a time against the same fixed stream (core cannot fall, CP unlimited): kills and losses per CP.
 ## --drop removes those cards from the deck for every pattern ("does the deck still hold without X?").
 ## --wavescale multiplies every wave's zombie count; --ratescale divides every wave's spawn interval (a wave's length
@@ -31,6 +31,9 @@ var _verbose: bool = false
 var _trace: bool = false
 var _bench: bool = false
 var _bench_gap: float = 0.5
+var _bench_enemy: String = "shambler"
+var _bench_count: int = 60
+var _bench_s: float = 60.0
 var _card_filter: String = ""
 var _drops: PackedStringArray = PackedStringArray()
 var _sets: Array[String] = []
@@ -65,6 +68,12 @@ func _init() -> void:
 			_bench_gap = float(a.substr(11))
 		elif a.begins_with("--card="):
 			_card_filter = a.substr(7)
+		elif a.begins_with("--benchenemy="):
+			_bench_enemy = a.substr(13)
+		elif a.begins_with("--benchtime="):
+			_bench_s = float(a.substr(12))
+		elif a.begins_with("--benchcount="):
+			_bench_count = int(a.substr(13))
 		elif a == "--bench":
 			_bench = true
 		elif a == "--trace":
@@ -378,8 +387,7 @@ func _crowd_cell(b: BattleController, radius: float, need: int, lead_s: float) -
 
 # ---- one card at a time -----------------------------------------------------------------------------------------
 
-const BENCH_ZOMBIES: int = 60
-const BENCH_S: float = 60.0
+
 
 
 ## The same stream every time: 60 shamblers, one every 0.5 s from t = 2 s. The core is made unbreakable, so what
@@ -388,15 +396,15 @@ func _run_bench(db: ContentDb, base: MissionDefinition) -> void:
 	var m: MissionDefinition = base.duplicate()
 	var w := WaveEntry.new()
 	w.start_s = 2.0
-	w.enemy_id = "shambler"
-	w.count = BENCH_ZOMBIES
+	w.enemy_id = _bench_enemy
+	w.count = _bench_count
 	w.interval_s = _bench_gap
 	w.spawn_index = 0
 	m.waves = [w] as Array[WaveEntry]
 	m.core_health = 1.0e7
-	m.duration_s = BENCH_S
-	print("bench: %d shamblers, one every %.2f s from 2 s; one card played once, at the best moment it can find; %d seeds" % [BENCH_ZOMBIES, _bench_gap, _seeds])
-	print("%-20s %4s | %-30s | kills of %d (avg) | units lost | kills per CP" % ["card", "cost", "when played", BENCH_ZOMBIES])
+	m.duration_s = _bench_s
+	print("bench: %d x %s, one every %.2f s from 2 s; one card played once, at the best moment it can find; %d seeds" % [_bench_count, _bench_enemy, _bench_gap, _seeds])
+	print("%-20s %4s | %-30s | kills of %d (avg) | units lost | kills per CP" % ["card", "cost", "when played", _bench_count])
 	var ids: Array[String] = []
 	for id in db.cards:
 		if _card_filter.is_empty() or id == _card_filter:

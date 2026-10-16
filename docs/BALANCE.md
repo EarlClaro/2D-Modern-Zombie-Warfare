@@ -129,6 +129,29 @@ Sweep (`tools/tune_cards.gd --mission=m3_combined_arms --seeds=8`, the economy v
 Mission: the `m3_combined_arms` waves (446 enemies), deck `fortified` (18 cards, 11 designs), jeep and truck beside the road. Enemies path along the line x+y=24 and stop to attack anything within reach, so the useful wall cells are the grass cells whose x+y is 22 (0.7 tiles from the line); the cells on the other side are 1.4 tiles away, which only the Brute can reach.
 Sweep (`tools/tune_cards.gd --mission=x1_fortified_crossing --seeds=8`): do nothing **0/8** (core falls at ~29 s; the pre-placed truck and jeep still kill 22 % of the zombies when they blow up); spam (cheapest card first, so many walls) **3/8**, core 25 % left, i.e. walls alone do not win; mix **6/8**, core 63 % left, 91 % killed, 1.5 units lost. For comparison `m3_combined_arms` with the old deck: mix 7/8. The wall cards were not measured one at a time (`--bench`, `only=`), the bots place walls like riflemen (about 4.5 tiles from the core, as near the lane as the terrain allows, spread apart) and know nothing about the best cells, so treat the numbers as a floor for a player who aims them.
 
+## Re-sweep on `m3_combined_arms` (Runner and Brute in play), 2026-10-16
+Run after ADR-011 to revisit the tank and the crowd cards (`tools/tune_cards.gd --mission=m3_combined_arms`, headless, seeded; new options `--benchenemy`, `--benchcount`, `--benchtime`). Data as committed (CP regen 3.0 s; tank 6, artillery 4, helicopter 5, RPG team 4, Howitzer 5, Rifle squad 3, Gatling 3).
+
+**1. The mission as shipped cannot tell the cards apart:** idle 0/20, spam 20/20, cheap 20/20, mix 18/20 (core 96 / 100 / 73 %). At 1.5x the waves (counts and spawn rate) spam, cheap and mix tie at 7/12; at 2x spam 4/12, cheap 3/12, mix **0/12**; at 3x all 0/12. In this mission *spending early beats saving* (the Runner rushes arrive before a saved Tank), the reverse of `m2_card_defense`. So the drop-one tests below use 1.5x pressure.
+
+**2. One-card bench** (kills per CP; 6 seeds; stream gap 0.1 s, 60 Shamblers / 40 Runners; Brutes 6 at 1.5 s, 150 s):
+| Card (cost) | Shamblers | Runners | 6 Brutes (kills of 6) |
+|---|---|---|---|
+| RPG team (4) | 49 (12.3) | 33 (8.3) | 1.5 |
+| Tank (6) | 60 (10.0) | 40 (6.7) | 1.3 |
+| Rifle squad (3) | 15 (5.1) | 29 (9.7) | 3.7 |
+| Howitzer (5) | 32 (6.3) | 31 (6.2) | 0.3 |
+| Artillery (4) | 24 (6.0) | 21 (5.2) | 0 (never found a crowd of 8) |
+| Helicopter (5) | 27 (5.4) | 25 (4.9) | 0 (same) |
+| Gatling (3) | 11 (3.8) | 12 (4.1) | 0 (5 dmg - armor 4 = 1 dmg per bullet) |
+One card cannot beat 6 Brutes (320 HP, armor 4, 30 dmg per 1.4 s): that is what they are for. The Tank kills every Shambler alone but is no better than the others against Runners and Brutes.
+
+**3. Drop-one, cheapest-first player, 1.5x, 20 seeds** (baseline 14/20 = 70 %, core 61 %): without the **RPG team 5/20**; without Tank 20/20, Artillery 20/20, Howitzer 20/20, Helicopter 19/20, Gatling 18/20, Rifle squad 16/20. So here the **RPG team is the carry card** (best kills per CP against Shamblers and Runners), and Tank / Artillery / Howitzer / Helicopter cost more than they return for a player who spends greedily. Noise is about +/-11 points at 20 seeds.
+
+**4. Candidate rebalance, tested with overrides only (not in the data):** RPG team 4 to 5, Artillery 4 to 3, Helicopter 5 to 4, Tank 6 to 5. Same pressure, 20 seeds: spam 7/20, cheap 10/20, mix **18/20** (the saving player wins again). Drop-one (cheap, baseline 10/20): RPG 7/20, Artillery 7/20, Rifle squad 4/20 (all now earn their slot), Tank 10/20 and Howitzer 10/20 (neutral), Gatling 14/20 (slightly negative: it does 1 damage to a Brute), **Helicopter 16/20 (still negative)**. Helicopter buffs did not fix that: missile damage 75 gave cheap 12/20 (from 10/20) but dropping it still gave 16/20; adding gun damage 9, blast 2.2 or speed 3 to 6 changed nothing further (cheap 12/20, spam 8-10/20).
+
+**Reading:** the tank dominance in M2 was a roster effect (Shamblers only), as predicted: with Brutes and Runners it is no longer the carry. The new outlier is the RPG team. Artillery and the Helicopter are the weakest value per CP; a cost cut fixes Artillery but not the Helicopter, whose problem is probably not numbers (it arrives about 6 s after the card and holds position for 12 s, against waves that move on). **Not applied:** these are candidates; nothing above changed `data/`.
+
 ## Performance: projectiles (measured, M2.4)
 `ProjectileSystem` with the 256-shell cap full: 0.46 ms per tick including per-shell position/altitude queries (headless, same laptop). A strike uses 5 shells. Rendering of shells/telegraphs under a 500-zombie horde is measured in 2.6.
 
