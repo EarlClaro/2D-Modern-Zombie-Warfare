@@ -47,6 +47,10 @@ class Strike:
 	var duration: float
 	var time_left: float
 	var warning_s: float
+	## A line strike (close air support) is a strip, not a circle: its unit direction, half length and half width
+	## (tiles). `line_half_len` is 0 for a circular strike.
+	var line_dir: Vector2 = Vector2.ZERO
+	var line_half_len: float = 0.0
 
 	func _init(p_center: Vector2, p_reach: float, p_scatter: float, p_duration: float, p_warning: float) -> void:
 		center = p_center
@@ -703,11 +707,16 @@ func _launch_sortie(card: CardDefinition, center: Vector2) -> void:
 ## Calls in a barrage: picks the impact points now (seeded) and queues every shell with its launch delay.
 func _start_strike(op: OperationDefinition, center: Vector2) -> void:
 	var targets := op.shell_targets(center, _ops_rng)
+	var kind := ProjectileSystem.KIND_MISSILE if op.projectile == OperationDefinition.Projectile.MISSILE else ProjectileSystem.KIND_SHELL
 	for i in targets.size():
 		var delay := op.warning_s + float(i) * op.shell_interval_s
-		projectiles.spawn(targets[i] + op.launch_offset, targets[i], op.flight_time_s, op.arc_height, op.shell_damage, op.blast_radius, delay)
+		projectiles.spawn(targets[i] + op.launch_offset, targets[i], op.flight_time_s, op.arc_height, op.shell_damage, op.blast_radius, delay, op.launch_altitude, kind, op.accel, op.drop)
 	var duration := op.total_duration_s()
-	strikes.append(Strike.new(center, op.reach_radius(), op.target_radius, duration, op.warning_s))
+	var strike := Strike.new(center, op.reach_radius(), op.target_radius, duration, op.warning_s)
+	if op.pattern == OperationDefinition.Pattern.LINE:
+		strike.line_dir = op.line_dir()
+		strike.line_half_len = op.line_length * 0.5
+	strikes.append(strike)
 	strike_called.emit(center, op.reach_radius(), duration)
 
 

@@ -1,5 +1,8 @@
 # Changelog
 
+## 3.8 Strike cutaways, slice 4b (branch m3-3.8-cutaways)
+- Line strike and the Close Air Support card. An Operation can now be a LINE pass (`pattern`, `line_length`, `line_direction`) that lays its missiles down one after another along a strip, tail first, instead of scattering shells over a circle; it can fire missiles (`projectile`, `launch_altitude`, `accel`, `drop`) that come in from altitude on smoke trails. The warning and the placement preview draw a strip. New operation and card `close_air_support` (cost 6, lockout 40 s, one copy, twelve 70-damage missiles; first guesses, in no deck yet) playing the F-15E clip. `tools/strike_shots.gd` screenshots a card on the battlefield. 11 new tests.
+
 ## 3.8 Strike cutaways, slices 2 to 4a (branch m3-3.8-cutaways)
 - Artillery barrage clip: five modern tracked self-propelled howitzers (researched: 52-calibre barrel with fume extractor and muzzle brake, tracked hull, turret) lined up on a ridge, all firing at once. Naval gunfire clip and card: an Iowa-class battleship in profile firing nine 16-inch guns; `naval_gunfire` operation and card (not in any deck yet). Close air support clip: three F-15E Strike Eagles in formation dive and release twelve missiles, pull up and fly over as the missiles hit an enemy base (the card and the line strike are still to come). Art by `tools/gen_cutaway_art.gd`. 4 more tests.
 

@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="OperationDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/cards/operation_definition.gd" id="1_op"]
+
+[resource]
+script = ExtResource("1_op")
+id = "close_air_support"
+display_name = "Close Air Support"
+pattern = 1
+shell_count = 12
+target_radius = 1.6
+line_length = 14.0
+line_direction = Vector2(1, -1)
+projectile = 1
+launch_altitude = 7.0
+accel = 0.6
+drop = 0.0
+warning_s = 2.2
+shell_interval_s = 0.09
+flight_time_s = 0.85
+arc_height = 0.0
+shell_damage = 70.0
+blast_radius = 1.7
+launch_offset = Vector2(-5, 5)
+cutaway_id = "close_air_support"

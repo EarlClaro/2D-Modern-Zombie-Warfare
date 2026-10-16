@@ -21,6 +21,9 @@ class Preview:
 	## Operations: outer edge of everything the barrage can hurt, and the circle its shells land in.
 	var area_radius: float = 0.0
 	var scatter_radius: float = 0.0
+	## Line strikes: unit direction of the pass and half the strip's length (0 = a circular strike).
+	var line_dir: Vector2 = Vector2.ZERO
+	var line_half_len: float = 0.0
 	## Where the deployed units would stand (ground positions).
 	var ground_points: Array[Vector2] = []
 	## Sorties: the aircraft's route (entry, station, exit) on the ground.
@@ -77,6 +80,9 @@ func preview(battle: BattleController, cell: Vector2i) -> Preview:
 		if op != null:
 			p.area_radius = op.reach_radius()
 			p.scatter_radius = op.target_radius
+			if op.pattern == OperationDefinition.Pattern.LINE:
+				p.line_dir = op.line_dir()
+				p.line_half_len = op.line_length * 0.5
 			p.blast_radius = op.blast_radius
 	if res.card != null and res.card.card_kind == CardDefinition.CardKind.SORTIE:
 		var air: UnitDefinition = battle.db.unit(res.card.unit_id)

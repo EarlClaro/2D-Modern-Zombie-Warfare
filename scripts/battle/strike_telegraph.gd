@@ -30,11 +30,27 @@ func _draw() -> void:
 		var age := s.duration - s.time_left
 		var warning_left := maxf(s.warning_s - age, 0.0)
 		var pulse := 0.5 + 0.5 * sin(Time.get_ticks_msec() / 1000.0 * (10.0 if warning_left > 0.0 else 4.0))
+		if s.line_half_len > 0.0:
+			var blast := s.reach - Vector2(s.line_half_len, s.scatter).length()
+			_strip(s.center, s.line_dir, s.line_half_len, s.scatter + blast, 0.10 + 0.05 * pulse, 0.55 + 0.35 * pulse, 3.0)
+			if warning_left > 0.0 and s.warning_s > 0.0:
+				var frac := warning_left / s.warning_s
+				_strip(s.center, s.line_dir, s.line_half_len * frac, (s.scatter + blast) * frac, 0.0, 0.8, 2.0)
+			continue
 		_ring(s.center, s.reach, 0.10 + 0.05 * pulse, 0.55 + 0.35 * pulse, 3.0)
 		_ring(s.center, s.scatter, 0.0, 0.3, 1.5)
 		if warning_left > 0.0 and s.warning_s > 0.0:
 			var frac := warning_left / s.warning_s
 			_ring(s.center, s.reach * frac, 0.0, 0.8, 2.0)
+
+
+## A strip on the ground: `half_len` along `dir` and `half_width` across, projected through IsoProjection.
+func _strip(ground_center: Vector2, dir: Vector2, half_len: float, half_width: float, fill_alpha: float, edge_alpha: float, width: float) -> void:
+	var poly := IsoProjection.ground_strip_polygon(ground_center, dir, half_len, half_width)
+	if fill_alpha > 0.0:
+		draw_colored_polygon(poly, Color(DANGER.r, DANGER.g, DANGER.b, fill_alpha))
+	poly.append(poly[0])
+	draw_polyline(poly, Color(DANGER.r, DANGER.g, DANGER.b, edge_alpha), width)
 
 
 func _ring(ground_center: Vector2, radius: float, fill_alpha: float, edge_alpha: float, width: float) -> void:
