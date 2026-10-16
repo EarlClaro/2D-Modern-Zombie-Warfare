@@ -707,7 +707,11 @@ func _launch_sortie(card: CardDefinition, center: Vector2) -> void:
 ## Calls in a barrage: picks the impact points now (seeded) and queues every shell with its launch delay.
 func _start_strike(op: OperationDefinition, center: Vector2) -> void:
 	var targets := op.shell_targets(center, _ops_rng)
-	var kind := ProjectileSystem.KIND_MISSILE if op.projectile == OperationDefinition.Projectile.MISSILE else ProjectileSystem.KIND_SHELL
+	var kind := ProjectileSystem.KIND_SHELL
+	if op.projectile == OperationDefinition.Projectile.MISSILE:
+		kind = ProjectileSystem.KIND_MISSILE
+	elif op.projectile == OperationDefinition.Projectile.BEAM:
+		kind = ProjectileSystem.KIND_BEAM
 	for i in targets.size():
 		var delay := op.warning_s + float(i) * op.shell_interval_s
 		projectiles.spawn(targets[i] + op.launch_offset, targets[i], op.flight_time_s, op.arc_height, op.shell_damage, op.blast_radius, delay, op.launch_altitude, kind, op.accel, op.drop)

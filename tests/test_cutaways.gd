@@ -421,3 +421,47 @@ func test_playing_the_missile_card_requests_its_clip_and_queues_three_missiles()
 	assert_eq(b.projectiles.count(), 3)
 	assert_eq(b.projectiles.kind_of(0), ProjectileSystem.KIND_MISSILE)
 	_release()
+
+
+# --- the epic clips and their cards -----------------------------------------------------------------------------
+
+const EPIC_IDS: Array[String] = ["hypersonic_missile", "nuclear_bomb", "satellite_laser"]
+
+
+func test_each_epic_attack_has_an_epic_clip_a_card_and_an_operation() -> void:
+	var db := _get_db()
+	assert_true(db.is_valid(), "content errors: %s" % ", ".join(db.errors))
+	for id in EPIC_IDS:
+		var clip := db.cutaway(id)
+		assert_true(clip != null, "%s has a clip" % id)
+		assert_eq(clip.tier, CutawayDefinition.Tier.EPIC, "%s is epic" % id)
+		assert_near(clip.full_duration(), 2.0)
+		assert_near(clip.short_duration(), 1.0)
+		assert_true(CutawayScenes.has(clip.scene))
+		var card := db.card(id)
+		assert_true(card != null and card.card_kind == CardDefinition.CardKind.OPERATION, "%s is an operation card" % id)
+		assert_eq(card.max_copies, 1, "%s is a one-of" % id)
+		assert_eq(db.operation(card.effect_id).cutaway_id, id)
+
+
+func test_the_epic_cards_are_the_most_expensive_and_slowest_to_come_back() -> void:
+	var db := _get_db()
+	var strongest_normal := 0.0
+	for id in ["artillery_strike", "naval_gunfire", "close_air_support", "missile_strike"]:
+		strongest_normal = maxf(strongest_normal, db.card(id).lockout_s)
+	for id in EPIC_IDS:
+		assert_true(db.card(id).lockout_s > strongest_normal, "%s locks out for longer than the large strikes" % id)
+		assert_true(db.card(id).cost >= db.card("missile_strike").cost, "%s costs at least as much as the missile strike" % id)
+	assert_true(db.card("nuclear_bomb").cost >= db.card("hypersonic_missile").cost)
+
+
+func test_playing_each_epic_card_requests_its_own_clip() -> void:
+	for id in EPIC_IDS:
+		var b := _battle()
+		b.deck.hand = [id] as Array[String]
+		b.points.cp = 10.0
+		var seen: Array[String] = []
+		b.cutaway_requested.connect(func(c: String) -> void: seen.append(c))
+		assert_true(b.play_card(0, TARGET).ok, "%s can be played with full CP" % id)
+		assert_eq(seen, [id] as Array[String])
+		_release()

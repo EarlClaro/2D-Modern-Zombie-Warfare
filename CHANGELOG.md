@@ -1,5 +1,8 @@
 # Changelog
 
+## 3.8 Strike cutaways, slice 6 (branch m3-3.8-cutaways)
+- The three epic clips and cards: hypersonic missile (slim missile, plasma trail and shock cone, pitch-over and plunge), nuclear bomb (bomber, falling bomb, one fading white flash, fireball, shock ring and mushroom cloud) and satellite laser (satellite over the Earth's limb charging, a beam sweeping the surface). Cards `hypersonic_missile` (cost 8), `nuclear_bomb` (cost 10, 9-tile blast, 4 s warning) and `satellite_laser` (cost 9, a sweeping line of 36 beams); all one-of, long lockouts, in no deck yet, first-guess numbers. New projectile kind `BEAM` drawn as a bolt of light. Art by `tools/gen_cutaway_art.gd` (`hypersonic.png`, `nuke.png`, `satellite.png`). 8 more tests.
+
 ## 3.8 Strike cutaways, slice 5 (branch m3-3.8-cutaways)
 - Missile strike clip and card: three 8x8 launcher trucks (Iskander-M style) erect their missiles and fire them one after another, the picture tilting up after them into the night sky. New operation, card and clip `missile_strike` (cost 6, lockout 35 s, one copy, three 260-damage missiles; first guesses, in no deck yet). Art by `tools/gen_cutaway_art.gd` (`launcher.png`, `missile.png`). 2 more tests.
 

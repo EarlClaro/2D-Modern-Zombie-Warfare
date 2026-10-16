@@ -197,3 +197,64 @@ func test_the_first_missile_lands_at_the_tail_and_the_last_at_the_head() -> void
 			head_hit_at = t
 	assert_true(tail_hit_at > 0.0 and head_hit_at > tail_hit_at, "the pass sweeps from the tail to the head (%.2f then %.2f)" % [tail_hit_at, head_hit_at])
 	_release()
+
+
+# --- the epic strikes on the same machinery -----------------------------------------------------------------------
+
+func test_the_nuclear_bomb_is_one_huge_late_blast() -> void:
+	var db := _get_db()
+	var nuke := db.operation("nuclear_bomb")
+	assert_eq(nuke.shell_count, 1)
+	assert_true(nuke.blast_radius >= 2.0 * db.operation("naval_gunfire").blast_radius, "a blast far wider than any shell")
+	assert_true(nuke.shell_damage >= 5.0 * db.operation("missile_strike").shell_damage)
+	assert_true(nuke.warning_s >= 3.0, "a long warning")
+	var b := _battle()
+	b.deck.hand = ["nuclear_bomb"] as Array[String]
+	b.points.cp = 10.0
+	var centre := IsoProjection.cell_center(TARGET)
+	var near := _inject_enemy(b, centre + Vector2(nuke.blast_radius * 0.6, 0.0))
+	var far := _inject_enemy(b, centre + Vector2(nuke.blast_radius + 2.0, 0.0))
+	b.play_card(0, TARGET)
+	_run_for(b, nuke.total_duration_s() - 0.3)
+	assert_near(near.health.hp, near.health.max_hp, 1e-9, "nothing happens before the bomb lands")
+	_run_for(b, 0.5)
+	assert_true(near.health.hp < near.health.max_hp, "the wide blast reaches an enemy six tiles out")
+	assert_near(far.health.hp, far.health.max_hp, 1e-9, "outside the blast radius: untouched")
+	_release()
+
+
+func test_the_hypersonic_missiles_arrive_fast_after_a_short_warning() -> void:
+	var db := _get_db()
+	var h := db.operation("hypersonic_missile")
+	assert_true(h.flight_time_s < db.operation("missile_strike").flight_time_s, "faster in the air than the ballistic missiles")
+	assert_true(h.shell_damage > db.operation("missile_strike").shell_damage)
+	assert_true(h.warning_s < db.operation("missile_strike").warning_s, "a shorter warning")
+	assert_eq(h.projectile, OperationDefinition.Projectile.MISSILE)
+
+
+func test_the_satellite_laser_sweeps_a_line_of_beams_that_hit_in_order() -> void:
+	var op := _get_db().operation("satellite_laser")
+	assert_eq(op.pattern, OperationDefinition.Pattern.LINE)
+	assert_eq(op.projectile, OperationDefinition.Projectile.BEAM)
+	var b := _battle()
+	b.deck.hand = ["satellite_laser"] as Array[String]
+	b.points.cp = 10.0
+	var centre := IsoProjection.cell_center(TARGET)
+	var dir := op.line_dir()
+	var tail := _inject_enemy(b, centre - dir * (op.line_length * 0.4))
+	var head := _inject_enemy(b, centre + dir * (op.line_length * 0.4))
+	b.play_card(0, TARGET)
+	assert_eq(b.projectiles.count(), op.shell_count)
+	assert_eq(b.projectiles.kind_of(0), ProjectileSystem.KIND_BEAM)
+	var tail_at := -1.0
+	var head_at := -1.0
+	var t := 0.0
+	while t < op.total_duration_s() + 0.2:
+		b.step(DT)
+		t += DT
+		if tail_at < 0.0 and tail.health.hp < tail.health.max_hp:
+			tail_at = t
+		if head_at < 0.0 and head.health.hp < head.health.max_hp:
+			head_at = t
+	assert_true(tail_at > 0.0 and head_at > tail_at + 0.5, "the beam crosses the strip from tail to head (%.2f s, then %.2f s)" % [tail_at, head_at])
+	_release()

@@ -10,7 +10,7 @@ extends ContentDefinition
 ## the line to the other), and each lands `flight_time_s` after it was fired.
 
 enum Pattern { SCATTER, LINE }
-enum Projectile { SHELL, MISSILE }
+enum Projectile { SHELL, MISSILE, BEAM }
 
 const GOLDEN_ANGLE: float = 2.399963229728653
 
@@ -23,7 +23,8 @@ const GOLDEN_ANGLE: float = 2.399963229728653
 ## (the first shell lands at the tail, the last at the head). The default runs screen left to right.
 @export var line_length: float = 12.0
 @export var line_direction: Vector2 = Vector2(1.0, -1.0)
-## What flies: artillery shells, or missiles (drawn small and bright, with a smoke trail).
+## What flies: artillery shells, missiles (drawn small and bright, with a smoke trail), or beams (a vertical bolt of
+## light that flashes down onto its impact point, used by a sweeping line strike).
 @export var projectile: Projectile = Projectile.SHELL
 ## Altitude (tile-height units) the projectiles are released at; falls linearly to the ground on top of the arc.
 @export var launch_altitude: float = 0.0

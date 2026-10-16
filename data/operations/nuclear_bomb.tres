@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="OperationDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/cards/operation_definition.gd" id="1_op"]
+
+[resource]
+script = ExtResource("1_op")
+id = "nuclear_bomb"
+display_name = "Nuclear Bomb"
+shell_count = 1
+target_radius = 0.0
+warning_s = 4.0
+shell_interval_s = 0.0
+flight_time_s = 2.2
+arc_height = 0.0
+shell_damage = 2500.0
+blast_radius = 9.0
+launch_altitude = 40.0
+launch_offset = Vector2(0, 0)
+cutaway_id = "nuclear_bomb"

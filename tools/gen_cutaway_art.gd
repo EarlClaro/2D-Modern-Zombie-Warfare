@@ -8,6 +8,9 @@ extends SceneTree
 ##   battleship.png      an Iowa-class battleship in profile, bow to the right, without its gun barrels (the scene draws them)
 ##   launcher.png        an 8x8 transporter-erector-launcher (Iskander-M style) facing right, jacks planted, with a bare hinge for the cradle
 ##   missile.png         a 9M723-style ballistic missile, nose right, tail fins and nozzle at the left edge
+##   hypersonic.png      a slim hypersonic cruise missile, nose right
+##   nuke.png            a B83-style gravity bomb, nose right
+##   satellite.png       a military satellite with a gold bus and two solar wings
 ##   f15e.png            an F-15E Strike Eagle in profile, nose to the right, with empty weapon pylons under the conformal tanks
 
 const OUT_DIR := "res://assets/cutaways"
@@ -33,6 +36,9 @@ const SHIP_SIZE := Vector2i(384, 112)
 const F15_SIZE := Vector2i(112, 40)
 const TEL_SIZE := Vector2i(140, 46)
 const MISSILE_SIZE := Vector2i(76, 13)
+const HYPER_SIZE := Vector2i(98, 14)
+const NUKE_SIZE := Vector2i(64, 17)
+const SAT_SIZE := Vector2i(96, 50)
 
 
 func _initialize() -> void:
@@ -43,6 +49,9 @@ func _initialize() -> void:
 	_save(_f15e(), "f15e")
 	_save(_launcher(), "launcher")
 	_save(_missile(), "missile")
+	_save(_hypersonic(), "hypersonic")
+	_save(_nuke(), "nuke")
+	_save(_satellite(), "satellite")
 	quit()
 
 
@@ -342,5 +351,70 @@ func _missile() -> Image:
 	_poly(img, PackedVector2Array([Vector2(56, 2), Vector2(66, 3), Vector2(73, 5), Vector2(75, 6), Vector2(73, 7), Vector2(66, 9), Vector2(56, 10)]), [STEEL[1], STEEL[2], HUB[1]] as Array[Color])
 	# the nozzle
 	_rect(img, 0, 3, 3, 9, [STEEL[0], STEEL[0], STEEL[1]] as Array[Color])
+	_outline(img)
+	return img
+
+
+## A hypersonic cruise missile in side view, nose to the right (about 9.6 m long, a slim needle: a long conical nose, a
+## bronze-dark body of heat-resistant skin, four small swept fins, the nozzle at the left edge). The scene adds the
+## white-hot glow at the nose and the shock cone.
+func _hypersonic() -> Image:
+	var img := _blank(HYPER_SIZE)
+	var skin: Array[Color] = [Color("2c2a2e"), Color("46424a"), Color("6a646e")]
+	var band: Array[Color] = [Color("5a3a1c"), Color("86592a"), Color("b07c3c")]
+	# the far fins and the near fins, short and swept back
+	_poly(img, PackedVector2Array([Vector2(4, 1), Vector2(18, 4), Vector2(18, 7), Vector2(4, 7)]), STEEL)
+	_poly(img, PackedVector2Array([Vector2(4, 13), Vector2(18, 10), Vector2(18, 7), Vector2(4, 7)]), STEEL)
+	# the body, then the long nose cone
+	_poly(img, PackedVector2Array([Vector2(2, 3), Vector2(50, 3), Vector2(50, 11), Vector2(2, 11)]), skin)
+	_rect(img, 22, 3, 25, 11, band)
+	_rect(img, 40, 3, 42, 11, band)
+	_poly(img, PackedVector2Array([Vector2(50, 3), Vector2(72, 4.5), Vector2(94, 6.4), Vector2(95, 7), Vector2(94, 7.6), Vector2(72, 9.5), Vector2(50, 11)]), [skin[1], skin[2], HUB[1]] as Array[Color])
+	_rect(img, 0, 4, 3, 10, [STEEL[0], STEEL[0], STEEL[1]] as Array[Color])
+	_outline(img)
+	return img
+
+
+## A B83-style gravity bomb in side view, nose to the right (3.7 m long, 0.46 m across, drawn a little fat): an olive
+## body with a yellow band, a dark ogive nose and a cruciform fin box at the tail.
+func _nuke() -> Image:
+	var img := _blank(NUKE_SIZE)
+	var yellow: Array[Color] = [Color("8a6a10"), Color("c49a1c"), Color("e8c030")]
+	# the tail fin box (near and far fins)
+	_poly(img, PackedVector2Array([Vector2(0, 0), Vector2(14, 4), Vector2(14, 8), Vector2(0, 8)]), STEEL)
+	_poly(img, PackedVector2Array([Vector2(0, 16), Vector2(14, 12), Vector2(14, 8), Vector2(0, 8)]), STEEL)
+	_rect(img, 2, 3, 4, 13, [STEEL[1], STEEL[2], HUB[1]] as Array[Color])  # the box ring
+	# the body, the band and the ogive nose
+	_poly(img, PackedVector2Array([Vector2(8, 3), Vector2(44, 3), Vector2(44, 13), Vector2(8, 13)]), OLIVE)
+	_rect(img, 24, 3, 28, 13, yellow)
+	_poly(img, PackedVector2Array([Vector2(44, 3), Vector2(54, 4), Vector2(62, 7), Vector2(63, 8), Vector2(62, 9), Vector2(54, 12), Vector2(44, 13)]), STEEL)
+	_rect(img, 14, 3, 15, 13, OLIVE_DEEP)
+	_outline(img)
+	return img
+
+
+## A military satellite for the laser clip: a gold-foil bus, two solar wings made of blue cells with grid lines, a
+## dish on a boom and a sensor block. The scene draws the emitter barrel and its glow.
+func _satellite() -> Image:
+	var img := _blank(SAT_SIZE)
+	var foil: Array[Color] = [Color("8a6a1c"), Color("c9a03a"), Color("f0d070")]
+	var cell: Array[Color] = [Color("14264a"), Color("234a8a"), Color("4a82c8")]
+	# the solar wings
+	for side in [0, 1]:
+		var x0 := 0 if side == 0 else 66
+		_rect(img, x0, 24, x0 + 29, 40, cell)
+		for gx in range(x0 + 5, x0 + 29, 6):
+			_line(img, Vector2(gx, 24), Vector2(gx, 40), STEEL[1])
+		_line(img, Vector2(x0, 32), Vector2(x0 + 29, 32), STEEL[1])
+	_rect(img, 29, 31, 66, 33, STEEL)  # the yoke through the bus
+	# the bus
+	_poly(img, PackedVector2Array([Vector2(30, 18), Vector2(65, 18), Vector2(65, 46), Vector2(30, 46)]), foil)
+	_rect(img, 34, 22, 61, 24, [foil[0], foil[1], foil[2]] as Array[Color])
+	_rect(img, 34, 38, 61, 40, [foil[0], foil[0], foil[1]] as Array[Color])
+	# the dish on a boom and a sensor block
+	_line(img, Vector2(40, 18), Vector2(40, 10), STEEL[2])
+	_poly(img, PackedVector2Array([Vector2(33, 6), Vector2(47, 6), Vector2(44, 11), Vector2(36, 11)]), [HUB[0], HUB[1], HUB[2]] as Array[Color])
+	_rect(img, 54, 11, 62, 18, STEEL)
+	_disc(img, 58.0, 14.0, 2.2, [GLASS[0], GLASS[1], GLASS[2]] as Array[Color])
 	_outline(img)
 	return img

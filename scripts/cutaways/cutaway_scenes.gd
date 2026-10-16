@@ -9,6 +9,9 @@ const RECIPES: Dictionary = {
 	"naval_gunfire": preload("res://scripts/cutaways/scenes/naval_gunfire_scene.gd"),
 	"close_air_support": preload("res://scripts/cutaways/scenes/close_air_support_scene.gd"),
 	"missile_strike": preload("res://scripts/cutaways/scenes/missile_strike_scene.gd"),
+	"hypersonic_missile": preload("res://scripts/cutaways/scenes/hypersonic_missile_scene.gd"),
+	"nuclear_bomb": preload("res://scripts/cutaways/scenes/nuclear_bomb_scene.gd"),
+	"satellite_laser": preload("res://scripts/cutaways/scenes/satellite_laser_scene.gd"),
 }
 
 

@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="OperationDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/cards/operation_definition.gd" id="1_op"]
+
+[resource]
+script = ExtResource("1_op")
+id = "hypersonic_missile"
+display_name = "Hypersonic Missile"
+shell_count = 2
+target_radius = 0.8
+warning_s = 2.2
+shell_interval_s = 0.25
+flight_time_s = 0.45
+arc_height = 0.0
+shell_damage = 420.0
+blast_radius = 3.2
+projectile = 1
+launch_altitude = 22.0
+launch_offset = Vector2(-8, 8)
+cutaway_id = "hypersonic_missile"

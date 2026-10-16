@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CardDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/cards/card_definition.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = "hypersonic_missile"
+display_name = "Hypersonic Missile"
+description = "Two hypersonic missiles strike one spot almost at once: devastating, with a short warning."
+card_kind = 1
+cost = 8
+lockout_s = 70.0
+max_copies = 1
+unit_id = ""
+unit_count = 1
+effect_id = "hypersonic_missile"
