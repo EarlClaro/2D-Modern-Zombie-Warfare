@@ -1,5 +1,5 @@
 extends TestCase
-## Guards the generated humanoid and howitzer sprite sheets: every facing exists, has the documented size, and has visible art in every frame.
+## Guards the generated humanoid, howitzer and prop sprite sheets: every facing exists, has the documented size, and has visible art in every frame.
 ## Layout per unit: [frame_w, frame_h, columns, frames] (see docs/ASSETS.md).
 
 const FACINGS: Array[String] = ["e", "se", "s", "sw", "w", "nw", "n", "ne"]
@@ -10,6 +10,14 @@ const SHEETS: Dictionary = {
 	"howitzer": [128, 104, 3, 6],
 	"rifle_soldier": [88, 72, 3, 10],
 	"shambler": [72, 72, 3, 10],
+	"sandbag_wall": [80, 64, 2, 4],
+	"concrete_barrier": [80, 64, 2, 4],
+	"crate_stack": [64, 56, 2, 4],
+	"oil_drums": [64, 56, 2, 4],
+	"tank_trap": [64, 56, 2, 4],
+	"jeep": [80, 60, 3, 5],
+	"supply_truck": [112, 76, 3, 5],
+	"wrecked_car": [80, 56, 1, 1],
 }
 
 

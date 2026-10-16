@@ -63,6 +63,19 @@ const MATS := {
 	"basec": ["221f1a", "302c24", "40392f"],
 	"sandc": ["3a3023", "4d402c", "61513a"],
 	"dirtc": ["14120e", "1c1913", "26221a"],
+	# props
+	"wood": ["6a4a2a", "8f6a3e", "b08a58"],
+	"woodd": ["3e2a16", "58401f", "725430"],
+	"woodc": ["1c140c", "28201a", "362b1f"],
+	"concrete": ["6a6a66", "8d8d86", "b0b0a8"],
+	"concretec": ["26262a", "34343a", "46464c"],
+	"drum": ["6a2a1c", "8f3e28", "b05a3c"],
+	"drumc": ["1c1410", "2a1f1a", "3a2c24"],
+	"canvas": ["5a5236", "7a7048", "9a8e60"],
+	"canvasc": ["201e16", "2c2a1e", "3a3828"],
+	"rust": ["4a2a1a", "6b3d24", "8a5434"],
+	"rustc": ["1e1410", "2a1e18", "382a22"],
+	"steelc": ["14181a", "1f2527", "2c3335"],
 }
 
 const BOX := 0
@@ -105,6 +118,14 @@ func _initialize() -> void:
 		{"dir": "brute", "frame": Vector2i(80, 72), "origin": Vector2(40, 54), "frames": 10, "columns": 3, "ss": 3},
 		{"dir": "rpg_soldier", "frame": Vector2i(124, 76), "origin": Vector2(62, 46), "frames": 10, "columns": 3, "ss": 3},
 		{"dir": "howitzer", "frame": Vector2i(128, 104), "origin": Vector2(64, 62), "frames": 6, "columns": 3, "ss": 1},
+		{"dir": "sandbag_wall", "frame": Vector2i(80, 64), "origin": Vector2(40, 42), "frames": 4, "columns": 2, "ss": 2},
+		{"dir": "concrete_barrier", "frame": Vector2i(80, 64), "origin": Vector2(40, 42), "frames": 4, "columns": 2, "ss": 2},
+		{"dir": "crate_stack", "frame": Vector2i(64, 56), "origin": Vector2(32, 40), "frames": 4, "columns": 2, "ss": 2},
+		{"dir": "oil_drums", "frame": Vector2i(64, 56), "origin": Vector2(32, 40), "frames": 4, "columns": 2, "ss": 2},
+		{"dir": "tank_trap", "frame": Vector2i(64, 56), "origin": Vector2(32, 40), "frames": 4, "columns": 2, "ss": 2},
+		{"dir": "jeep", "frame": Vector2i(80, 60), "origin": Vector2(40, 42), "frames": 5, "columns": 3, "ss": 1},
+		{"dir": "supply_truck", "frame": Vector2i(112, 76), "origin": Vector2(56, 52), "frames": 5, "columns": 3, "ss": 1},
+		{"dir": "wrecked_car", "frame": Vector2i(80, 56), "origin": Vector2(40, 38), "frames": 1, "columns": 1, "ss": 1},
 	]
 	var only: PackedStringArray = []
 	for a in OS.get_cmdline_user_args():
@@ -174,6 +195,22 @@ func _model(unit: String, frame: int) -> Array[Prim]:
 			_scale(m, 1.3)
 		"howitzer":
 			_howitzer(m, frame)
+		"sandbag_wall":
+			_sandbags(m, frame)
+		"concrete_barrier":
+			_barrier(m, frame)
+		"crate_stack":
+			_crates(m, frame)
+		"oil_drums":
+			_drums(m, frame)
+		"tank_trap":
+			_trap(m, frame)
+		"jeep":
+			_jeep(m, frame)
+		"supply_truck":
+			_truck(m, frame)
+		"wrecked_car":
+			_wreck_car(m)
 		"tank":
 			_tank(m, frame)
 		"gatling_gun":
@@ -188,6 +225,8 @@ func _model(unit: String, frame: int) -> Array[Prim]:
 const CHAR := {
 	"hull": "hullc", "track": "trackc", "gun": "gunc", "glass": "gunc", "base": "basec", "ammo": "gunc",
 	"heli": "helic", "rotor": "gunc", "sand": "sandc", "dirt": "dirtc",
+	"wood": "woodc", "woodd": "woodc", "concrete": "concretec", "drum": "drumc", "canvas": "canvasc", "rust": "rustc",
+	"steel": "steelc",
 }
 
 
@@ -723,6 +762,376 @@ func _howitzer(m: Array[Prim], frame: int) -> void:
 	m.append_array(wheels)
 	m.append_array(barrel)
 	m.append_array(fx)
+
+
+## Sandbag wall along local y, three courses high. Frames 0 intact, 1-3 progressively blown apart.
+func _sandbags(m: Array[Prim], frame: int) -> void:
+	var d := frame
+	var bags: Array[Prim] = []
+	var ground: Array[Prim] = []
+	var fx: Array[Prim] = []
+	ground.append(Prim.new(CYL, Vector3(0, 0, 0.008), Vector3(0.5, 0, 0.008), "dirt"))
+	var k := 0
+	for layer in 3:
+		var n := 4 if layer == 1 else 5
+		for i in n:
+			var y := (float(i) - float(n - 1) * 0.5) * 0.19
+			var bag := Prim.new(BOX, Vector3(0, y, 0.045 + 0.085 * layer), Vector3(0.075, 0.088, 0.045), "sand", (_rnd(k, 1) - 0.5) * 0.12)
+			var j := _rnd(k, d + 3)
+			var gone := false
+			match d:
+				1:
+					gone = layer == 2 and j < 0.45
+				2:
+					gone = layer == 2 or (layer == 1 and j < 0.5)
+				3:
+					gone = true
+			if gone:
+				bag.c = Vector3((_rnd(k, 7) - 0.5) * 0.7, y * 1.15, 0.045 if j < 0.7 else 0.13)
+				if d == 1:
+					bag.c = Vector3(0.18 + 0.2 * j, y, 0.045)
+				bag.basis = Basis(Vector3(0, 0, 1), (_rnd(k, 5) - 0.5) * 2.4)
+			bags.append(bag)
+			k += 1
+	match d:
+		1:
+			_blob(fx, Vector3(0.05, 0.1, 0.24), 0.2, "flash")
+		2:
+			_scorch(ground)
+			_blob(fx, Vector3(0.0, -0.05, 0.2), 0.12, "fire")
+		3:
+			_scorch(ground)
+			_scorch(bags)
+			_blob(fx, Vector3(0.0, 0.0, 0.14), 0.08, "smoke")
+	m.append_array(ground)
+	m.append_array(bags)
+	m.append_array(fx)
+
+
+## Jersey barrier made of three segments along local y. Frames 0 intact, 1 cracked and leaning, 2 toppled, 3 rubble.
+func _barrier(m: Array[Prim], frame: int) -> void:
+	var d := frame
+	var segs: Array[Array] = []
+	for i in 3:
+		var y := (float(i) - 1.0) * 0.31
+		var seg: Array[Prim] = []
+		seg.append(Prim.new(BOX, Vector3(0, y, 0.05), Vector3(0.12, 0.15, 0.05), "concrete"))
+		seg.append(Prim.new(BOX, Vector3(0, y, 0.16), Vector3(0.085, 0.15, 0.055), "concrete"))
+		seg.append(Prim.new(BOX, Vector3(0, y, 0.27), Vector3(0.055, 0.15, 0.055), "concrete"))
+		seg.append(Prim.new(BOX, Vector3(0.062, y, 0.2), Vector3(0.012, 0.08, 0.018), "woodd"))  # painted marker
+		segs.append(seg)
+	var fx: Array[Prim] = []
+	var rubble: Array[Prim] = []
+	match d:
+		1:
+			_xform_about(segs[2], Vector3(0, 0.31, 0), Basis(Vector3(1, 0, 0), -0.28), Vector3(0.03, 0.02, 0))
+			_blob(fx, Vector3(0.05, 0.3, 0.22), 0.16, "flash")
+		2:
+			_xform_about(segs[2], Vector3(0, 0.31, 0), Basis(Vector3(1, 0, 0), -1.25), Vector3(0.12, 0.12, 0.17))
+			_xform_about(segs[1], Vector3(0, 0, 0), Basis(Vector3(1, 0, 0), 0.22), Vector3(0.0, 0, 0))
+			_blob(fx, Vector3(0.0, 0.3, 0.1), 0.1, "fire")
+		3:
+			_xform_about(segs[2], Vector3(0, 0.31, 0), Basis(Vector3(1, 0, 0), -1.3), Vector3(0.14, 0.14, 0.17))
+			_xform_about(segs[1], Vector3(0, 0, 0), Basis(Vector3(1, 0, 0), 1.2), Vector3(0.12, -0.04, 0.17))
+			_xform_about(segs[0], Vector3(0, -0.31, 0), Basis(Vector3(1, 0, 0), 0.5), Vector3(-0.04, -0.03, 0.08))
+			for q in 6:
+				rubble.append(Prim.new(BOX, Vector3((_rnd(q, 2) - 0.5) * 0.5, (_rnd(q, 3) - 0.5) * 0.9, 0.025), Vector3(0.04 + 0.03 * _rnd(q, 4), 0.04 + 0.03 * _rnd(q, 5), 0.025), "concrete", _rnd(q, 6) * 3.0))
+			_blob(fx, Vector3(0.0, 0.0, 0.16), 0.08, "smoke")
+	for seg in segs:
+		var typed: Array[Prim] = []
+		typed.assign(seg)
+		if d >= 2:
+			_scorch(typed)
+		m.append_array(typed)
+	if d >= 2:
+		_scorch(rubble)
+	m.append_array(rubble)
+	m.append_array(fx)
+
+
+static func _crate(list: Array[Prim], c: Vector3, s: float, yaw: float, tilt: float = 0.0) -> void:
+	var g := Basis(Vector3(0, 0, 1), yaw) * Basis(Vector3(1, 0, 0), tilt)
+	var parts: Array[Prim] = []
+	parts.append(Prim.new(BOX, Vector3(0, 0, 0), Vector3(s, s, s * 0.9), "wood"))
+	for z in [-0.55, 0.55]:
+		parts.append(Prim.new(BOX, Vector3(0, 0, z * s), Vector3(s * 1.04, s * 1.04, s * 0.13), "woodd"))
+	parts.append(Prim.new(BOX, Vector3(0, 0, s * 0.92), Vector3(s * 0.8, s * 0.12, s * 0.02), "woodd"))  # lid slat
+	_xform_about(parts, Vector3.ZERO, g, c)
+	list.append_array(parts)
+
+
+## Three stacked wooden crates. Frames 0 intact, 1 top crate knocked off, 2 smashed and burning, 3 splinters.
+func _crates(m: Array[Prim], frame: int) -> void:
+	var d := frame
+	var list: Array[Prim] = []
+	var fx: Array[Prim] = []
+	var ground: Array[Prim] = [Prim.new(CYL, Vector3(0, 0, 0.008), Vector3(0.4, 0, 0.008), "dirt")]
+	match d:
+		0:
+			_crate(list, Vector3(-0.03, -0.14, 0.16), 0.17, 0.0)
+			_crate(list, Vector3(-0.02, 0.17, 0.16), 0.17, 0.1)
+			_crate(list, Vector3(-0.02, 0.0, 0.5), 0.15, 0.5)
+		1:
+			_crate(list, Vector3(-0.03, -0.14, 0.16), 0.17, 0.0)
+			_crate(list, Vector3(-0.02, 0.17, 0.16), 0.17, 0.1)
+			_crate(list, Vector3(0.26, -0.06, 0.15), 0.15, 0.9, 0.35)
+			_blob(fx, Vector3(0.05, 0.0, 0.34), 0.16, "flash")
+		2:
+			_crate(list, Vector3(-0.03, -0.14, 0.1), 0.15, 0.3, 0.15)
+			_crate(list, Vector3(0.0, 0.2, 0.08), 0.12, 0.6, 0.4)
+			_crate(list, Vector3(0.24, -0.08, 0.08), 0.1, 1.2, 0.5)
+			_scorch(list)
+			_blob(fx, Vector3(-0.03, -0.05, 0.2), 0.13, "fire")
+		3:
+			for q in 9:
+				var a := _rnd(q, 21) * TAU
+				var r := 0.1 + 0.28 * _rnd(q, 22)
+				var plank := Prim.new(BOX, Vector3(cos(a) * r, sin(a) * r, 0.02), Vector3(0.16 * (0.5 + _rnd(q, 23)), 0.025, 0.012), "wood", _rnd(q, 24) * 3.1)
+				list.append(plank)
+			_crate(list, Vector3(0, 0, 0.05), 0.08, 0.4, 0.6)
+			_scorch(list)
+			_blob(fx, Vector3(0, 0, 0.12), 0.07, "smoke")
+	if d >= 2:
+		_scorch(ground)
+	m.append_array(ground)
+	m.append_array(list)
+	m.append_array(fx)
+
+
+static func _drum(list: Array[Prim], c: Vector3, mat: String, pitch: float = 0.0, yaw: float = 0.0) -> void:
+	var parts: Array[Prim] = []
+	parts.append(Prim.new(CYL, Vector3(0, 0, 0), Vector3(0.115, 0, 0.14), mat))
+	parts.append(Prim.new(CYL, Vector3(0, 0, -0.07), Vector3(0.122, 0, 0.012), "steel"))
+	parts.append(Prim.new(CYL, Vector3(0, 0, 0.07), Vector3(0.122, 0, 0.012), "steel"))
+	parts.append(Prim.new(CYL, Vector3(0, 0, 0.14), Vector3(0.1, 0, 0.012), "steel"))
+	_xform_about(parts, Vector3.ZERO, Basis(Vector3(0, 0, 1), yaw) * Basis(Vector3(0, 1, 0), pitch), c)
+	list.append_array(parts)
+
+
+## Three oil drums. Frames 0 intact, 1 blast (one tipped), 2 burning, 3 charred and scattered.
+func _drums(m: Array[Prim], frame: int) -> void:
+	var d := frame
+	var list: Array[Prim] = []
+	var fx: Array[Prim] = []
+	var ground: Array[Prim] = [Prim.new(CYL, Vector3(0, 0, 0.008), Vector3(0.38, 0, 0.008), "dirt")]
+	match d:
+		0:
+			_drum(list, Vector3(0.0, -0.13, 0.14), "drum")
+			_drum(list, Vector3(0.0, 0.13, 0.14), "hull")
+			_drum(list, Vector3(0.2, 0.0, 0.14), "drum")
+		1:
+			_drum(list, Vector3(0.0, -0.13, 0.14), "drum")
+			_drum(list, Vector3(0.0, 0.13, 0.14), "hull")
+			_drum(list, Vector3(0.28, 0.12, 0.115), "drum", PI * 0.5, 0.7)
+			_blob(fx, Vector3(0.1, 0.0, 0.3), 0.2, "flash")
+		2:
+			_drum(list, Vector3(-0.02, -0.16, 0.115), "drum", PI * 0.5, 0.3)
+			_drum(list, Vector3(0.05, 0.14, 0.14), "hull")
+			_drum(list, Vector3(0.3, 0.1, 0.115), "drum", PI * 0.5, 1.2)
+			_scorch(list)
+			_blob(fx, Vector3(0.0, 0.1, 0.3), 0.13, "fire")
+			_blob(fx, Vector3(-0.02, -0.16, 0.22), 0.07, "fire")
+		3:
+			_drum(list, Vector3(-0.04, -0.17, 0.115), "drum", PI * 0.5, 0.3)
+			_drum(list, Vector3(0.08, 0.2, 0.115), "hull", PI * 0.5, 1.9)
+			_drum(list, Vector3(0.28, 0.0, 0.115), "drum", PI * 0.5, 1.2)
+			_scorch(list)
+			_blob(fx, Vector3(0.0, 0.0, 0.2), 0.08, "smoke")
+			_blob(fx, Vector3(0.04, 0.02, 0.36), 0.07, "smoke")
+	if d >= 2:
+		_scorch(ground)
+	m.append_array(ground)
+	m.append_array(list)
+	m.append_array(fx)
+
+
+## Czech hedgehog: three perpendicular angle-iron beams. Frames 0 intact, 1 one beam bent, 2 knocked over, 3 flung apart.
+func _trap(m: Array[Prim], frame: int) -> void:
+	var d := frame
+	var list: Array[Prim] = []
+	var fx: Array[Prim] = []
+	var ground: Array[Prim] = [Prim.new(CYL, Vector3(0, 0, 0.008), Vector3(0.4, 0, 0.008), "dirt")]
+	var dirs: Array[Vector3] = [
+		Vector3(sqrt(2.0 / 3.0), 0, sqrt(1.0 / 3.0)),
+		Vector3(-sqrt(1.0 / 6.0), sqrt(0.5), sqrt(1.0 / 3.0)),
+		Vector3(-sqrt(1.0 / 6.0), -sqrt(0.5), sqrt(1.0 / 3.0)),
+	]
+	var half := 0.4
+	var c := Vector3(0, 0, half * dirs[0].z + 0.03)
+	match d:
+		0:
+			for u in dirs:
+				_bone(list, c - u * half, c + u * half, 0.034, 0.034, "steel")
+		1:
+			_bone(list, c - dirs[0] * half, c + dirs[0] * half, 0.034, 0.034, "steel")
+			_bone(list, c - dirs[1] * half, c + dirs[1] * half, 0.034, 0.034, "steel")
+			var bent := Vector3(-sqrt(1.0 / 6.0), -sqrt(0.5) * 0.4, sqrt(1.0 / 3.0) * 1.6).normalized()
+			_bone(list, c - dirs[2] * half, c, 0.034, 0.034, "steel")
+			_bone(list, c, c + bent * half, 0.034, 0.034, "steel")
+			_blob(fx, c, 0.17, "flash")
+		2:
+			var g := Basis(Vector3(1, 0, 0), 0.7) * Basis(Vector3(0, 0, 1), 0.4)
+			var c2 := Vector3(0.05, 0.06, 0.26)
+			for u in dirs:
+				var v := g * u
+				_bone(list, c2 - v * half, c2 + v * half, 0.034, 0.034, "steel")
+			_scorch(list)
+			_blob(fx, Vector3(0.0, 0, 0.12), 0.1, "fire")
+		3:
+			var ends: Array[Array] = [
+				[Vector3(-0.3, -0.1, 0.03), Vector3(0.1, 0.1, 0.04)],
+				[Vector3(0.0, 0.3, 0.03), Vector3(0.38, 0.15, 0.04)],
+				[Vector3(-0.1, -0.38, 0.03), Vector3(0.25, -0.2, 0.04)],
+			]
+			for e in ends:
+				_bone(list, e[0], e[1], 0.034, 0.03, "steel")
+			_scorch(list)
+			_blob(fx, Vector3(0, 0, 0.1), 0.07, "smoke")
+	if d >= 2:
+		_scorch(ground)
+	m.append_array(ground)
+	m.append_array(list)
+	m.append_array(fx)
+
+
+## Tilts a wrecked vehicle: d = 2 sagging, 3 tipping, 4 lying on its side. Parts are lifted so none sink below the ground.
+static func _tip(parts: Array[Prim], d: int, half_w: float) -> void:
+	match d:
+		2:
+			_xform_about(parts, Vector3.ZERO, Basis(Vector3(1, 0, 0), 0.12), Vector3(0, 0, 0.05))
+		3:
+			_xform_about(parts, Vector3.ZERO, Basis(Vector3(1, 0, 0), 0.5), Vector3(0, 0.02, half_w * 0.55))
+		4:
+			_xform_about(parts, Vector3.ZERO, Basis(Vector3(1, 0, 0), 1.42), Vector3(0, 0.0, half_w + 0.02))
+
+
+## Army jeep. Frames 0 idle, 1-4 destruction (fireball, sagging, tipping, burnt wreck on its side).
+func _jeep(m: Array[Prim], frame: int) -> void:
+	var d := frame
+	var body: Array[Prim] = []
+	var wheels: Array[Prim] = []
+	var gun: Array[Prim] = []
+	var fx: Array[Prim] = []
+	body.append(Prim.new(BOX, Vector3(-0.02, 0, 0.17), Vector3(0.38, 0.17, 0.06), "hull"))
+	body.append(Prim.new(BOX, Vector3(0.27, 0, 0.26), Vector3(0.13, 0.16, 0.05), "hull"))  # hood
+	body.append(Prim.new(BOX, Vector3(0.43, 0, 0.2), Vector3(0.025, 0.14, 0.04), "gun"))  # grille
+	body.append(Prim.new(BOX, Vector3(0.11, 0, 0.35), Vector3(0.012, 0.15, 0.065), "glass"))  # windscreen
+	body.append(Prim.new(BOX, Vector3(-0.1, 0.1, 0.28), Vector3(0.07, 0.05, 0.05), "ammo"))  # seats
+	body.append(Prim.new(BOX, Vector3(-0.1, -0.1, 0.28), Vector3(0.07, 0.05, 0.05), "ammo"))
+	body.append(Prim.new(BOX, Vector3(-0.3, 0, 0.27), Vector3(0.1, 0.15, 0.04), "hull"))  # rear bed
+	body.append(Prim.new(BOX, Vector3(-0.42, 0, 0.3), Vector3(0.02, 0.07, 0.07), "track"))  # spare wheel
+	for x in [0.27, -0.24]:
+		for side in [1, -1]:
+			wheels.append(Prim.new(SPH, Vector3(x, 0.19 * side, 0.1), Vector3(0.1, 0.04, 0.1), "track"))
+			wheels.append(Prim.new(SPH, Vector3(x, 0.205 * side, 0.1), Vector3(0.045, 0.02, 0.045), "steel"))
+	gun.append(Prim.new(BOX, Vector3(-0.06, 0, 0.37), Vector3(0.015, 0.015, 0.07), "gun"))  # pintle MG
+	gun.append(Prim.new(BOX, Vector3(0.04, 0, 0.45), Vector3(0.12, 0.02, 0.025), "gun"))
+	if d >= 1:
+		_scorch(body)
+		_scorch(wheels)
+		_scorch(gun)
+	if d >= 3:
+		_xform_about(gun, Vector3(-0.06, 0, 0.37), Basis(Vector3(0, 1, 0), 0.6), Vector3(-0.1, 0.12, -0.2))
+	match d:
+		1:
+			_blob(fx, Vector3(0.0, 0, 0.3), 0.38, "flash")
+			_blob(fx, Vector3(0.12, 0.08, 0.28), 0.22, "fire")
+		2:
+			_blob(fx, Vector3(0.0, 0, 0.34), 0.2, "fire")
+			_blob(fx, Vector3(0.25, 0.0, 0.34), 0.13, "flash")
+		3:
+			_blob(fx, Vector3(-0.05, 0, 0.3), 0.15, "fire")
+			_blob(fx, Vector3(-0.05, 0, 0.5), 0.1, "smoke")
+		4:
+			_blob(fx, Vector3(0.0, 0, 0.26), 0.09, "fire")
+			_blob(fx, Vector3(0.0, 0, 0.46), 0.1, "smoke")
+			_blob(fx, Vector3(0.05, 0.0, 0.64), 0.08, "smoke")
+	if d >= 2:
+		var tipped: Array[Prim] = []
+		tipped.append_array(body)
+		tipped.append_array(wheels)
+		tipped.append_array(gun)
+		_tip(tipped, d, 0.2)
+		if d == 4:
+			_xform_about(fx, Vector3.ZERO, Basis.IDENTITY, Vector3(0, 0.1, 0.0))
+	m.append_array(body)
+	m.append_array(wheels)
+	m.append_array(gun)
+	m.append_array(fx)
+
+
+## Canvas-top supply truck. Frames 0 idle, 1-4 destruction as for the jeep.
+func _truck(m: Array[Prim], frame: int) -> void:
+	var d := frame
+	var body: Array[Prim] = []
+	var wheels: Array[Prim] = []
+	var fx: Array[Prim] = []
+	body.append(Prim.new(BOX, Vector3(0, 0, 0.17), Vector3(0.62, 0.2, 0.05), "gun"))  # chassis
+	body.append(Prim.new(BOX, Vector3(0.43, 0, 0.35), Vector3(0.16, 0.19, 0.14), "hull"))  # cab
+	body.append(Prim.new(BOX, Vector3(0.575, 0, 0.3), Vector3(0.025, 0.17, 0.08), "hull"))  # bonnet
+	body.append(Prim.new(BOX, Vector3(0.575, 0, 0.4), Vector3(0.012, 0.15, 0.06), "glass"))
+	body.append(Prim.new(BOX, Vector3(0.435, 0.195, 0.4), Vector3(0.1, 0.008, 0.07), "glass"))  # side windows
+	body.append(Prim.new(BOX, Vector3(0.435, -0.195, 0.4), Vector3(0.1, 0.008, 0.07), "glass"))
+	body.append(Prim.new(BOX, Vector3(-0.14, 0, 0.42), Vector3(0.43, 0.19, 0.17), "canvas"))  # cargo cover
+	for i in 5:  # canvas ribs
+		body.append(Prim.new(BOX, Vector3(-0.44 + 0.15 * i, 0, 0.6), Vector3(0.012, 0.2, 0.012), "woodd"))
+	body.append(Prim.new(BOX, Vector3(-0.58, 0, 0.3), Vector3(0.012, 0.18, 0.12), "canvas"))  # tailgate flap
+	for x in [0.43, -0.12, -0.45]:
+		for side in [1, -1]:
+			wheels.append(Prim.new(SPH, Vector3(x, 0.215 * side, 0.115), Vector3(0.115, 0.05, 0.115), "track"))
+			wheels.append(Prim.new(SPH, Vector3(x, 0.235 * side, 0.115), Vector3(0.05, 0.02, 0.05), "steel"))
+	if d >= 1:
+		_scorch(body)
+		_scorch(wheels)
+	match d:
+		1:
+			_blob(fx, Vector3(0.0, 0, 0.4), 0.48, "flash")
+			_blob(fx, Vector3(0.2, 0.1, 0.34), 0.26, "fire")
+			_blob(fx, Vector3(-0.3, -0.08, 0.4), 0.22, "fire")
+		2:
+			_blob(fx, Vector3(-0.1, 0, 0.5), 0.26, "fire")
+			_blob(fx, Vector3(0.3, 0.0, 0.46), 0.14, "flash")
+		3:
+			_blob(fx, Vector3(-0.1, 0, 0.42), 0.18, "fire")
+			_blob(fx, Vector3(-0.1, 0, 0.64), 0.12, "smoke")
+		4:
+			_blob(fx, Vector3(0.0, 0, 0.3), 0.1, "fire")
+			_blob(fx, Vector3(0.0, 0, 0.5), 0.11, "smoke")
+			_blob(fx, Vector3(0.05, 0.0, 0.7), 0.09, "smoke")
+	if d >= 2:
+		var tipped: Array[Prim] = []
+		tipped.append_array(body)
+		tipped.append_array(wheels)
+		_tip(tipped, d, 0.26)
+		if d == 4:
+			_xform_about(fx, Vector3.ZERO, Basis.IDENTITY, Vector3(0, 0.1, 0.0))
+	m.append_array(body)
+	m.append_array(wheels)
+	m.append_array(fx)
+
+
+## Burnt-out civilian car, one static frame: no glass, a wheel missing, blackened and rusted, a wisp of smoke.
+func _wreck_car(m: Array[Prim]) -> void:
+	var car: Array[Prim] = []
+	var wheels: Array[Prim] = []
+	car.append(Prim.new(BOX, Vector3(0, 0, 0.14), Vector3(0.4, 0.17, 0.06), "rust"))
+	car.append(Prim.new(BOX, Vector3(-0.04, 0, 0.27), Vector3(0.2, 0.15, 0.065), "rust"))  # cabin
+	car.append(Prim.new(BOX, Vector3(0.26, 0, 0.21), Vector3(0.13, 0.16, 0.03), "rust"))  # bonnet
+	car.append(Prim.new(BOX, Vector3(-0.04, 0, 0.345), Vector3(0.17, 0.12, 0.012), "gun"))  # roof
+	car.append(Prim.new(BOX, Vector3(0.065, 0, 0.28), Vector3(0.01, 0.12, 0.045), "gun"))  # empty windscreen
+	car.append(Prim.new(BOX, Vector3(-0.04, 0.152, 0.28), Vector3(0.13, 0.006, 0.04), "gun"))
+	car.append(Prim.new(BOX, Vector3(-0.04, -0.152, 0.28), Vector3(0.13, 0.006, 0.04), "gun"))
+	for x in [0.25, -0.25]:
+		for side in [1, -1]:
+			if x < 0 and side < 0:
+				continue  # that wheel is gone: the car sits lower on its axle
+			wheels.append(Prim.new(SPH, Vector3(x, 0.18 * side, 0.085), Vector3(0.085, 0.035, 0.085), "track"))
+	_scorch(wheels)
+	_xform_about(car, Vector3(0, 0, 0), Basis(Vector3(1, 0, 0), -0.1), Vector3(0, -0.04, 0.0))
+	m.append_array(car)
+	m.append_array(wheels)
+	_blob(m, Vector3(0.0, 0, 0.5), 0.06, "smoke")
+	_blob(m, Vector3(0.05, 0.02, 0.62), 0.045, "smoke")
 
 
 ## Ray-cast every pixel (ss x ss samples, majority colour, >=50% coverage); returns the finished frame.
