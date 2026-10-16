@@ -1,6 +1,6 @@
 # Spec: Unit autonomy and new card types (inserted into Milestone 3)
 
-Status: **v0.1, decisions approved by the user in an interview on 2026-10-16 (listed below); the spec text itself awaits a read-through.** Nothing is built. Origin: playtest feedback, "I want the game to be easy and not micromanage the many units. Once the player uses the card, the units or things used by the player smartly do what they do, without having to set it up in the map. There should also be more types of cards instead of just military units."
+Status: **v0.2, approved by the user on 2026-10-16 (interview decisions, then "this is good now").** Nothing is built. Origin: playtest feedback, "I want the game to be easy and not micromanage the many units. Once the player uses the card, the units or things used by the player smartly do what they do, without having to set it up in the map. There should also be more types of cards instead of just military units."
 
 Builds on [card-loop.md](card-loop.md) (M2) and [horde-and-objectives.md](horde-and-objectives.md) (M3, which this spec re-orders; see "Effect on the M3 plan").
 

@@ -1,6 +1,6 @@
 # Spec: Strike cutaways (call-in clips for big support cards)
 
-Status: **v0.1, decisions approved by the user in an interview on 2026-10-16.** Nothing is built. Origin: "When a missile strikes, an artillery barrage, close air support from a fighter jet or bomber ... it would feel cool and epic to show a close-up with a bit of animation for 1-2 seconds before the damage hits. Like a battleship gun naval support: a small clip of a battleship near the shore firing barrages, then the damage animation or effect on the area."
+Status: **v0.2, approved by the user on 2026-10-16 (interview decisions, tiers confirmed with "this is good now").** Nothing is built. Origin: "When a missile strikes, an artillery barrage, close air support from a fighter jet or bomber ... it would feel cool and epic to show a close-up with a bit of animation for 1-2 seconds before the damage hits. Like a battleship gun naval support: a small clip of a battleship near the shore firing barrages, then the damage animation or effect on the area."
 
 Part of the Milestone 3 re-order in [unit-autonomy-and-card-types.md](unit-autonomy-and-card-types.md) (new increment 3.8).
 
