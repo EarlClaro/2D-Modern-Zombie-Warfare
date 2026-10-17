@@ -1,10 +1,15 @@
 # Changelog
 
-## 3.10 Card and autonomy balance sweep (2026-10-17; branch m3-10-sweep)
-- **Costs:** Helicopter Support 5 to 4 CP; Close Air Support 6 to 5; Missile Strike 6 to 5; Naval Gunfire 7 to 6 (numbers and method in BALANCE.md "3.10").
+## 3.10 Card and autonomy balance sweep (2026-10-17)
+- `tools/tune_cards.gd`: the bots now play the 3.5-3.9 card kinds (orders, supply, deck, mines, lure, convoy, drones) and take `--difficulty=`.
+- Hard is x1.2 now (was x1.5: the decent-player bot won 0/10 on every mission at x1.5, 3-4/10 at x1.25 on `m2_card_defense`). `DifficultyDefinition.max_total_enemies` (hard = 2000) keeps a bigger level under about 2,000 enemies (the F5 frame budget) and never below normal; on `x2_outskirts`, `x3_storm_night` and `x9_town_siege` hard is the same as normal.
+- Helicopter 5 -> 4 CP (3.5 -> 4.4 kills per CP in the bench; the saving bot won 6/20 at 5 CP and 8/20 at 4 CP). Minefield 8 -> 12 mines (1.8 -> 2.4 kills per CP). Drone gun 4 -> 6 damage (1.8 -> 4.4 kills per CP). Evidence and caveats in BALANCE.md.
+- 6 new tests (the cap), 894 in all.
+
+## 3.10 follow-up: strike card costs and the strike decks (2026-10-17; branch m3-10-sweep)
+- **Costs:** Close Air Support 6 to 5 CP; Missile Strike 6 to 5; Naval Gunfire 7 to 6 (kills per CP level with Artillery Strike; BALANCE.md "3.10 follow-up"). The helicopter change here is the same 5 to 4 as above.
 - **Decision:** the six strike cards are not added to the campaign decks. Tried in `field_arms`, `field_siege`, `fortified` and `combined_arms`, they made every mission harder (x10 5/8 to 2/8, x9 2-3/4 to 1/6). They remain in the `strikes` deck as a late tier for the unlock system.
 - **Balance bot:** the mix bot does not hold its CP for a strike costing more than 5 CP (`STRIKE_SAVE_MAX_COST` in `tools/tune_cards.gd`).
-- **Tests:** 890 pass, 0 failed.
 
 ## Cleanup chores (2026-10-17; branch m3-cleanup)
 - **Mission numbers:** the F4 missions are now `x7_bridge_line`, `x8_dead_highway`, `x9_last_airfield`, `x10_town_siege`, `x11_mountain_pass` (no clash with `x6_high_tech`). Older changelog and balance entries keep the old x6..x10 names.
@@ -17,7 +22,7 @@
 - **Re-balance after the scatter:** Bridge Line 0.45 to 0.4 (734 enemies), Town Siege 0.85 to 0.6 (1,440 enemies); Mountain Pass confirmed at 0.62 (4/6). Numbers in docs/BALANCE.md.
 
 ## 3.9 Selectable difficulty (2026-10-17)
-- Easy / normal / hard (`DifficultyDefinition`, `data/difficulties/`) scale how many enemies each wave sends (0.6 / 1.0 / 1.5, rounded, at least 1 per entry; a denser wave keeps its first and last enemy times). Chosen with `--difficulty=`, in mission select (buttons or Left / Right, remembered in `GameSettings.difficulty`) or by a mission's `difficulty_id`; named on the HUD unless normal. Normal changes nothing: whole-battle digests of 6 missions x 2 seeds are identical to before. `ContentDb` requires a `normal` of exactly 1.0. `GameSession.prepare_battle`, `MissionDefinition.total_enemies_at`, `MissionListing.facts` takes a level. 29 new tests.
+- Easy / normal / hard (`DifficultyDefinition`, `data/difficulties/`) scale how many enemies each wave sends (0.6 / 1.0 / 1.5 at first, hard is 1.2 since 3.10; rounded, at least 1 per entry; a denser wave keeps its first and last enemy times). Chosen with `--difficulty=`, in mission select (buttons or Left / Right, remembered in `GameSettings.difficulty`) or by a mission's `difficulty_id`; named on the HUD unless normal. Normal changes nothing: whole-battle digests of 6 missions x 2 seeds are identical to before. `ContentDb` requires a `normal` of exactly 1.0. `GameSession.prepare_battle`, `MissionDefinition.total_enemies_at`, `MissionListing.facts` takes a level. 29 new tests.
 
 ## Merge of the field command package with 3.6 and 3.7 (2026-10-17)
 - `UnitBrain.Behavior` is now HOLD, GUARD, ADVANCE, SUPPORT, KITE, ARTILLERY, HUNT (HUNT moved from 4 to 6; the combat drone data follows). `PlacementRules.Reason` keeps `NOT_WALKABLE` and `NO_ROUTE` before `TOO_CLOSE_TO_SPAWN`.

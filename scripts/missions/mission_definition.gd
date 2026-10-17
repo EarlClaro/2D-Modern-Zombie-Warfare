@@ -49,10 +49,11 @@ func total_enemies() -> int:
 
 ## Enemies the mission sends at a difficulty (the base total when `diff` is null).
 func total_enemies_at(diff: DifficultyDefinition) -> int:
+	var base := total_enemies()
 	var n := 0
 	for w in waves:
 		if w != null:
-			n += diff.scaled_count(maxi(w.count, 0)) if diff != null else maxi(w.count, 0)
+			n += diff.scaled_count(maxi(w.count, 0), base) if diff != null else maxi(w.count, 0)
 	return n
 
 

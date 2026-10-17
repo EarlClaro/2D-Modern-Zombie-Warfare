@@ -12,6 +12,7 @@ extends SceneTree
 ##                   to SAVE_PATIENCE_S for the most expensive card it could play, unless the horde is at the core
 ## Run:  godot --headless --path . --script tools/tune_cards.gd -- [--patterns=idle,spam,mix] [--seeds=10] [--mission=m2_card_defense]
 ##                                                         [--set=card.tank.cost=5 --set=op.artillery_strike.warning_s=1.0 ...]
+##                                                         [--difficulty=easy|normal|hard (M3.10: enemy counts of the game's own levels)]
 ##                                                         [--typescale=brute:3,spitter:2 (per enemy id, same wave length)] [--timescale=0.6 (wave start times)] [--wavescale=0.8] [--ratescale=2] [--core=700] [--verbose] [--trace] [--drop=card_id,card_id] [--bench] [--benchgap=0.5] [--benchenemy=shambler] [--benchcount=60] [--benchtime=60] [--card=ID]
 ## --bench: one card at a time against the same fixed stream (core cannot fall, CP unlimited): kills and losses per CP.
 ## --drop removes those cards from the deck for every pattern ("does the deck still hold without X?").
@@ -41,6 +42,7 @@ var _sets: Array[String] = []
 var _wavescale: float = 1.0
 var _ratescale: float = 1.0
 var _core_override: float = -1.0
+var _difficulty: String = ""
 var _timescale: float = 1.0  # multiplies every wave's start time (a long route needs the waves earlier to arrive in time)
 var _typescale: Dictionary = {}  # enemy id -> count multiplier (the wave keeps its length: the interval shrinks by the same factor)
 
@@ -67,6 +69,8 @@ func _init() -> void:
 			for pair in a.substr(12).split(","):
 				var kv := pair.split(":")
 				_typescale[kv[0]] = float(kv[1])
+		elif a.begins_with("--difficulty="):
+			_difficulty = a.substr(13)
 		elif a.begins_with("--core="):
 			_core_override = float(a.substr(7))
 		elif a == "--verbose":
@@ -229,6 +233,7 @@ func _run(db: ContentDb, m: MissionDefinition, pattern: String, seed_value: int)
 		db.decks["tune_drop"] = d2
 		m = m.duplicate()
 		m.deck_id = "tune_drop"
+	b.difficulty_id = _difficulty
 	b.setup(db, m, seed_value)
 	var r := Result.new()
 	var ticks := 0
@@ -513,6 +518,7 @@ func _bench_one(db: ContentDb, m: MissionDefinition, card_id: String, seed_value
 	mm.deck_id = "tune_bench"
 	var b := BattleController.new()
 	b.auto_step = false
+	b.difficulty_id = _difficulty
 	b.setup(db, mm, seed_value)
 	b.points.cp = 99.0
 	b.points.cap = 99.0

@@ -99,7 +99,7 @@ func test_the_three_shipped_levels_exist_in_menu_order() -> void:
 	assert_eq(db.difficulty_ids(), ["easy", "normal", "hard"] as Array[String])
 	assert_near(db.difficulty("easy").enemy_count_mult, 0.6)
 	assert_near(db.difficulty("normal").enemy_count_mult, 1.0, 0.0)
-	assert_near(db.difficulty("hard").enemy_count_mult, 1.5)
+	assert_near(db.difficulty("hard").enemy_count_mult, 1.2)
 
 
 func test_normal_must_exist_and_must_not_change_anything() -> void:
@@ -138,7 +138,7 @@ func test_the_menu_order_follows_the_order_field_then_the_id() -> void:
 
 
 func test_a_mission_reports_its_enemy_total_at_a_level() -> void:
-	var m := _get_db().mission("m2_card_defense")
+	var m := _get_db().mission("m3_combined_arms")
 	var base := m.total_enemies()
 	assert_eq(m.total_enemies_at(null), base)
 	assert_eq(m.total_enemies_at(_get_db().difficulty("normal")), base)
@@ -146,7 +146,7 @@ func test_a_mission_reports_its_enemy_total_at_a_level() -> void:
 	assert_true(m.total_enemies_at(_get_db().difficulty("easy")) < base)
 	var by_hand := 0
 	for w in m.waves:
-		by_hand += _get_db().difficulty("hard").scaled_count(w.count)
+		by_hand += _get_db().difficulty("hard").scaled_count(w.count, base)
 	assert_eq(m.total_enemies_at(_get_db().difficulty("hard")), by_hand)
 
 
@@ -173,13 +173,16 @@ func test_every_shipped_mission_is_unchanged_at_normal() -> void:
 
 
 func test_hard_and_easy_scale_every_wave() -> void:
-	var m := _get_db().mission("m2_card_defense")
-	var hard := _battle("hard", "m2_card_defense")
-	var easy := _battle("easy", "m2_card_defense")
+	var m := _get_db().mission("m3_combined_arms")
+	var base := m.total_enemies()
+	var hard := _battle("hard", "m3_combined_arms")
+	var easy := _battle("easy", "m3_combined_arms")
 	for i in m.waves.size():
-		assert_eq(hard._wave_count[i], _get_db().difficulty("hard").scaled_count(m.waves[i].count))
-		assert_eq(easy._wave_count[i], _get_db().difficulty("easy").scaled_count(m.waves[i].count))
-		assert_true(hard._wave_count[i] > m.waves[i].count and easy._wave_count[i] < m.waves[i].count)
+		assert_eq(hard._wave_count[i], _get_db().difficulty("hard").scaled_count(m.waves[i].count, base))
+		assert_eq(easy._wave_count[i], _get_db().difficulty("easy").scaled_count(m.waves[i].count, base))
+		assert_true(hard._wave_count[i] >= m.waves[i].count and easy._wave_count[i] <= m.waves[i].count, "wave %d" % i)
+		if m.waves[i].count >= 4:
+			assert_true(hard._wave_count[i] > m.waves[i].count and easy._wave_count[i] < m.waves[i].count, "a real wave %d scales" % i)
 	_release()
 
 
@@ -228,6 +231,70 @@ func test_a_wave_with_no_gap_sends_the_scaled_count_all_at_once() -> void:
 		b.elapsed = 2.0
 		b._spawn_due_enemies()
 		assert_eq(b.enemies.size(), _get_db().difficulty(level).scaled_count(10), "%s sends its count at once" % level)
+	_release()
+
+
+# --- the cap on a bigger level ------------------------------------------------------------------------------------
+
+func _capped(mult: float, cap: int) -> DifficultyDefinition:
+	var d := _diff(mult)
+	d.max_total_enemies = cap
+	return d
+
+
+func test_a_cap_stops_a_bigger_level_at_the_limit_but_never_below_normal() -> void:
+	var d := _capped(1.5, 2000)
+	assert_near(d.effective_mult(1000), 1.5, 1e-9, "well under the cap: the full multiplier")
+	assert_near(d.effective_mult(1600), 1.25, 1e-9, "the cap divided by the base total")
+	assert_near(d.effective_mult(2000), 1.0, 1e-9, "already at the cap: no growth")
+	assert_near(d.effective_mult(3000), 1.0, 1e-9, "above the cap: never smaller than normal")
+	assert_near(d.effective_mult(0), 1.5, 1e-9, "no base total means no cap")
+	assert_near(_capped(1.5, 0).effective_mult(5000), 1.5, 1e-9, "a cap of 0 means no limit")
+	assert_near(_capped(0.6, 100).effective_mult(5000), 0.6, 1e-9, "a smaller level is never capped")
+	assert_near(_capped(1.0, 100).effective_mult(5000), 1.0, 1e-9, "normal stays exactly 1")
+
+
+func test_a_negative_cap_is_invalid() -> void:
+	assert_true(_has(_capped(1.5, -1).validate(), "max_total_enemies"))
+	assert_eq(_capped(1.5, 2000).validate().size(), 0)
+
+
+func test_the_capped_scaling_keeps_the_first_and_last_time_of_a_wave() -> void:
+	var d := _capped(1.5, 1200)
+	# base total 1000 -> multiplier 1.2: 10 enemies become 12 over the same 9 s span
+	assert_eq(d.scaled_count(10, 1000), 12)
+	assert_near(d.scaled_interval(10, 1.0, 1000) * float(d.scaled_count(10, 1000) - 1), 9.0, 1e-9)
+
+
+func test_hard_never_sends_more_than_its_cap_and_never_less_than_normal() -> void:
+	var db := _get_db()
+	var hard := db.difficulty("hard")
+	assert_true(hard.max_total_enemies > 0, "hard is capped")
+	for id: String in db.missions.keys():
+		var m: MissionDefinition = db.missions[id]
+		var base := m.total_enemies()
+		var got := m.total_enemies_at(hard)
+		assert_true(got >= base, "%s: hard is not easier than normal (%d vs %d)" % [id, got, base])
+		# rounding each entry can add or lose up to half an enemy
+		assert_true(got <= maxi(base, hard.max_total_enemies) + m.waves.size(), "%s: hard stays inside the cap (%d)" % [id, got])
+
+
+func test_a_mission_already_past_the_cap_is_the_same_on_hard_and_normal() -> void:
+	var m := _get_db().mission("x2_outskirts")
+	assert_true(m.total_enemies() > _get_db().difficulty("hard").max_total_enemies, "x2 is past the cap at normal")
+	assert_eq(m.total_enemies_at(_get_db().difficulty("hard")), m.total_enemies())
+
+
+func test_a_capped_battle_spawns_what_the_listing_says() -> void:
+	var m := _get_db().mission("m2_card_defense")
+	var hard := _get_db().difficulty("hard")
+	var b := _battle("hard", "m2_card_defense")
+	var sum := 0
+	for n in b._wave_count:
+		sum += n
+	assert_eq(sum, m.total_enemies_at(hard))
+	assert_true(sum > m.total_enemies(), "m2 still grows on hard")
+	assert_true(sum <= hard.max_total_enemies + m.waves.size(), "and stays inside the cap")
 	_release()
 
 
