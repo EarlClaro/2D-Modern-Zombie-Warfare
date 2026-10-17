@@ -83,6 +83,7 @@ static func load_from(db: ContentDb, path: String = PATH, new_seed: int = -1) ->
 	if res.profile.reward_seed <= 0:
 		res.profile.reward_seed = new_seed if new_seed >= 0 else random_seed()
 	res.repaired = res.profile.sanitize(db)
+	res.profile.backfill_rewards(db)
 	if from_backup:
 		res.status = Status.RECOVERED
 	elif mig.migrated():

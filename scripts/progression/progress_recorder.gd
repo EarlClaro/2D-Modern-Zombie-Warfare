@@ -7,6 +7,8 @@ extends Node
 ## Emitted after a win has been recorded; `unlocked` is the id of the mission it opened ("" if none) and
 ## `note` a line for the result panel.
 signal recorded(unlocked: String, note: String)
+## Emitted after `recorded` when the win earned a reward: the mission and the cards on offer.
+signal offer_ready(mission_id: String, offer: PackedStringArray)
 
 var _battle: BattleController
 var persist: bool = true  # tests turn the disk write off
@@ -28,12 +30,16 @@ func _on_ended(res: MissionRules.Result) -> void:
 		GameSession.save_profile()
 	var unlocked := String(note.get("unlocked", ""))
 	recorded.emit(unlocked, String(note.get("text", "")))
+	var offer: PackedStringArray = note.get("offer", PackedStringArray())
+	if not offer.is_empty():
+		offer_ready.emit(_battle.mission.id, offer)
 
 
-## Records a win in `profile` and says what changed: {"unlocked": id or "", "text": line for the player}.
+## Records a win in `profile` and says what changed: {"unlocked": id or "", "text": line for the player, "offer": the
+## cards of a new reward (empty when the win earned none)}.
 static func record(profile: PlayerProfile, db: ContentDb, mission_id: String, core_fraction: float, difficulty_id: String, scale: float) -> Dictionary:
 	if profile.read_only:
-		return {"unlocked": "", "text": "Progress is not saved (the save file comes from a newer game)."}
+		return {"unlocked": "", "text": "Progress is not saved (the save file comes from a newer game).", "offer": PackedStringArray()}
 	profile.record_win(mission_id, core_fraction, difficulty_id, scale)
 	var camp := db.main_campaign()
 	var unlocked := camp.unlocked_by(profile, mission_id) if camp != null else ""
@@ -43,4 +49,10 @@ static func record(profile: PlayerProfile, db: ContentDb, mission_id: String, co
 		text = "Unlocked: %s" % (m.display_name if m != null else unlocked)
 	else:
 		unlocked = ""
-	return {"unlocked": unlocked, "text": text}
+	var offer := PackedStringArray()
+	var camp2 := db.main_campaign()
+	if camp2 != null and profile.wins_of(mission_id) == 1 and not profile.rewards.has(mission_id):
+		offer = RewardPicker.offer(camp2.pool_of(mission_id), profile.collection, profile.reward_seed, mission_id)
+		if not offer.is_empty():
+			profile.open_reward(mission_id, offer)
+	return {"unlocked": unlocked, "text": text, "offer": offer}

@@ -91,11 +91,13 @@ static func facts(db: ContentDb, mission: MissionDefinition, difficulty_id: Stri
 	return lines
 
 
-## What mission select shows after a mission's name: "" (nothing to say), "locked", or the best result of a won one.
+## What mission select shows after a mission's name: "" (nothing to say), "locked", "reward waiting" or "won".
 static func tag_for(db: ContentDb, profile: PlayerProfile, mission_id: String) -> String:
 	var camp := db.main_campaign()
 	if camp != null and not camp.is_unlocked(profile, mission_id):
 		return "locked"
+	if profile.has_pending_reward(mission_id):
+		return "reward waiting"
 	if profile.is_won(mission_id):
 		return "won"
 	return ""

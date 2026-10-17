@@ -8,6 +8,8 @@ var _title: Label
 var _reason: Label
 var _stats: Label
 var _note: Label
+var _box: VBoxContainer
+var _chooser: RewardChooser
 
 
 func bind(battle: BattleController) -> void:
@@ -25,6 +27,7 @@ func _ready() -> void:
 	var panel := PanelContainer.new()
 	_root.add_child(panel)
 	var box := VBoxContainer.new()
+	_box = box
 	box.add_theme_constant_override("separation", 14)
 	box.custom_minimum_size = Vector2(520, 0)
 	panel.add_child(box)
@@ -63,6 +66,26 @@ func _on_started() -> void:
 	if _root != null:
 		_root.visible = false
 		_note.visible = false
+		_clear_chooser()
+
+
+## Shows the reward a first win earned: pick one of the offered cards.
+func show_offer(db: ContentDb, mission_id: String, offer: PackedStringArray) -> void:
+	_clear_chooser()
+	_chooser = RewardChooser.new()
+	_box.add_child(_chooser)
+	_box.move_child(_chooser, _note.get_index() + 1)
+	_chooser.setup(db, mission_id, offer)
+	_chooser.claimed.connect(func(card_id: String) -> void:
+		var card := db.card(card_id)
+		add_note("Added %s to your collection." % (card.display_name if card != null else card_id))
+		_clear_chooser())
+
+
+func _clear_chooser() -> void:
+	if _chooser != null:
+		_chooser.queue_free()
+		_chooser = null
 
 
 ## A line under the stats (what the win unlocked, whether progress was saved).

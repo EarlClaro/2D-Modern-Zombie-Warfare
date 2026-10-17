@@ -12,6 +12,8 @@ var _profile: PlayerProfile
 var _list: ItemList
 var _title: Label
 var _facts: Label
+var _chooser: RewardChooser
+var _side: VBoxContainer
 var _start: Button
 var _level: String = ContentDb.NORMAL_DIFFICULTY  # the difficulty chosen here (a DifficultyDefinition id)
 var _level_buttons: Dictionary = {}  # difficulty id -> its toggle button
@@ -51,6 +53,7 @@ func _ready() -> void:
 	side.custom_minimum_size = Vector2(620, 0)
 	side.add_theme_constant_override("separation", 14)
 	row.add_child(side)
+	_side = side
 	_title = UiKit.label("", 34, UiKit.ACCENT)
 	_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	side.add_child(_title)
@@ -86,13 +89,13 @@ func _ready() -> void:
 
 
 ## (Re)builds the list; the last mission played is pre-selected, otherwise the first real mission.
-func _fill() -> void:
+func _fill(select_id: String = "") -> void:
 	_list.clear()
 	_ids.clear()
 	if _db == null:
 		return
 	var group := ""
-	var want := GameSession.settings().last_mission
+	var want := select_id if not select_id.is_empty() else GameSession.settings().last_mission
 	var camp := _db.main_campaign()
 	if want.is_empty() or _tag(want) == "locked":
 		want = camp.next_up(_profile) if camp != null and _profile != null else ""  # the next mission to play
@@ -179,6 +182,23 @@ func _on_selected(index: int) -> void:
 		lines.append_array(MissionListing.progress_lines(_db, _profile, id))
 	_facts.text = "\n".join(lines)
 	_start.disabled = _tag(id) == "locked"
+	_show_reward(id)
+
+
+## A reward that was never answered waits here: its three cards are shown under the facts.
+func _show_reward(mission_id: String) -> void:
+	if _chooser != null:
+		_chooser.queue_free()
+		_chooser = null
+	if _profile == null or not _profile.has_pending_reward(mission_id):
+		return
+	var offer := GameSession.pending_offer(_db, mission_id)
+	if offer.is_empty():
+		return
+	_chooser = RewardChooser.new()
+	_side.add_child(_chooser)
+	_chooser.setup(_db, mission_id, offer)
+	_chooser.claimed.connect(func(_card_id: String) -> void: _fill(mission_id))
 
 
 func _start_selected() -> void:

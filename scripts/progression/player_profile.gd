@@ -20,6 +20,9 @@ var doctrines: PackedStringArray = PackedStringArray()
 var missions: Dictionary = {}
 ## Reward offers: mission id -> the card taken ("" while the offer waits for an answer).
 var rewards: Dictionary = {}
+## The cards on offer while a reward waits for an answer: mission id -> card ids. Saved with the win, so quitting and
+## coming back shows the same cards.
+var offers: Dictionary = {}
 ## Set when the file came from a newer game version: kept in memory, never written back.
 var read_only: bool = false
 
@@ -84,17 +87,55 @@ func record_win(mission_id: String, core_fraction: float, difficulty_id: String,
 	missions[mission_id] = m
 
 
-## Opens the reward offer of a mission that has none yet (it stays "" until a card is taken).
-func open_reward(mission_id: String) -> void:
-	if not rewards.has(mission_id):
-		rewards[mission_id] = ""
+## Opens the reward offer of a mission that has none yet (it stays "" until a card is taken). `offer` is the list of
+## cards shown; an empty one is kept as "no cards saved" and the picker is asked again when it is shown.
+func open_reward(mission_id: String, offer: PackedStringArray = PackedStringArray()) -> void:
+	if rewards.has(mission_id):
+		return
+	rewards[mission_id] = ""
+	if not offer.is_empty():
+		offers[mission_id] = offer
 
 
-## Takes `card_id` as the reward of `mission_id`: the offer is answered and the card is owned.
-func take_reward(mission_id: String, card_id: String) -> void:
+## The cards saved for a waiting reward (empty when none were saved or it was answered).
+func offer_of(mission_id: String) -> PackedStringArray:
+	var o: Variant = offers.get(mission_id)
+	return o if o is PackedStringArray else PackedStringArray()
+
+
+func has_pending_reward(mission_id: String) -> bool:
+	return rewards.has(mission_id) and String(rewards[mission_id]).is_empty()
+
+
+## Takes `card_id` as the reward of `mission_id`: the offer is answered and the card is owned. Refuses (false) a card
+## that was not on the saved offer, and a reward that was already answered.
+func take_reward(mission_id: String, card_id: String) -> bool:
+	if rewards.has(mission_id) and not String(rewards[mission_id]).is_empty():
+		return false
+	var saved := offer_of(mission_id)
+	if not saved.is_empty() and not saved.has(card_id):
+		return false
 	rewards[mission_id] = card_id
+	offers.erase(mission_id)
 	if not collection.has(card_id):
 		collection.append(card_id)
+	return true
+
+
+## Opens the reward of every won mission that has a pool and no reward entry yet (a profile written before rewards
+## existed, or a pool added later). Returns how many were opened.
+func backfill_rewards(db: ContentDb) -> int:
+	var camp := db.main_campaign()
+	if camp == null:
+		return 0
+	var opened := 0
+	for mid in camp.mission_ids:
+		if is_won(mid) and not rewards.has(mid):
+			var offer := RewardPicker.offer(camp.pool_of(mid), collection, reward_seed, mid)
+			if not offer.is_empty():
+				open_reward(mid, offer)
+				opened += 1
+	return opened
 
 
 # --- dictionary round trip --------------------------------------------------------------------------------------
@@ -108,6 +149,7 @@ func to_dict() -> Dictionary:
 		"doctrines": Array(doctrines),
 		"missions": missions.duplicate(true),
 		"rewards": rewards.duplicate(true),
+		"offers": _offers_to_json(),
 	}
 
 
@@ -136,6 +178,13 @@ static func from_dict(d: Dictionary) -> PlayerProfile:
 		for id: Variant in rs:
 			if id is String and rs[id] is String:
 				p.rewards[id] = rs[id]
+	var os: Variant = d.get("offers")
+	if os is Dictionary:
+		for id: Variant in os:
+			if id is String:
+				var list := _ids_of(os[id])
+				if not list.is_empty():
+					p.offers[id] = list
 	return p
 
 
@@ -162,6 +211,21 @@ func sanitize(db: ContentDb) -> int:
 			changes += 1
 		elif not taken.is_empty() and not collection.has(taken):
 			collection.append(taken)  # a taken reward is always owned
+	for id in offers.keys():
+		if db.mission(id) == null or not rewards.has(id) or not String(rewards[id]).is_empty():
+			offers.erase(id)
+			changes += 1
+			continue
+		var kept := PackedStringArray()
+		for cid in offers[id]:
+			if db.card(cid) != null and not collection.has(cid):
+				kept.append(cid)
+		if kept.size() != (offers[id] as PackedStringArray).size():
+			changes += 1
+			if kept.is_empty():
+				offers.erase(id)
+			else:
+				offers[id] = kept
 	if collection.is_empty() and db.deck(STARTER_DECK) != null:
 		var keep := deck
 		_reset_to_starter(db)
@@ -188,6 +252,13 @@ func deck_is_legal(db: ContentDb) -> bool:
 	for cid in deck:
 		ids.append(cid)
 	return db.deck_rules.validate_deck(ids, db.cards).is_empty()
+
+
+func _offers_to_json() -> Dictionary:
+	var out: Dictionary = {}
+	for id: String in offers:
+		out[id] = Array(offers[id] as PackedStringArray)
+	return out
 
 
 ## Removes ids the database has no card for; returns how many were removed.

@@ -1,6 +1,6 @@
 # Spec: Progression, rewards, deck editor and the local save (Milestone 5)
 
-Status: **v0.1, decisions taken in a user interview on 2026-10-17** (ADR-017). Increments 5.1 and 5.2 are built. Source of intent: MasterPrompt.md section 12 and Milestone 5 ("mission reward choice, unlockable cards, deck editing between missions, basic upgrades, persistent local save, tests for save/load and progression edge cases").
+Status: **v0.1, decisions taken in a user interview on 2026-10-17** (ADR-017). Increments 5.1 to 5.3 are built. Source of intent: MasterPrompt.md section 12 and Milestone 5 ("mission reward choice, unlockable cards, deck editing between missions, basic upgrades, persistent local save, tests for save/load and progression edge cases").
 
 ## Purpose
 Today every mission hands you a fixed deck and nothing you do is remembered. The player should keep what they earn: finish a mission, choose a new card, build a deck from the cards they own, and find the same collection and campaign position when the game is started again.
@@ -35,7 +35,7 @@ Derived, never stored: which missions are unlocked, which cards are still locked
 - Recording a result: a win updates `wins`, `best_core`, `best_difficulty`; a defeat records nothing. Battles started from the command line record nothing at all (tools and bots must not touch a player's file).
 
 ### Rewards
-- `MissionDefinition.reward_pool`: card ids this mission can offer. After the **first** win of a mission with an unanswered offer, the result panel shows three cards from the pool that the player does not own yet (fewer if fewer remain, none if none), chosen by a shuffle seeded from `reward_seed` and the mission id. The offer is saved the moment the mission is won, so quitting before choosing does not lose or re-roll it; it waits in the result panel (and on the mission entry in mission select) until answered.
+- **Reward pools** are data in the campaign (`CampaignDefinition.reward_pools`: mission id to card ids), not on the mission file, because the map generators rewrite mission files and would drop them (changed in 5.3). After the **first** win of a mission with an unanswered offer, the result panel shows three cards from the pool that the player does not own yet (fewer if fewer remain, none if none), chosen by a shuffle seeded from `reward_seed` and the mission id. The three cards are saved in the profile (`offers`) the moment the mission is won, so quitting before choosing does not lose or re-roll it; the choice is shown in the result panel, and a reward still waiting shows on the mission in mission select (`[reward waiting]`, the three cards under the facts). A profile written before rewards existed gets its offers for already-won missions when it is loaded. A card can only be taken from the saved offer, once.
 - Taking a card adds it to `collection`. Replays of a won mission offer nothing. Pools are data and are written so the early campaign offers simple cards and the late campaign offers the strike and high-tech cards (the three heaviest strikes are the last rewards).
 - Rewards never touch a fixed-deck mission's own deck; they only widen what the editor can pick.
 
@@ -66,7 +66,7 @@ Master prompt wants meaningful, branching card upgrades (a machine gun that beco
 - `scripts/progression/campaign_definition.gd` (`CampaignDefinition`) and `data/campaign/main.tres`; `ContentDb` loads and validates it (every id must be a mission).
 - `scripts/progression/reward_picker.gd` (`RewardPicker`): pure, `offer(pool, owned, seed, mission_id) -> Array[String]`.
 - `scripts/progression/deck_builder.gd` (`DeckBuilder`): pure deck editing and validation.
-- `MissionDefinition`: `reward_pool: PackedStringArray`, `deck_source` (enum); `ContentDb` checks the pool ids are cards.
+- `CampaignDefinition.reward_pools` (checked by the definition and by `ContentDb`); `MissionDefinition.deck_source` (enum, 5.4).
 - `GameSession`: `profile()` (lazy load), `set_profile()`, deck hand-over for player-deck missions, result recording.
 - `ui/deck_screen.gd`, changes to `ui/main_menu.gd` (Deck button, "progress file was damaged" note), `ui/mission_select.gd` (locks, marks), `ui/settings_screen.gd` (test missions, reset progress with a confirmation), `ui/result_panel.gd` (reward choice).
 - `docs/ARCHITECTURE.md`, `docs/BALANCE.md`, `docs/ROADMAP.md`, `CHANGELOG.md`, `docs/DECISIONS.md` (ADR-017).
@@ -77,7 +77,7 @@ Currency, shops, research tree, military doctrine trees, rarity-weighted drops, 
 ## Increments
 1. **5.1 Profile and safe save (done 2026-10-17, 24 tests):** `PlayerProfile`, `ProfileStore`, `ProfileMigration`, `GameSession.profile()`; tests for round trip, defaults, wrong types, unknown ids, corrupt file, backup fallback, future version read-only, migration from version 0, atomic write.
 2. **5.2 Campaign and unlocks (done 2026-10-17, 18 tests):** `CampaignDefinition`, unlock rules, recording a win, mission select locks and marks, "show test missions" setting, "reset progress".
-3. **5.3 Rewards:** `reward_pool`, `RewardPicker`, offer saved on win, result-panel choice, collection grows; reward pools written for the existing campaign.
+3. **5.3 Rewards (done 2026-10-17, 19 tests):** `reward_pools`, `RewardPicker`, offer saved on win, `RewardChooser` in the result panel and in mission select, collection grows; pools written for all 14 campaign missions (every non-starter card can be won; Nuclear Bomb and Satellite Laser only in the last two missions).
 4. **5.4 Deck editor and player-deck missions:** `DeckBuilder`, deck screen, doctrine picker, `deck_source`, the battle gets the player's deck.
 5. **5.5 Upgrades:** short interview with the user first; then the data model, tests and the first few upgrades.
 6. **5.6 First player-deck mission and hand-over:** one new mission balanced with bots on three sample decks; docs; manual checklist for the user.

@@ -199,6 +199,10 @@ func validate_references() -> void:
 		for mid in camp.mission_ids:
 			if not missions.has(mid):
 				errors.append("campaign '%s': unknown mission '%s'" % [id, mid])
+		for mid in camp.mission_ids:
+			for cid in camp.pool_of(mid):
+				if not cards.has(cid):
+					errors.append("campaign '%s': the reward pool of '%s' has unknown card '%s'" % [id, mid, cid])
 	for id in missions:
 		var m: MissionDefinition = missions[id]
 		for su in m.start_units:

@@ -6,6 +6,9 @@ extends ContentDefinition
 
 @export var display_name: String = ""
 @export var mission_ids: PackedStringArray = PackedStringArray()
+## The cards a mission's first win can offer: mission id -> PackedStringArray of card ids. Kept here and not on the
+## mission because the map generators rewrite the mission files. A mission without an entry gives no reward.
+@export var reward_pools: Dictionary = {}
 
 
 func kind() -> String:
@@ -23,7 +26,26 @@ func validate() -> PackedStringArray:
 		if seen.has(mid):
 			errs.append(_err("mission '%s' is listed twice" % mid))
 		seen[mid] = true
+	for mid: Variant in reward_pools:
+		if not (mid is String) or not mission_ids.has(mid):
+			errs.append(_err("reward pool for '%s', which is not a mission of the chain" % str(mid)))
+			continue
+		var pool: Variant = reward_pools[mid]
+		if not (pool is PackedStringArray) or (pool as PackedStringArray).is_empty():
+			errs.append(_err("reward pool of '%s' must be a non-empty list of card ids" % mid))
+			continue
+		var cards: Dictionary = {}
+		for cid in (pool as PackedStringArray):
+			if cards.has(cid):
+				errs.append(_err("reward pool of '%s' lists '%s' twice" % [mid, cid]))
+			cards[cid] = true
 	return errs
+
+
+## The card ids a mission's first win can offer (empty = no reward).
+func pool_of(mission_id: String) -> PackedStringArray:
+	var pool: Variant = reward_pools.get(mission_id)
+	return pool if pool is PackedStringArray else PackedStringArray()
 
 
 func contains(mission_id: String) -> bool:

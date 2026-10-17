@@ -50,6 +50,30 @@ static func reset_profile(db: ContentDb = null) -> bool:
 	return ProfileStore.save(_profile, profile_path)
 
 
+## The cards waiting on a mission's reward: the saved offer, or one worked out again when none was saved (empty when
+## nothing is waiting).
+static func pending_offer(db: ContentDb, mission_id: String) -> PackedStringArray:
+	var p := profile(db)
+	if not p.has_pending_reward(mission_id):
+		return PackedStringArray()
+	var saved := p.offer_of(mission_id)
+	if not saved.is_empty():
+		return saved
+	var camp := db.main_campaign()
+	return RewardPicker.offer(camp.pool_of(mission_id) if camp != null else PackedStringArray(), p.collection, p.reward_seed, mission_id)
+
+
+## Takes `card_id` as the reward of `mission_id` and saves. False if it was not on offer or the reward is not waiting.
+static func claim_reward(db: ContentDb, mission_id: String, card_id: String) -> bool:
+	var p := profile(db)
+	if p.read_only or not p.has_pending_reward(mission_id) or not pending_offer(db, mission_id).has(card_id):
+		return false
+	if not p.take_reward(mission_id, card_id):
+		return false
+	save_profile()
+	return true
+
+
 ## Writes the shared profile; false when there is none loaded, it is read-only, or the disk refused.
 static func save_profile() -> bool:
 	return _profile != null and ProfileStore.save(_profile, profile_path)

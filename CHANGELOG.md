@@ -1,5 +1,11 @@
 # Changelog
 
+## 5.3 Rewards: pick one of three cards (2026-10-17; Milestone 5)
+- **Rewards:** the first win of a campaign mission offers three cards from that mission's pool that you do not own yet (`RewardPicker`, seeded by the profile and the mission, so the same offer every time). The offer is saved with the win; choosing a card adds it to your collection and saves. Replays offer nothing.
+- **Pools** are data in `data/campaigns/main.tres` (`reward_pools`), early missions offer simple cards and the heaviest strikes come last; every card you do not start with can be won. They are not on the mission files because the map generators rewrite those.
+- **Screens:** `RewardChooser` appears in the result panel after the win and in mission select for a reward you have not answered yet (`[reward waiting]`). A profile from before rewards gets its offers for missions already won when it is loaded.
+- **Tests:** 19 new (957 in all, 0 failed).
+
 ## 5.2 Campaign chain, locks and progress records (2026-10-17; Milestone 5)
 - **Campaign:** `CampaignDefinition` + `data/campaigns/main.tres` (m1, m2, m3, x1 to x11 in that order). Only the first mission is open at the start; a win opens the next. Test missions are never locked.
 - **Mission select:** follows the campaign order, greys locked missions (`[locked]`, Start disabled, "Locked: win X first."), marks won ones (`[won]`, best core and level), and pre-selects the next mission to play. Test missions are hidden unless the new Settings switch "List test missions in mission select" is on.

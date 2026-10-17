@@ -257,6 +257,7 @@ func _ready() -> void:
 		add_child(recorder)
 		recorder.bind(self)
 		recorder.recorded.connect(func(_unlocked: String, note: String) -> void: panel.add_note(note))
+		recorder.offer_ready.connect(func(mid: String, offer: PackedStringArray) -> void: panel.show_offer(db, mid, offer))
 	var pause_menu := PauseMenu.new()
 	pause_menu.name = "PauseMenu"
 	add_child(pause_menu)
