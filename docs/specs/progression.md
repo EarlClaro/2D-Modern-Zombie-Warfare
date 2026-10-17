@@ -1,6 +1,6 @@
 # Spec: Progression, rewards, deck editor and the local save (Milestone 5)
 
-Status: **v0.1, decisions taken in a user interview on 2026-10-17** (ADR-017). Increments 5.1 to 5.5 are built. Source of intent: MasterPrompt.md section 12 and Milestone 5 ("mission reward choice, unlockable cards, deck editing between missions, basic upgrades, persistent local save, tests for save/load and progression edge cases").
+Status: **v0.1, decisions taken in a user interview on 2026-10-17** (ADR-017). All six increments are built; Milestone 5 waits for the user's manual check (list below). Source of intent: MasterPrompt.md section 12 and Milestone 5 ("mission reward choice, unlockable cards, deck editing between missions, basic upgrades, persistent local save, tests for save/load and progression edge cases").
 
 ## Purpose
 Today every mission hands you a fixed deck and nothing you do is remembered. The player should keep what they earn: finish a mission, choose a new card, build a deck from the cards they own, and find the same collection and campaign position when the game is started again.
@@ -55,14 +55,14 @@ Decisions: (1) **obtained as a reward option**: a pick-1-of-3 offer may contain 
 - `UpgradeApplier.patched_db(db, ids)` builds a copy of the content in which only the changed definitions are duplicated and patched; the shared definitions are never touched. The battle scene hands the patched copy to the battle for a menu-started player-deck mission.
 - The profile keeps `unlocked_upgrades` and `equipped` (card id to upgrade id, one per card). Taking an upgrade unlocks it and equips it when the card has none; the deck screen switches the branch on and off at will (free, saved at once). The reward picker offers an upgrade only for an owned card and never twice.
 - Reward pools: m1 offers the Rifle Squad upgrades next to its cards, m2 the Gatling, m3 the Tank, x1 the Artillery Strike, x2 the Helicopter.
-First-guess numbers (not swept; the bot check is 5.6):
+Numbers after the 5.6 bench and bot rounds (BALANCE.md "5.6"):
 | Card | Branch A | Branch B |
 |---|---|---|
-| Rifle Squad | **Long Barrels**: rifle range +2 tiles | **Body Armour**: rifleman health x1.4, armour +1 |
-| Gatling Gun | **Crowd Spray**: splash 0.9 tiles, damage x0.8 | **Armour-Piercing Belt**: damage x2.2, fire rate x0.6, prefers armoured targets |
-| Tank | **High-Explosive Shells**: blast +0.9 tiles, damage x0.9 | **Reactive Armour**: armour +3, health x1.25 |
-| Artillery Strike | **Saturation Barrage**: +4 shells, +1 tile area, shell damage x0.85 | **Heavy Shells**: shell damage x1.6, blast +0.4, lands 0.4 s sooner |
-| Helicopter Support | **Extended Station**: +6 s on station, health x1.2 | **Rocket Pods**: +4 rockets, rocket damage x1.3 |
+| Rifle Squad | **Long Barrels**: range +3 tiles, damage x1.1 | **Body Armour**: health x1.6, armour +2 |
+| Gatling Gun | **Crowd Spray**: splash +0.7 tiles, damage x0.65 | **Armour-Piercing Belt**: damage x3.2, fire rate x0.6, prefers armoured targets |
+| Tank | **High-Explosive Shells**: blast +0.9 tiles, damage x0.9 | **Reactive Armour**: armour +3, health x1.6 |
+| Artillery Strike | **Saturation Barrage**: +6 shells, +2 tiles area, shell damage x0.8 | **Heavy Shells**: shell damage x1.8, blast +0.4, lands 0.4 s sooner |
+| Helicopter Support | **Extended Station**: +14 s on station, health x1.3 | **Rocket Pods**: +3 rockets, rocket damage x1.1 |
 
 ## Rules that must hold
 - **Rules never depend on the profile.** The battle, combat and card code stay as testable as today: a battle is given a deck and doctrines, never a profile. Profile-aware code lives in `scripts/progression/`, `GameSession` and `ui/`.
@@ -92,9 +92,15 @@ Currency, shops, research tree, military doctrine trees, rarity-weighted drops, 
 3. **5.3 Rewards (done 2026-10-17, 19 tests):** `reward_pools`, `RewardPicker`, offer saved on win, `RewardChooser` in the result panel and in mission select, collection grows; pools written for all 14 campaign missions (every non-starter card can be won; Nuclear Bomb and Satellite Laser only in the last two missions).
 4. **5.4 Deck editor and player-deck missions (done 2026-10-17, 21 tests):** `DeckBuilder`, `DeckScreen` (main menu "Deck"), doctrine picker, `MissionDefinition.deck_source`, `BattleController.deck_override`; the test mission `dev_player_deck` (a copy of m2 on the player's deck) lets the editor be tried end to end. Rules as built: a change that would make the deck illegal is refused with the reason (so a swap is "add, then remove"); the doctrine is one card at a time; only a battle started from the menu uses the player's deck, the command line keeps the mission's own `deck_id`.
 5. **5.5 Upgrades (done 2026-10-17, 22 tests):** interview, then `UpgradeDefinition` / `UpgradePatch` / `UpgradeApplier`, ten upgrades, rewards, the deck-screen switches.
-6. **5.6 First player-deck mission and hand-over:** one new mission balanced with bots on three sample decks; docs; manual checklist for the user.
+6. **5.6 First player-deck mission and hand-over (done 2026-10-18, 5 new tests):** `x12_open_orders` (Dead Highway map and waves at 1.25x, after `x6_high_tech` in the chain, first-win reward pool of its own), `SampleDecks` (a weak, a balanced and a strong example player built only from the first nine missions' reward pools), `tune_cards.gd --sample=` and `--upgrades=`, three rounds of upgrade tuning. Results in BALANCE.md "5.6".
 
 Each increment ends with tests, a headless import with no new warnings, docs and changelog.
 
 ## Manual checks the user will have to do
-Mouse and keyboard on the deck screen; whether the reward choice reads; whether locked missions are clear; that quitting the game and starting it again keeps the collection, deck and campaign position; the "reset progress" button.
+Never verified by the agent (no window, no real input): everything below.
+1. **Fresh start:** delete `profile.json` in the game's user folder (or press Settings > Reset progress). Play opens with only `Hold the Crossing`; the others are greyed and say what to win first. Settings has the test-missions switch.
+2. **Win and reward:** win `Hold the Crossing`. The result panel says "Unlocked: ..." and shows three cards (an upgrade may be one of them). Pick one. Quit the game and start it again: the next mission is open and your pick is still yours. Win a mission and quit before choosing: the mission shows `[reward waiting]` and offers the same three cards.
+3. **Deck screen** (main menu > Deck): add and remove cards with the buttons, Enter and double-click; try to break a rule (a 4th Tank, below 12 cards) and read the message; "Starter deck" restores it; select Rifle Squad, Gatling, Tank, Artillery or Helicopter and switch an earned upgrade on and off.
+4. **Player-deck mission:** `Open Orders` (after `High Tech (combat drones)`) and, with test missions on, `Player Deck Range`. Mission select says "Deck: yours". Your cards are in the hand; an equipped upgrade is felt (e.g. Reactive Armour tank has 640 health).
+5. **Damaged save:** copy `profile.json` away, replace it with nonsense text, start the game: the main menu says the file was damaged and a new profile starts; the damaged file stays next to it as `profile.corrupt-<time>.json`.
+6. Whether the extra screens read at 1920 x 1080, and whether the three reward cards and the upgrade buttons are clear to a first-time player.

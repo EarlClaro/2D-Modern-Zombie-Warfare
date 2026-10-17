@@ -93,6 +93,8 @@ Deck editor (M5.4): `DeckBuilder` (pure) holds every editing rule over a `Player
 
 Upgrades (M5.5): `UpgradeDefinition` holds `UpgradePatch`es (number changes on a weapon, unit, operation or card, validated when the content loads). `UpgradeApplier.patched_db` copies the database tables and duplicates only the definitions a patch changes; the battle scene gives that copy to a menu-started player-deck battle. The profile stores `unlocked_upgrades` and `equipped`; the shared definitions, the tools and fixed-deck missions never see an upgrade.
 
+Balancing player-deck missions (M5.6): `SampleDecks` describes three example players (picks from the real reward pools, deck, upgrades, doctrine) and builds their `PlayerProfile`; the balance tool plays missions with their `DeckBuilder.loadout` and the `UpgradeApplier` copy of the content, the same path the battle scene uses for a real player.
+
 ## Key design choices
 - **Pure logic classes** (`RefCounted`, no Node dependency) for IsoProjection, DamageService, DeckState, CommandPoints, objective evaluation → trivially headless-testable.
 - **Definitions vs runtime**: `CardDefinition` (Resource, immutable) vs `CardRuntime`/`DeckState` entries (id + mutable lockout).

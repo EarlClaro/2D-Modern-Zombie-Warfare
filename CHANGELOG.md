@@ -1,5 +1,12 @@
 # Changelog
 
+## 5.6 First player-deck mission and the upgrade numbers (2026-10-18; Milestone 5 hand-over)
+- **New mission `x12_open_orders`** ("Open Orders", Dead Highway map, 1337 enemies): the first mission that runs on your own deck, upgrades and doctrine. It sits after `x6_high_tech` in the campaign and has its own first-win reward pool.
+- **Balance** (details in BALANCE.md "5.6"): three example players (`SampleDecks`: weak, balanced, strong) win 0/8, 2/8 and 4/8 on Normal; the weak one wins 8/8 on Easy, the strong one 1/8 on Hard. Upgrade numbers re-tuned in three bench rounds (Crowd Spray and Rocket Pods were far too strong, Extended Station and Saturation too weak); the area and duration branches (A) still beat the armour branches (B) on the missions tried, noted as open.
+- **Tools:** `tools/tune_cards.gd --sample=weak|balanced|strong` and `--upgrades=ids|none`; `tools/gen_player_mission.gd` writes the mission.
+- **Docs:** Milestone 5 is complete pending your manual check (list at the end of `docs/specs/progression.md`).
+- **Tests:** 5 new (1005 in all, 0 failed).
+
 ## 5.5 Card upgrades (2026-10-17; Milestone 5)
 - **Ten upgrades**, two exclusive branches for each of the five starter cards (Rifle Squad, Gatling Gun, Tank, Artillery Strike, Helicopter): e.g. Gatling Crowd Spray or Armour-Piercing Belt, Tank High-Explosive Shells or Reactive Armour. Numbers are first guesses (table in `docs/specs/progression.md`, check in 5.6).
 - **Earned as rewards:** the pick-1-of-3 after a first win can offer an upgrade for a card you own. Taking one unlocks it and switches it on if that card has none.
