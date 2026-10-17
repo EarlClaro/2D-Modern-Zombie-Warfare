@@ -74,7 +74,7 @@ static func entries(db: ContentDb, include_tests: bool = true) -> Array[Entry]:
 
 
 ## The lines of the details panel, all taken from data.
-static func facts(db: ContentDb, mission: MissionDefinition, difficulty_id: String = "") -> PackedStringArray:
+static func facts(db: ContentDb, mission: MissionDefinition, difficulty_id: String = "", profile: PlayerProfile = null) -> PackedStringArray:
 	var lines := PackedStringArray()
 	if mission == null:
 		return lines
@@ -83,7 +83,9 @@ static func facts(db: ContentDb, mission: MissionDefinition, difficulty_id: Stri
 	var level := db.difficulty(difficulty_id) if not difficulty_id.is_empty() else null
 	lines.append("Enemies: %d (%s)" % [mission.total_enemies_at(level), ", ".join(enemy_names(db, mission))])
 	var deck := db.deck(mission.deck_id) if not mission.deck_id.is_empty() else null
-	if deck != null:
+	if mission.deck_source == MissionDefinition.DeckSource.PLAYER and profile != null:
+		lines.append("Deck: yours (%d cards, change it under Deck in the main menu)" % DeckBuilder.loadout(profile, db)["deck"].size())
+	elif deck != null:
 		lines.append("Deck: %s (%d cards)" % [deck.display_name, deck.card_ids.size()])
 	else:
 		lines.append("No cards: the units you start with defend the core.")

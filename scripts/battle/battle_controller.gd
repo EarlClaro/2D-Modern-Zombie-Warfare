@@ -119,6 +119,9 @@ var modifiers: BattleModifiers = BattleModifiers.new()
 var difficulty_id: String = ""
 ## Doctrine card ids added on top of the mission's (the `--doctrine=` option); set before `setup`.
 var extra_doctrines: PackedStringArray = PackedStringArray()
+## A deck to draw from instead of the mission's `deck_id` (the player's own deck on a player-deck mission); set before
+## `setup`. Empty = use the mission's deck.
+var deck_override: PackedStringArray = PackedStringArray()
 ## Which hand slot is selected for placement (state only; the HUD and the world preview read it).
 var targeting: CardTargeting = CardTargeting.new()
 ## Arcing shells in flight (artillery) and the telegraphs of strikes that are still landing.
@@ -239,6 +242,10 @@ func _ready() -> void:
 	if not difficulty_id.is_empty() and loaded.difficulty(difficulty_id) == null:
 		_show_fatal("Unknown difficulty '%s' (%s)" % [difficulty_id, ", ".join(loaded.difficulty_ids())])
 		return
+	if from_menu and m.deck_source == MissionDefinition.DeckSource.PLAYER:  # the deck the player built
+		var load_out := DeckBuilder.loadout(GameSession.profile(loaded), loaded)
+		deck_override = load_out["deck"]
+		extra_doctrines.append_array(load_out["doctrines"])
 	setup(loaded, m, rng_seed)
 	var hud := BattleHud.new()
 	add_child(hud)
@@ -1205,12 +1212,17 @@ func _setup_cards() -> void:
 	points = null
 	targeting = CardTargeting.new()
 	preview = null
-	if mission.deck_id.is_empty() or db.deck_rules == null:
+	if db.deck_rules == null:
 		return
-	var d := db.deck(mission.deck_id)
-	if d == null:
-		return
-	deck = DeckState.new(db.deck_rules, d.ids(), _deck_rng)
+	var ids: Array[String] = []
+	if not deck_override.is_empty():
+		ids.assign(deck_override)
+	else:
+		var d := db.deck(mission.deck_id) if not mission.deck_id.is_empty() else null
+		if d == null:
+			return
+		ids = d.ids()
+	deck = DeckState.new(db.deck_rules, ids, _deck_rng)
 	deck.start()
 	points = CommandPoints.from_rules(db.deck_rules)
 

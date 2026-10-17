@@ -13,6 +13,10 @@ extends ContentDefinition
 @export var path_cells: Array[Vector2i] = []
 @export var start_units: Array[StartUnit] = []
 @export var waves: Array[WaveEntry] = []
+## Where the deck comes from: the mission's own `deck_id` (FIXED, every mission so far), or the deck the player built in the
+## deck editor (PLAYER; `deck_id` is then the deck used when the mission is started outside the menu, e.g. by the tools).
+enum DeckSource { FIXED, PLAYER }
+@export var deck_source: DeckSource = DeckSource.FIXED
 ## Optional: the deck id the player draws from (empty = no cards, as in M1 missions).
 @export var deck_id: String = ""
 ## Deployment cards may only be placed within this many tiles of the core.
@@ -77,6 +81,8 @@ func validate() -> PackedStringArray:
 			errs.append(_err("map '%s' is invalid (%d error(s)); fix the map first" % [map.id, map_errs.size()]))
 	if map_ok:
 		_validate_geometry(errs)
+	if deck_source == DeckSource.PLAYER and deck_id.is_empty():
+		errs.append(_err("a player-deck mission needs a fallback deck_id"))
 	if deploy_radius < 0.0:
 		errs.append(_err("deploy_radius must be >= 0 (0 = the whole map)"))
 	if spawn_guard_radius < 0.0:

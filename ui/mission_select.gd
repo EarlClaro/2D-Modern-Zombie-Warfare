@@ -177,7 +177,7 @@ func _on_selected(index: int) -> void:
 		_start.disabled = true
 		return
 	_title.text = m.display_name
-	var lines := MissionListing.facts(_db, m, _level)
+	var lines := MissionListing.facts(_db, m, _level, _profile)
 	if _profile != null:
 		lines.append_array(MissionListing.progress_lines(_db, _profile, id))
 	_facts.text = "\n".join(lines)

@@ -6,6 +6,7 @@ extends Control
 var _db: ContentDb
 var _home: Control
 var _select: MissionSelect
+var _deck_screen: DeckScreen
 var _settings: SettingsScreen
 
 
@@ -44,6 +45,11 @@ func _build_home() -> void:
 	play.pressed.connect(_open_select)
 	play.disabled = _db == null or not _db.is_valid()
 	box.add_child(play)
+	var deck := UiKit.button("Deck", 34, Vector2(420, 72))
+	deck.name = "Deck"
+	deck.pressed.connect(_open_deck)
+	deck.disabled = play.disabled
+	box.add_child(deck)
 	var settings := UiKit.button("Settings", 34, Vector2(420, 72))
 	settings.pressed.connect(_open_settings)
 	box.add_child(settings)
@@ -73,6 +79,22 @@ func _close_select() -> void:
 	if _select != null:
 		_select.queue_free()
 		_select = null
+	_home.visible = true
+	_focus_first_button()
+
+
+func _open_deck() -> void:
+	_home.visible = false
+	_deck_screen = DeckScreen.new()
+	_deck_screen.bind(_db, GameSession.profile(_db))
+	_deck_screen.closed.connect(_close_deck)
+	add_child(_deck_screen)
+
+
+func _close_deck() -> void:
+	if _deck_screen != null:
+		_deck_screen.queue_free()
+		_deck_screen = null
 	_home.visible = true
 	_focus_first_button()
 

@@ -89,6 +89,8 @@ Campaign (M5.2): `CampaignDefinition` (`data/campaigns/main.tres`, loaded by `Co
 
 Rewards (M5.3): `RewardPicker` is pure (pool, owned cards, seed, mission id gives up to three card ids); `ProgressRecorder` opens the offer on a first win and `PlayerProfile` keeps it in `offers` until `GameSession.claim_reward` takes a card from it and saves; `RewardChooser` is the one widget used by the result panel and by mission select. Pools live in `CampaignDefinition.reward_pools`.
 
+Deck editor (M5.4): `DeckBuilder` (pure) holds every editing rule over a `PlayerProfile` and the shipped `DeckRules` and builds the `loadout` a battle receives; `DeckScreen` only presents it and saves through `GameSession`. A mission with `deck_source = PLAYER` gets that loadout through `BattleController.deck_override` and `extra_doctrines`, set by the battle scene only when the menu started it; combat and card code never see the profile.
+
 ## Key design choices
 - **Pure logic classes** (`RefCounted`, no Node dependency) for IsoProjection, DamageService, DeckState, CommandPoints, objective evaluation → trivially headless-testable.
 - **Definitions vs runtime**: `CardDefinition` (Resource, immutable) vs `CardRuntime`/`DeckState` entries (id + mutable lockout).

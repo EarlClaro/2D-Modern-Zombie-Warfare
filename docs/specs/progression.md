@@ -1,6 +1,6 @@
 # Spec: Progression, rewards, deck editor and the local save (Milestone 5)
 
-Status: **v0.1, decisions taken in a user interview on 2026-10-17** (ADR-017). Increments 5.1 to 5.3 are built. Source of intent: MasterPrompt.md section 12 and Milestone 5 ("mission reward choice, unlockable cards, deck editing between missions, basic upgrades, persistent local save, tests for save/load and progression edge cases").
+Status: **v0.1, decisions taken in a user interview on 2026-10-17** (ADR-017). Increments 5.1 to 5.4 are built. Source of intent: MasterPrompt.md section 12 and Milestone 5 ("mission reward choice, unlockable cards, deck editing between missions, basic upgrades, persistent local save, tests for save/load and progression edge cases").
 
 ## Purpose
 Today every mission hands you a fixed deck and nothing you do is remembered. The player should keep what they earn: finish a mission, choose a new card, build a deck from the cards they own, and find the same collection and campaign position when the game is started again.
@@ -78,7 +78,7 @@ Currency, shops, research tree, military doctrine trees, rarity-weighted drops, 
 1. **5.1 Profile and safe save (done 2026-10-17, 24 tests):** `PlayerProfile`, `ProfileStore`, `ProfileMigration`, `GameSession.profile()`; tests for round trip, defaults, wrong types, unknown ids, corrupt file, backup fallback, future version read-only, migration from version 0, atomic write.
 2. **5.2 Campaign and unlocks (done 2026-10-17, 18 tests):** `CampaignDefinition`, unlock rules, recording a win, mission select locks and marks, "show test missions" setting, "reset progress".
 3. **5.3 Rewards (done 2026-10-17, 19 tests):** `reward_pools`, `RewardPicker`, offer saved on win, `RewardChooser` in the result panel and in mission select, collection grows; pools written for all 14 campaign missions (every non-starter card can be won; Nuclear Bomb and Satellite Laser only in the last two missions).
-4. **5.4 Deck editor and player-deck missions:** `DeckBuilder`, deck screen, doctrine picker, `deck_source`, the battle gets the player's deck.
+4. **5.4 Deck editor and player-deck missions (done 2026-10-17, 21 tests):** `DeckBuilder`, `DeckScreen` (main menu "Deck"), doctrine picker, `MissionDefinition.deck_source`, `BattleController.deck_override`; the test mission `dev_player_deck` (a copy of m2 on the player's deck) lets the editor be tried end to end. Rules as built: a change that would make the deck illegal is refused with the reason (so a swap is "add, then remove"); the doctrine is one card at a time; only a battle started from the menu uses the player's deck, the command line keeps the mission's own `deck_id`.
 5. **5.5 Upgrades:** short interview with the user first; then the data model, tests and the first few upgrades.
 6. **5.6 First player-deck mission and hand-over:** one new mission balanced with bots on three sample decks; docs; manual checklist for the user.
 

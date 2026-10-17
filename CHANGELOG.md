@@ -1,5 +1,11 @@
 # Changelog
 
+## 5.4 Deck editor and player-deck missions (2026-10-17; Milestone 5)
+- **Deck screen** (main menu "Deck"): your cards (cost, copies in the deck / allowed) on the left, the deck on the right. Add a copy with Add, Enter or a double-click, remove one the same way, "Starter deck" puts the starting deck back. A change that would break the deck rules (more than a card's copy limit, over 24 or under 12 cards, a card you do not own) is refused and the reason is shown. Everything is saved at once. Owned doctrine cards (Hollow Points) are chosen here for the next player-deck mission.
+- **Player-deck missions:** a mission can now be flagged `deck_source = PLAYER`; started from the menu it draws your deck and starts with your doctrine. From the command line it keeps its own `deck_id`, so the bots and tools are unaffected. No campaign mission uses it yet (5.6); `dev_player_deck` (test missions) is a copy of m2 on your deck for trying the editor.
+- **Mission select** says "Deck: yours (N cards)" for such a mission.
+- **Tests:** 21 new (978 in all, 0 failed).
+
 ## 5.3 Rewards: pick one of three cards (2026-10-17; Milestone 5)
 - **Rewards:** the first win of a campaign mission offers three cards from that mission's pool that you do not own yet (`RewardPicker`, seeded by the profile and the mission, so the same offer every time). The offer is saved with the win; choosing a card adds it to your collection and saves. Replays offer nothing.
 - **Pools** are data in `data/campaigns/main.tres` (`reward_pools`), early missions offer simple cards and the heaviest strikes come last; every card you do not start with can be won. They are not on the mission files because the map generators rewrite those.
