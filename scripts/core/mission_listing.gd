@@ -26,10 +26,32 @@ static func group_of(mission_id: String) -> String:
 	return GROUP_TESTS
 
 
-## Every mission once: Missions first, then Test missions, each sorted by id.
+## Id order a person expects: the number in "x10_..." counts as a number, so x10 comes after x9, not after x1.
+static func id_less(a: String, b: String) -> bool:
+	var ka := _sort_key(a)
+	var kb := _sort_key(b)
+	if ka[0] != kb[0]:
+		return ka[0] < kb[0]
+	if ka[1] != kb[1]:
+		return ka[1] < kb[1]
+	return a < b
+
+
+## [letters before the first digit run, that digit run as a number] ("x10_foo" -> ["x", 10]).
+static func _sort_key(id: String) -> Array:
+	var i := 0
+	while i < id.length() and not id[i].is_valid_int():
+		i += 1
+	var j := i
+	while j < id.length() and id[j].is_valid_int():
+		j += 1
+	return [id.substr(0, i), int(id.substr(i, j - i)) if j > i else -1]
+
+
+## Every mission once: Missions first, then Test missions, each in id order (numbers counted as numbers).
 static func entries(db: ContentDb) -> Array[Entry]:
 	var ids: Array = db.missions.keys()
-	ids.sort()
+	ids.sort_custom(id_less)
 	var out: Array[Entry] = []
 	for group in [GROUP_MISSIONS, GROUP_TESTS]:
 		for id: String in ids:

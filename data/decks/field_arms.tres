@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="DeckDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/cards/deck_definition.gd" id="1_wcxvd"]
+
+[resource]
+script = ExtResource("1_wcxvd")
+display_name = "Field Arms"
+card_ids = PackedStringArray("rifle_squad", "rifle_squad", "rifle_squad", "marksman_team", "marksman_team", "rpg_team", "rpg_team", "gatling_gun", "gatling_gun", "tank", "tank", "ifv", "ifv", "scout_jeep", "mortar_team", "howitzer_battery", "rocket_launcher", "artillery_strike", "helicopter_support")
+id = "field_arms"

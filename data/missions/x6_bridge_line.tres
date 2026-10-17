@@ -1,0 +1,132 @@
+[gd_resource type="Resource" script_class="MissionDefinition" format=3]
+
+[ext_resource type="Resource" path="res://data/maps/bridge_line.tres" id="1_vfit6"]
+[ext_resource type="Script" path="res://scripts/missions/mission_definition.gd" id="2_bko4m"]
+[ext_resource type="Script" path="res://scripts/missions/start_unit.gd" id="3_wk2nm"]
+[ext_resource type="Script" path="res://scripts/missions/wave_entry.gd" id="4_m1ptr"]
+
+[sub_resource type="Resource" id="Resource_75up2"]
+script = ExtResource("3_wk2nm")
+unit_id = "mg_nest"
+cell = Vector2i(12, 28)
+
+[sub_resource type="Resource" id="Resource_ytxsb"]
+script = ExtResource("3_wk2nm")
+unit_id = "mg_nest"
+cell = Vector2i(11, 28)
+
+[sub_resource type="Resource" id="Resource_k6irt"]
+script = ExtResource("3_wk2nm")
+unit_id = "rifle_soldier"
+cell = Vector2i(10, 30)
+
+[sub_resource type="Resource" id="Resource_dopuo"]
+script = ExtResource("3_wk2nm")
+unit_id = "rifle_soldier"
+cell = Vector2i(13, 34)
+
+[sub_resource type="Resource" id="Resource_l7rs7"]
+script = ExtResource("3_wk2nm")
+unit_id = "jeep"
+cell = Vector2i(10, 28)
+
+[sub_resource type="Resource" id="Resource_o71sb"]
+script = ExtResource("4_m1ptr")
+start_s = 5.0
+enemy_id = "shambler"
+count = 110
+interval_s = 0.07
+
+[sub_resource type="Resource" id="Resource_nm5ey"]
+script = ExtResource("4_m1ptr")
+start_s = 5.0
+enemy_id = "shambler"
+count = 80
+interval_s = 0.09
+spawn_index = 1
+
+[sub_resource type="Resource" id="Resource_qrl2a"]
+script = ExtResource("4_m1ptr")
+start_s = 24.0
+enemy_id = "runner"
+count = 90
+interval_s = 0.05
+
+[sub_resource type="Resource" id="Resource_hfyfb"]
+script = ExtResource("4_m1ptr")
+start_s = 30.0
+enemy_id = "spitter"
+count = 18
+interval_s = 0.5
+spawn_index = 1
+
+[sub_resource type="Resource" id="Resource_0y25b"]
+script = ExtResource("4_m1ptr")
+start_s = 46.0
+enemy_id = "shambler"
+count = 320
+interval_s = 0.03
+
+[sub_resource type="Resource" id="Resource_t63mk"]
+script = ExtResource("4_m1ptr")
+start_s = 52.0
+enemy_id = "brute"
+count = 14
+interval_s = 0.9
+spawn_index = 1
+
+[sub_resource type="Resource" id="Resource_ibmd4"]
+script = ExtResource("4_m1ptr")
+start_s = 76.0
+enemy_id = "runner"
+count = 170
+interval_s = 0.03
+spawn_index = 1
+
+[sub_resource type="Resource" id="Resource_2l5l2"]
+script = ExtResource("4_m1ptr")
+start_s = 80.0
+enemy_id = "spitter"
+count = 28
+interval_s = 0.45
+
+[sub_resource type="Resource" id="Resource_5f8h6"]
+script = ExtResource("4_m1ptr")
+start_s = 98.0
+enemy_id = "shambler"
+count = 420
+interval_s = 0.02
+
+[sub_resource type="Resource" id="Resource_gxuyc"]
+script = ExtResource("4_m1ptr")
+start_s = 104.0
+enemy_id = "brute"
+count = 32
+interval_s = 0.5
+spawn_index = 1
+
+[sub_resource type="Resource" id="Resource_w7ti1"]
+script = ExtResource("4_m1ptr")
+start_s = 122.0
+enemy_id = "runner"
+count = 170
+interval_s = 0.035
+
+[resource]
+script = ExtResource("2_bko4m")
+display_name = "Bridge Line"
+map = ExtResource("1_vfit6")
+core_cell = Vector2i(7, 35)
+core_health = 950.0
+duration_s = 160.0
+spawn_cells = Array[Vector2i]([Vector2i(54, 5), Vector2i(54, 38)])
+path_cells = Array[Vector2i]([Vector2i(44, 22), Vector2i(31, 22), Vector2i(21, 22), Vector2i(14, 30), Vector2i(7, 35)])
+start_units = Array[ExtResource("3_wk2nm")]([SubResource("Resource_75up2"), SubResource("Resource_ytxsb"), SubResource("Resource_k6irt"), SubResource("Resource_dopuo"), SubResource("Resource_l7rs7")])
+waves = Array[ExtResource("4_m1ptr")]([SubResource("Resource_o71sb"), SubResource("Resource_nm5ey"), SubResource("Resource_qrl2a"), SubResource("Resource_hfyfb"), SubResource("Resource_0y25b"), SubResource("Resource_t63mk"), SubResource("Resource_ibmd4"), SubResource("Resource_2l5l2"), SubResource("Resource_5f8h6"), SubResource("Resource_gxuyc"), SubResource("Resource_w7ti1")])
+deck_id = "field_arms"
+doctrines = PackedStringArray()
+core_scenery_id = "hq_bunker"
+core_radius = 1.2
+time_of_day = 0.45
+weather = "rain"
+id = "x6_bridge_line"

@@ -1,0 +1,132 @@
+[gd_resource type="Resource" script_class="MissionDefinition" format=3]
+
+[ext_resource type="Resource" path="res://data/maps/dead_highway.tres" id="1_h56rc"]
+[ext_resource type="Script" path="res://scripts/missions/mission_definition.gd" id="2_o3vkb"]
+[ext_resource type="Script" path="res://scripts/missions/start_unit.gd" id="3_6h6fr"]
+[ext_resource type="Script" path="res://scripts/missions/wave_entry.gd" id="4_mjtyn"]
+
+[sub_resource type="Resource" id="Resource_joo75"]
+script = ExtResource("3_6h6fr")
+unit_id = "mg_nest"
+cell = Vector2i(15, 20)
+
+[sub_resource type="Resource" id="Resource_h71u8"]
+script = ExtResource("3_6h6fr")
+unit_id = "mg_nest"
+cell = Vector2i(15, 10)
+
+[sub_resource type="Resource" id="Resource_w8xn8"]
+script = ExtResource("3_6h6fr")
+unit_id = "rifle_soldier"
+cell = Vector2i(15, 21)
+
+[sub_resource type="Resource" id="Resource_ao5ki"]
+script = ExtResource("3_6h6fr")
+unit_id = "rifle_soldier"
+cell = Vector2i(15, 9)
+
+[sub_resource type="Resource" id="Resource_7rpw3"]
+script = ExtResource("3_6h6fr")
+unit_id = "jeep"
+cell = Vector2i(15, 8)
+
+[sub_resource type="Resource" id="Resource_170ry"]
+script = ExtResource("4_mjtyn")
+start_s = 5.0
+enemy_id = "shambler"
+count = 120
+interval_s = 0.06
+
+[sub_resource type="Resource" id="Resource_v8a5e"]
+script = ExtResource("4_mjtyn")
+start_s = 5.0
+enemy_id = "runner"
+count = 40
+interval_s = 0.1
+spawn_index = 1
+
+[sub_resource type="Resource" id="Resource_mt1dp"]
+script = ExtResource("4_mjtyn")
+start_s = 26.0
+enemy_id = "runner"
+count = 140
+interval_s = 0.04
+
+[sub_resource type="Resource" id="Resource_db1do"]
+script = ExtResource("4_mjtyn")
+start_s = 30.0
+enemy_id = "spitter"
+count = 14
+interval_s = 0.5
+spawn_index = 1
+
+[sub_resource type="Resource" id="Resource_vsmks"]
+script = ExtResource("4_mjtyn")
+start_s = 48.0
+enemy_id = "shambler"
+count = 360
+interval_s = 0.025
+spawn_index = 1
+
+[sub_resource type="Resource" id="Resource_ack5v"]
+script = ExtResource("4_mjtyn")
+start_s = 54.0
+enemy_id = "brute"
+count = 14
+interval_s = 0.9
+
+[sub_resource type="Resource" id="Resource_6584v"]
+script = ExtResource("4_mjtyn")
+start_s = 76.0
+enemy_id = "runner"
+count = 240
+interval_s = 0.025
+
+[sub_resource type="Resource" id="Resource_7nvof"]
+script = ExtResource("4_mjtyn")
+start_s = 82.0
+enemy_id = "spitter"
+count = 26
+interval_s = 0.45
+spawn_index = 1
+
+[sub_resource type="Resource" id="Resource_thx52"]
+script = ExtResource("4_mjtyn")
+start_s = 100.0
+enemy_id = "shambler"
+count = 450
+interval_s = 0.02
+spawn_index = 1
+
+[sub_resource type="Resource" id="Resource_71jfj"]
+script = ExtResource("4_mjtyn")
+start_s = 106.0
+enemy_id = "brute"
+count = 30
+interval_s = 0.5
+
+[sub_resource type="Resource" id="Resource_pxl7h"]
+script = ExtResource("4_mjtyn")
+start_s = 126.0
+enemy_id = "runner"
+count = 220
+interval_s = 0.03
+spawn_index = 1
+
+[resource]
+script = ExtResource("2_o3vkb")
+display_name = "Dead Highway"
+map = ExtResource("1_h56rc")
+core_cell = Vector2i(8, 15)
+core_health = 900.0
+duration_s = 170.0
+spawn_cells = Array[Vector2i]([Vector2i(70, 4), Vector2i(70, 25)])
+path_cells = Array[Vector2i]([Vector2i(58, 15), Vector2i(40, 15), Vector2i(8, 15)])
+start_units = Array[ExtResource("3_6h6fr")]([SubResource("Resource_joo75"), SubResource("Resource_h71u8"), SubResource("Resource_w8xn8"), SubResource("Resource_ao5ki"), SubResource("Resource_7rpw3")])
+waves = Array[ExtResource("4_mjtyn")]([SubResource("Resource_170ry"), SubResource("Resource_v8a5e"), SubResource("Resource_mt1dp"), SubResource("Resource_db1do"), SubResource("Resource_vsmks"), SubResource("Resource_ack5v"), SubResource("Resource_6584v"), SubResource("Resource_7nvof"), SubResource("Resource_thx52"), SubResource("Resource_71jfj"), SubResource("Resource_pxl7h")])
+deck_id = "field_arms"
+doctrines = PackedStringArray()
+core_scenery_id = "hq_bunker"
+core_radius = 1.2
+weather = "dust"
+id = "x7_dead_highway"

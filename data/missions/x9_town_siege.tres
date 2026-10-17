@@ -1,0 +1,140 @@
+[gd_resource type="Resource" script_class="MissionDefinition" format=3]
+
+[ext_resource type="Resource" path="res://data/maps/town_siege.tres" id="1_4ua0w"]
+[ext_resource type="Script" path="res://scripts/missions/mission_definition.gd" id="2_5oqe6"]
+[ext_resource type="Script" path="res://scripts/missions/start_unit.gd" id="3_x5pvq"]
+[ext_resource type="Script" path="res://scripts/missions/wave_entry.gd" id="4_m07st"]
+
+[sub_resource type="Resource" id="Resource_x7vou"]
+script = ExtResource("3_x5pvq")
+unit_id = "mg_nest"
+cell = Vector2i(15, 40)
+
+[sub_resource type="Resource" id="Resource_kaquy"]
+script = ExtResource("3_x5pvq")
+unit_id = "mg_nest"
+cell = Vector2i(15, 39)
+
+[sub_resource type="Resource" id="Resource_lx4p5"]
+script = ExtResource("3_x5pvq")
+unit_id = "rifle_soldier"
+cell = Vector2i(15, 50)
+
+[sub_resource type="Resource" id="Resource_csvho"]
+script = ExtResource("3_x5pvq")
+unit_id = "rifle_soldier"
+cell = Vector2i(15, 51)
+
+[sub_resource type="Resource" id="Resource_1pqww"]
+script = ExtResource("3_x5pvq")
+unit_id = "gatling_gun"
+cell = Vector2i(14, 51)
+
+[sub_resource type="Resource" id="Resource_ud6ms"]
+script = ExtResource("4_m07st")
+start_s = 5.0
+enemy_id = "shambler"
+count = 120
+interval_s = 0.07
+
+[sub_resource type="Resource" id="Resource_rs7ts"]
+script = ExtResource("4_m07st")
+start_s = 8.0
+enemy_id = "shambler"
+count = 80
+interval_s = 0.1
+spawn_index = 1
+
+[sub_resource type="Resource" id="Resource_ihbvd"]
+script = ExtResource("4_m07st")
+start_s = 24.0
+enemy_id = "runner"
+count = 120
+interval_s = 0.04
+spawn_index = 1
+
+[sub_resource type="Resource" id="Resource_wdnjk"]
+script = ExtResource("4_m07st")
+start_s = 30.0
+enemy_id = "spitter"
+count = 22
+interval_s = 0.5
+
+[sub_resource type="Resource" id="Resource_op57b"]
+script = ExtResource("4_m07st")
+start_s = 46.0
+enemy_id = "shambler"
+count = 380
+interval_s = 0.025
+
+[sub_resource type="Resource" id="Resource_hg8ce"]
+script = ExtResource("4_m07st")
+start_s = 52.0
+enemy_id = "brute"
+count = 18
+interval_s = 0.8
+spawn_index = 1
+
+[sub_resource type="Resource" id="Resource_0uvyr"]
+script = ExtResource("4_m07st")
+start_s = 74.0
+enemy_id = "runner"
+count = 220
+interval_s = 0.03
+
+[sub_resource type="Resource" id="Resource_7nnpj"]
+script = ExtResource("4_m07st")
+start_s = 80.0
+enemy_id = "spitter"
+count = 34
+interval_s = 0.4
+spawn_index = 1
+
+[sub_resource type="Resource" id="Resource_jtr8n"]
+script = ExtResource("4_m07st")
+start_s = 98.0
+enemy_id = "shambler"
+count = 480
+interval_s = 0.02
+spawn_index = 1
+
+[sub_resource type="Resource" id="Resource_w0xc2"]
+script = ExtResource("4_m07st")
+start_s = 104.0
+enemy_id = "brute"
+count = 36
+interval_s = 0.45
+
+[sub_resource type="Resource" id="Resource_7o5uy"]
+script = ExtResource("4_m07st")
+start_s = 124.0
+enemy_id = "runner"
+count = 220
+interval_s = 0.03
+spawn_index = 1
+
+[sub_resource type="Resource" id="Resource_ijbjo"]
+script = ExtResource("4_m07st")
+start_s = 138.0
+enemy_id = "spitter"
+count = 30
+interval_s = 0.4
+
+[resource]
+script = ExtResource("2_5oqe6")
+display_name = "Town Siege"
+map = ExtResource("1_4ua0w")
+core_cell = Vector2i(8, 44)
+core_health = 1000.0
+duration_s = 180.0
+spawn_cells = Array[Vector2i]([Vector2i(50, 8), Vector2i(44, 1)])
+path_cells = Array[Vector2i]([Vector2i(44, 8), Vector2i(44, 20), Vector2i(32, 20), Vector2i(32, 32), Vector2i(20, 32), Vector2i(20, 44), Vector2i(8, 44)])
+start_units = Array[ExtResource("3_x5pvq")]([SubResource("Resource_x7vou"), SubResource("Resource_kaquy"), SubResource("Resource_lx4p5"), SubResource("Resource_csvho"), SubResource("Resource_1pqww")])
+waves = Array[ExtResource("4_m07st")]([SubResource("Resource_ud6ms"), SubResource("Resource_rs7ts"), SubResource("Resource_ihbvd"), SubResource("Resource_wdnjk"), SubResource("Resource_op57b"), SubResource("Resource_hg8ce"), SubResource("Resource_0uvyr"), SubResource("Resource_7nnpj"), SubResource("Resource_jtr8n"), SubResource("Resource_w0xc2"), SubResource("Resource_7o5uy"), SubResource("Resource_ijbjo")])
+deck_id = "field_siege"
+doctrines = PackedStringArray()
+core_scenery_id = "hq_bunker"
+core_radius = 1.2
+time_of_day = 0.12
+weather = "fog"
+id = "x9_town_siege"
