@@ -157,7 +157,7 @@ func test_missions_come_first_then_test_missions_each_sorted() -> void:
 		if e.group != prev_group:
 			prev_id = ""
 			prev_group = e.group
-		assert_true(e.id > prev_id, "%s sorted inside %s" % [e.id, e.group])
+		assert_true(prev_id.is_empty() or MissionListing.id_less(prev_id, e.id), "%s sorted inside %s" % [e.id, e.group])
 		prev_id = e.id
 		if e.group == MissionListing.GROUP_TESTS:
 			in_tests = true

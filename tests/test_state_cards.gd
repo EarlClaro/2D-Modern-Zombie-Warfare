@@ -360,6 +360,8 @@ func _rifle_hit(b: BattleController) -> float:
 	b.enemies.clear()
 	b._pending.clear()
 	var soldier := b._spawn_unit_at("rifle_soldier", IsoProjection.cell_center(GOOD))
+	soldier.def = soldier.def.duplicate()
+	soldier.def.behavior = UnitBrain.Behavior.HOLD  # stand and shoot; the shipped rifleman would back away from this enemy
 	var e := _enemy_at(b, soldier.ground_pos + Vector2(2.0, 0.0))
 	var hp := e.health.hp
 	b.step(DT)

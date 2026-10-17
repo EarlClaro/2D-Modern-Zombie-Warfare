@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="WeaponDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/weapon_definition.gd" id="1_weapon"]
+
+[resource]
+script = ExtResource("1_weapon")
+id = "mortar"
+damage = 40.0
+shots_per_second = 0.5
+range_tiles = 14.0
+min_range_tiles = 3.0
+delivery = 1
+blast_radius = 1.8
+projectile_speed = 9.0
+projectile_arc = 6.0
+sfx_id = "missile"

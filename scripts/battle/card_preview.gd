@@ -13,11 +13,13 @@ const ZONE := Color(0.9, 0.95, 1.0)
 var _info: CardTargeting.Preview
 var _zone_center: Vector2 = Vector2.ZERO
 var _zone_radius: float = 0.0
+var _guards: Array[Vector2] = []
+var _guard_radius: float = 0.0
 var _last_key: String = ""
 
 
 ## `info` null hides the preview. Redraws only when what is shown changes.
-func show_preview(info: CardTargeting.Preview, zone_center: Vector2, zone_radius: float) -> void:
+func show_preview(info: CardTargeting.Preview, zone_center: Vector2, zone_radius: float, guards: Array[Vector2] = [], guard_radius: float = 0.0) -> void:
 	var key := _key(info, zone_radius)
 	if key == _last_key:
 		return
@@ -25,6 +27,8 @@ func show_preview(info: CardTargeting.Preview, zone_center: Vector2, zone_radius
 	_info = info
 	_zone_center = zone_center
 	_zone_radius = zone_radius
+	_guards = guards
+	_guard_radius = guard_radius
 	visible = info != null
 	queue_redraw()
 
@@ -43,6 +47,9 @@ func _draw() -> void:
 	var is_deploy := _info.card != null and _info.card.card_kind == CardDefinition.CardKind.DEPLOYMENT
 	if is_deploy and _zone_radius > 0.0:
 		_ring(_zone_center, _zone_radius, ZONE, 0.08, 0.35)
+	if is_deploy and _guard_radius > 0.0:
+		for g in _guards:
+			_ring(g, _guard_radius, INVALID, 0.1, 0.45)
 	if _info.line_half_len > 0.0:
 		var blast := _info.area_radius - Vector2(_info.line_half_len, _info.scatter_radius).length()
 		_strip(centre, _info.line_dir, _info.line_half_len + blast, _info.scatter_radius + blast, BLAST, 0.12, 0.8)

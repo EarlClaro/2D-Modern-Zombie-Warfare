@@ -164,6 +164,44 @@ func best_in_range(origin: Vector2, range_tiles: float, anti_armor: bool) -> Bat
 	return _who[best] if best != -1 else null
 
 
+## Artillery target selection: among the enemies within `spot_range` of the spotter at `spot` (what it can see) that also
+## lie between `min_range` and `max_range` of the gun at `gun`, the one to shell: the highest `threat`, then the nearest to
+## the spotter (what is pressing our people), then the lowest uid. Sets `pick_score` / `pick_d2` (the spotter's distance)
+## so the caller can compare the answers of several spotters. Null when nothing qualifies.
+var pick_score: int = -1
+var pick_d2: float = INF
+
+func best_spotted(gun: Vector2, min_range: float, max_range: float, spot: Vector2, spot_range: float) -> BattleEnemy:
+	pick_score = -1
+	pick_d2 = INF
+	if _count == 0:
+		return null
+	var r2 := spot_range * spot_range
+	var lo2 := min_range * min_range
+	var hi2 := max_range * max_range
+	var best := -1
+	var x0 := clampi(int((spot.x - spot_range) * _inv), 0, _cw - 1)
+	var x1 := clampi(int((spot.x + spot_range) * _inv), 0, _cw - 1)
+	var y0 := clampi(int((spot.y - spot_range) * _inv), 0, _ch - 1)
+	var y1 := clampi(int((spot.y + spot_range) * _inv), 0, _ch - 1)
+	for cy in range(y0, y1 + 1):
+		for cx in range(x0, x1 + 1):
+			var j := _head[cy * _cw + cx]
+			while j != -1:
+				var p := _pos[j]
+				var d2 := spot.distance_squared_to(p)
+				if d2 <= r2:
+					var g2 := gun.distance_squared_to(p)
+					if g2 >= lo2 and g2 <= hi2:
+						var score := _threat[j]
+						if best == -1 or score > pick_score or (score == pick_score and (d2 < pick_d2 or (d2 == pick_d2 and _uid[j] < _uid[best]))):
+							best = j
+							pick_score = score
+							pick_d2 = d2
+				j = _next[j]
+	return _who[best] if best != -1 else null
+
+
 ## Indices (into insertion order, ascending) of every enemy in the cells overlapping the square around `center`
 ## with half-side `radius`: a superset of the enemies within `radius`.
 func box_candidates(center: Vector2, radius: float) -> PackedInt32Array:
@@ -185,3 +223,50 @@ func box_candidates(center: Vector2, radius: float) -> PackedInt32Array:
 				j = _next[j]
 	out.sort()
 	return out
+
+
+## Fills `out` with what a unit at `origin` sees within `vision` tiles: which enemies it must keep clear of, how crowded it
+## is, and the enemy nearest any of `spawns` (see KiteScan). One pass over the cells around the unit.
+## An enemy is dangerous when its distance is under reach + margin + speed * react_s; `my_speed` decides which of those
+## the unit can outrun (an enemy slower than 95 % of it).
+func scan_kite(origin: Vector2, vision: float, my_speed: float, margin: float, react_s: float, crowd_radius: float, spawns: PackedVector2Array, out: KiteScan) -> void:
+	out.reset()
+	var r := maxf(vision, 0.0)
+	var r2 := r * r
+	var crowd2 := crowd_radius * crowd_radius
+	var x0 := clampi(int((origin.x - r) * _inv), 0, _cw - 1)
+	var x1 := clampi(int((origin.x + r) * _inv), 0, _cw - 1)
+	var y0 := clampi(int((origin.y - r) * _inv), 0, _ch - 1)
+	var y1 := clampi(int((origin.y + r) * _inv), 0, _ch - 1)
+	for cy in range(y0, y1 + 1):
+		for cx in range(x0, x1 + 1):
+			var j := _head[cy * _cw + cx]
+			while j != -1:
+				var p := _pos[j]
+				var d2 := origin.distance_squared_to(p)
+				if d2 <= r2:
+					var def := _who[j].def
+					out.visible += 1
+					if d2 <= crowd2:
+						out.crowd += 1
+					var d := sqrt(d2)
+					var speed := def.move_speed
+					var slack := d - (def.attack_range + margin + speed * react_s)
+					if slack < 0.0:
+						out.danger_count += 1
+						if speed < my_speed * 0.95:
+							out.danger_slower += 1
+						out.away += (origin - p) / maxf(d2, 0.04)
+					if slack < out.worst_slack:
+						out.worst_slack = slack
+					var up := INF
+					for sp in spawns:
+						up = minf(up, p.distance_squared_to(sp))
+					if up < out._upstream_d2 or (up == out._upstream_d2 and _uid[j] < out._upstream_uid):
+						out._upstream_d2 = up
+						out._upstream_uid = _uid[j]
+						out.has_upstream = true
+						out.upstream_pos = p
+						out.upstream_reach = def.attack_range
+						out.upstream_speed = speed
+				j = _next[j]

@@ -25,6 +25,13 @@ enum Delivery { HITSCAN, PROJECTILE }
 @export var projectile_drop: float = 0.0
 ## Which generated shot sound to play (see SfxFactory.SHOT_SOUNDS).
 @export var sfx_id: String = "shot_rifle"
+## Artillery (F3): the weapon cannot hit anything closer than `min_range_tiles` (0 = no minimum). It fires `burst_size` shots
+## at `shots_per_second` and then reloads for `burst_pause_s` (1 = no bursts). With `needs_spotter` it only fires at enemies
+## that a friendly unit (or the core) can see: it shoots at what it is told about, not at what it sees itself.
+@export var min_range_tiles: float = 0.0
+@export var burst_size: int = 1
+@export var burst_pause_s: float = 0.0
+@export var needs_spotter: bool = false
 
 
 func kind() -> String:
@@ -43,6 +50,10 @@ func validate() -> PackedStringArray:
 		errs.append(_err("ammo must be >= 0 (0 = unlimited)"))
 	if blast_radius < 0.0:
 		errs.append(_err("blast_radius must be >= 0"))
+	if min_range_tiles < 0.0 or min_range_tiles >= range_tiles:
+		errs.append(_err("min_range_tiles must be >= 0 and below range_tiles"))
+	if burst_size < 1 or burst_pause_s < 0.0:
+		errs.append(_err("burst_size must be >= 1 and burst_pause_s >= 0"))
 	if not SfxFactory.is_shot_sound(sfx_id):
 		errs.append(_err("sfx_id '%s' is not a known shot sound (%s)" % [sfx_id, ", ".join(SfxFactory.SHOT_SOUNDS)]))
 	if delivery == Delivery.PROJECTILE:

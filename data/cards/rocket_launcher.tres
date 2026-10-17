@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CardDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/cards/card_definition.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = "rocket_launcher"
+display_name = "Rocket Launcher"
+description = "A six-rocket salvo over a huge area, long reload. Needs a friendly unit to see the target."
+card_kind = 0
+cost = 6
+lockout_s = 25.0
+max_copies = 3
+unit_id = "rocket_launcher"
+unit_count = 1
+effect_id = ""

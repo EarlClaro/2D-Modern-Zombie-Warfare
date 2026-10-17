@@ -15,6 +15,11 @@ var _made: Array[BattleController] = []
 func _get_db() -> ContentDb:
 	if _db == null:
 		_db = ContentDb.load_from()
+		# These tests are about what the buildings and the convoy make and where they settle: pin the rifleman to GUARD
+		# (the shipped one kites away from its post since F2; see test_kite.gd). A copy, loaded resources are shared.
+		var guard: UnitDefinition = _db.units["rifle_soldier"].duplicate()
+		guard.behavior = UnitBrain.Behavior.GUARD
+		_db.units["rifle_soldier"] = guard
 	return _db
 
 
@@ -443,9 +448,11 @@ func test_the_barracks_card_is_a_normal_placed_structure() -> void:
 	var b := _battle()
 	_hand(b, ["barracks"] as Array[String])
 	assert_true(not b.play_card(0, b.mission.core_cell).ok, "not on the core")
-	assert_eq(b.play_card(0, Vector2i(18, 2)).placement, P.TOO_FAR_FROM_CORE)
 	assert_true(b.play_card(0, GOOD).ok)
 	assert_near(b.points.cp, 10.0 - float(b.db.card("barracks").cost))
+	var far := _battle()
+	_hand(far, ["barracks"] as Array[String])
+	assert_true(far.play_card(0, Vector2i(14, 8)).ok, "anywhere on the map (F1: no deploy circle)")
 	_release()
 
 

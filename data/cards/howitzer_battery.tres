@@ -6,7 +6,7 @@
 script = ExtResource("1_card")
 id = "howitzer_battery"
 display_name = "Howitzer"
-description = "Fixed field gun with huge range. Lobbed shells burst on whole groups."
+description = "Self-propelled gun with enormous range. Fires bursts of three at what your units can see, but not at anything close."
 card_kind = 0
 cost = 5
 lockout_s = 12.0

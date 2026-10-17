@@ -172,7 +172,7 @@ func test_refused_confirm_keeps_the_selection_and_reports() -> void:
 	var rejected: Array = []
 	b.card_rejected.connect(func(slot: int, r: CardPlayService.Result): rejected.append([slot, r.reason, r.placement]))
 	b.select_slot(0)
-	var res := b.confirm_at(Vector2i(5, 19))  # road
+	var res := b.confirm_at(Vector2i(10, 21))  # rock
 	assert_true(not res.ok)
 	assert_true(b.targeting.is_selecting(), "stays selected so the player can pick another cell")
 	assert_eq(rejected, [[0, R.INVALID_TARGET, PlacementRules.Reason.NOT_BUILDABLE]])
@@ -285,13 +285,15 @@ func test_preview_of_an_invalid_cell_says_why() -> void:
 	var b := _battle()
 	_hand(b, ["rifle_squad"] as Array[String])
 	b.select_slot(0)
+	var rock := b.targeting.preview(b, Vector2i(10, 21))
+	assert_true(not rock.valid)
+	assert_eq(rock.placement, PlacementRules.Reason.NOT_BUILDABLE)
+	assert_eq(rock.message, PlacementRules.describe(PlacementRules.Reason.NOT_BUILDABLE))
+	var near_spawn := b.targeting.preview(b, Vector2i(20, 4))
+	assert_eq(near_spawn.placement, PlacementRules.Reason.TOO_CLOSE_TO_SPAWN)
+	assert_true(near_spawn.message != rock.message)
 	var road := b.targeting.preview(b, Vector2i(5, 19))
-	assert_true(not road.valid)
-	assert_eq(road.placement, PlacementRules.Reason.NOT_BUILDABLE)
-	assert_eq(road.message, PlacementRules.describe(PlacementRules.Reason.NOT_BUILDABLE))
-	var far := b.targeting.preview(b, Vector2i(20, 12))
-	assert_eq(far.placement, PlacementRules.Reason.TOO_FAR_FROM_CORE)
-	assert_true(far.message != road.message)
+	assert_true(road.valid, "roads can be built on")
 	_release()
 
 

@@ -64,7 +64,7 @@ func _initialize() -> void:
 	m.duration_s = 3600.0
 	m.spawn_cells = [Vector2i(1, 8)]
 	m.path_cells = [Vector2i(1, 1)]
-	m.deploy_radius = 6.0
+	m.deploy_radius = 0.0
 	m.deck_id = "fortified"
 	m.time_of_day = 0.5
 	var w := WaveEntry.new()

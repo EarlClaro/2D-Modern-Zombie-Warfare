@@ -40,7 +40,7 @@ func test_bounds() -> void:
 func test_walkable_and_buildable() -> void:
 	var m := _map([".=#"])
 	assert_true(m.is_walkable(Vector2i(0, 0)) and m.is_buildable(Vector2i(0, 0)), "grass")
-	assert_true(m.is_walkable(Vector2i(1, 0)) and not m.is_buildable(Vector2i(1, 0)), "road")
+	assert_true(m.is_walkable(Vector2i(1, 0)) and m.is_buildable(Vector2i(1, 0)), "road")
 	assert_true(not m.is_walkable(Vector2i(2, 0)) and not m.is_buildable(Vector2i(2, 0)), "rock")
 	assert_true(not m.is_walkable(Vector2i(5, 5)), "outside is not walkable")
 

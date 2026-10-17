@@ -1,21 +1,26 @@
 class_name PlacementRules
 extends RefCounted
 ## Pure placement checks for cards, in ground space (no nodes). A deployment cell must be
-## buildable, inside the mission's deploy radius around the core, and not already occupied by the core
-## or a player unit.
+## buildable (roads included), not inside the no-build circle around an enemy spawn, inside the mission's deploy
+## radius around the core if it has one (0 = the whole map), and not already occupied by the core or a player unit.
 
-enum Reason { OK, OUT_OF_BOUNDS, NOT_BUILDABLE, TOO_FAR_FROM_CORE, OCCUPIED, NOT_WALKABLE, NO_ROUTE }
+enum Reason { OK, OUT_OF_BOUNDS, NOT_BUILDABLE, TOO_FAR_FROM_CORE, OCCUPIED, NOT_WALKABLE, NO_ROUTE, TOO_CLOSE_TO_SPAWN }
 
 ## Units of a multi-unit card stand on a ring this far (tiles) from the cell centre; < 0.5 keeps them in the cell.
 const RING_RADIUS: float = 0.28
 
 
-static func check_deploy(map: MapDefinition, cell: Vector2i, core_cell: Vector2i, deploy_radius: float, occupied: Array[Vector2i]) -> Reason:
+static func check_deploy(map: MapDefinition, cell: Vector2i, core_cell: Vector2i, deploy_radius: float, occupied: Array[Vector2i], spawn_cells: Array[Vector2i] = [], guard_radius: float = 0.0) -> Reason:
 	if not map.in_bounds(cell):
 		return Reason.OUT_OF_BOUNDS
 	if not map.is_buildable(cell):
 		return Reason.NOT_BUILDABLE
-	if IsoProjection.cell_center(cell).distance_to(IsoProjection.cell_center(core_cell)) > deploy_radius:
+	if guard_radius > 0.0:
+		var here := IsoProjection.cell_center(cell)
+		for sc in spawn_cells:
+			if here.distance_to(IsoProjection.cell_center(sc)) < guard_radius:
+				return Reason.TOO_CLOSE_TO_SPAWN
+	if deploy_radius > 0.0 and IsoProjection.cell_center(cell).distance_to(IsoProjection.cell_center(core_cell)) > deploy_radius:
 		return Reason.TOO_FAR_FROM_CORE
 	if cell == core_cell or occupied.has(cell):
 		return Reason.OCCUPIED
@@ -55,6 +60,8 @@ static func describe(reason: Reason) -> String:
 			return "Not open ground"
 		Reason.NO_ROUTE:
 			return "No clear route for the convoy"
+		Reason.TOO_CLOSE_TO_SPAWN:
+			return "Too close to the enemy spawn"
 	return "Invalid"
 
 

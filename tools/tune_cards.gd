@@ -12,7 +12,7 @@ extends SceneTree
 ##                   to SAVE_PATIENCE_S for the most expensive card it could play, unless the horde is at the core
 ## Run:  godot --headless --path . --script tools/tune_cards.gd -- [--patterns=idle,spam,mix] [--seeds=10] [--mission=m2_card_defense]
 ##                                                         [--set=card.tank.cost=5 --set=op.artillery_strike.warning_s=1.0 ...]
-##                                                         [--wavescale=0.8] [--ratescale=2] [--core=700] [--verbose] [--trace] [--drop=card_id,card_id] [--bench] [--benchgap=0.5] [--benchenemy=shambler] [--benchcount=60] [--benchtime=60] [--card=ID]
+##                                                         [--typescale=brute:3,spitter:2 (per enemy id, same wave length)] [--timescale=0.6 (wave start times)] [--wavescale=0.8] [--ratescale=2] [--core=700] [--verbose] [--trace] [--drop=card_id,card_id] [--bench] [--benchgap=0.5] [--benchenemy=shambler] [--benchcount=60] [--benchtime=60] [--card=ID]
 ## --bench: one card at a time against the same fixed stream (core cannot fall, CP unlimited): kills and losses per CP.
 ## --drop removes those cards from the deck for every pattern ("does the deck still hold without X?").
 ## --wavescale multiplies every wave's zombie count; --ratescale divides every wave's spawn interval (a wave's length
@@ -40,6 +40,8 @@ var _sets: Array[String] = []
 var _wavescale: float = 1.0
 var _ratescale: float = 1.0
 var _core_override: float = -1.0
+var _timescale: float = 1.0  # multiplies every wave's start time (a long route needs the waves earlier to arrive in time)
+var _typescale: Dictionary = {}  # enemy id -> count multiplier (the wave keeps its length: the interval shrinks by the same factor)
 
 
 func _init() -> void:
@@ -58,6 +60,12 @@ func _init() -> void:
 			_wavescale = float(a.substr(12))
 		elif a.begins_with("--ratescale="):
 			_ratescale = float(a.substr(12))
+		elif a.begins_with("--timescale="):
+			_timescale = float(a.substr(12))
+		elif a.begins_with("--typescale="):
+			for pair in a.substr(12).split(","):
+				var kv := pair.split(":")
+				_typescale[kv[0]] = float(kv[1])
 		elif a.begins_with("--core="):
 			_core_override = float(a.substr(7))
 		elif a == "--verbose":
@@ -108,8 +116,10 @@ func _variant(base: MissionDefinition) -> MissionDefinition:
 	var waves: Array[WaveEntry] = []
 	for w in base.waves:
 		var c: WaveEntry = w.duplicate()
-		c.count = maxi(1, int(round(float(w.count) * _wavescale)))
-		c.interval_s = w.interval_s / _ratescale
+		var k := float(_typescale.get(w.enemy_id, 1.0))
+		c.count = maxi(1, int(round(float(w.count) * _wavescale * k)))
+		c.interval_s = w.interval_s / (_ratescale * k)
+		c.start_s = w.start_s * _timescale
 		waves.append(c)
 	m.waves = waves
 	if _core_override > 0.0:
@@ -313,10 +323,18 @@ func _preferred_distance(card: CardDefinition, pattern: String) -> float:
 	if pattern == "spam":
 		return 6.0
 	match card.unit_id:
-		"tank":
+		"tank", "ifv":
 			return 8.0
+		"scout":
+			return 11.0
 		"gatling_gun":
 			return 6.5
+		"marksman", "rpg_soldier":
+			return 5.5
+		"mortar_team":
+			return 3.5
+		"howitzer", "rocket_launcher":
+			return 2.5  # artillery stays back (it does not need to be near the horde, only near a spotter)
 		_:
 			return 4.5  # riflemen behind the heavy stuff
 
@@ -332,18 +350,22 @@ func _deploy_cell(b: BattleController, card: CardDefinition, pattern: String) ->
 	var dir := _lane_dir(b)
 	var perp := Vector2(-dir.y, dir.x)
 	var want := _preferred_distance(card, pattern)
+	var route: Route = b._routes[0] if not b._routes.is_empty() else null  # the enemy route: "along" is measured on it, so winding maps work
 	var occupied := b.occupied_cells()
 	var best := Vector2i(-1000, -1000)
 	var best_score := INF
-	var rad := int(ceil(b.mission.deploy_radius))
+	var rad := int(ceil(b.mission.deploy_radius)) if b.mission.deploy_radius > 0.0 else maxi(b.mission.map.width(), b.mission.map.height())
 	for dx in range(-rad, rad + 1):
 		for dy in range(-rad, rad + 1):
 			var cell := b.mission.core_cell + Vector2i(dx, dy)
-			if PlacementRules.check_deploy(b.mission.map, cell, b.mission.core_cell, b.mission.deploy_radius, occupied) != PlacementRules.Reason.OK:
+			if PlacementRules.check_deploy(b.mission.map, cell, b.mission.core_cell, b.mission.deploy_radius, occupied, b.mission.spawn_cells, b.mission.spawn_guard_radius) != PlacementRules.Reason.OK:
 				continue
 			var rel := IsoProjection.cell_center(cell) - core_c
 			var along := rel.dot(dir)
 			var side := absf(rel.dot(perp))
+			if route != null and not route.is_empty():
+				along = route.progress_of(IsoProjection.cell_center(cell))
+				side = route.distance_to(IsoProjection.cell_center(cell))
 			var score := absf(along - want) + side * 0.7
 			# stay off cells next to a friend (they would all die to one bite anyway; spreads the fire)
 			for u in b.units:

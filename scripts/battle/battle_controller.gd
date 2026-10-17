@@ -44,6 +44,8 @@ const LURE_STAND: float = 0.8  # tiles from a lure at which an enemy stops (plus
 const HUNT_SEARCH_RADIUS: float = 60.0  # tiles: a hunting aircraft looks for prey this far (the whole map)
 const DRONE_RING: float = 0.9  # tiles: combat drones leave the core on a ring this wide
 const SORTIE_MARGIN: float = 5.0  # tiles beyond the map edge where aircraft appear and disappear
+const CORE_SPOT_RANGE: float = 14.0  # how far the core's own watch reaches when it calls in artillery
+const ARTILLERY_LOOKAHEAD_S: float = 0.25  # a gun looks for a target only when it will be ready within this time
 
 
 ## A called-in strike's telegraph (the danger circle on the ground) while its shells are still coming.
@@ -150,6 +152,10 @@ var _wave_count: Array[int] = []  # enemies each wave entry sends at this diffic
 var _wave_gap: Array[float] = []  # seconds between its enemies at this difficulty
 var _difficulty: DifficultyDefinition
 var _waypoints: Array[Vector2] = []
+var _routes: Array[Route] = []  # one per enemy spawn: spawn -> path -> core (where kiting units scout and fall back)
+var _spawn_points: PackedVector2Array = PackedVector2Array()
+var _kite_scan: KiteScan = KiteScan.new()
+var _kite_facts: UnitBrain.KiteFacts = UnitBrain.KiteFacts.new()
 var _pending: Array[Hit] = []
 var _enemy_index: EnemyIndex = EnemyIndex.new()  # filled by the enemy phase; queried by unit targeting and blasts
 var _enemy_index_valid: bool = false  # false once `enemies` changed after the index was built
@@ -296,6 +302,15 @@ func setup(p_db: ContentDb, p_mission: MissionDefinition, p_seed: int) -> void:
 	_waypoints.clear()
 	for c in mission.path_cells:
 		_waypoints.append(IsoProjection.cell_center(c))
+	_routes.clear()
+	_spawn_points.clear()
+	for sc in mission.spawn_cells:
+		var pts := PackedVector2Array()
+		pts.append(IsoProjection.cell_center(sc))
+		for wp in _waypoints:
+			pts.append(wp)
+		_routes.append(Route.from_points(pts))
+		_spawn_points.append(IsoProjection.cell_center(sc))
 	_rules = MissionRules.new(mission.duration_s)
 	_rules.ended.connect(_on_rules_ended)
 	_build_map()
@@ -492,7 +507,7 @@ func _unit_phase(delta: float) -> void:
 		var target: BattleEnemy = null
 		if u.def.flies_a_plan():  # sortie aircraft follow their flight plan, not the unit brain
 			u.advance_move(delta)
-			if not u.is_moving():  # units must stand still to fire
+			if not u.is_moving() or u.weapon.can_fire_moving:  # units must stand still to fire, unless the weapon says otherwise
 				target = _nearest_enemy(u.ground_pos, u.weapon.range_tiles)
 		else:
 			target = _think_and_move(u, delta)
@@ -522,6 +537,8 @@ func _think_and_move(u: BattleUnit, delta: float) -> BattleEnemy:
 			UnitBrain.Behavior.SUPPORT:
 				var friend := _nearest_friend(u)
 				decision = UnitBrain.support(u.ground_pos, friend != null, friend.ground_pos if friend != null else Vector2.ZERO)
+			UnitBrain.Behavior.KITE, UnitBrain.Behavior.ARTILLERY:
+				decision = UnitBrain.kite(_kite_facts_for(u, target != null))
 			UnitBrain.Behavior.HUNT:
 				var prey := _nearest_enemy(u.ground_pos, HUNT_SEARCH_RADIUS)
 				decision = UnitBrain.hunt(u.ground_pos, u.anchor, weapon_range, target != null, prey != null, prey.ground_pos if prey != null else Vector2.ZERO)
@@ -530,17 +547,89 @@ func _think_and_move(u: BattleUnit, delta: float) -> BattleEnemy:
 	var before := u.ground_pos
 	u.advance_move(delta)
 	if u.is_moving():
-		return null
+		return target if u.weapon.can_fire_moving else null  # a gun that fires on the move keeps shooting while it walks
 	if u.ground_pos != before:  # it arrived this tick: the target may have changed
 		target = _pick_target(u)
 	return target
 
 
+## The facts the kiting brain needs for `u`: one pass over the enemies it can see, the route it scouts along, a friend
+## that is too close.
+func _kite_facts_for(u: BattleUnit, in_range: bool) -> UnitBrain.KiteFacts:
+	var f := _kite_facts
+	var route := _route_for(u.ground_pos)
+	f.pos = u.ground_pos
+	f.speed = u.def.move_speed
+	f.weapon_range = u.weapon.range_tiles
+	f.danger_margin = u.def.danger_margin
+	f.courage = u.def.courage
+	f.core = core.ground_pos
+	f.route = route
+	f.post_s = maxf(route.length() - u.def.scout_post, 0.0) if route != null else 0.0
+	f.post_side = float(u.uid % 5 - 2) * 0.9
+	f.in_range = in_range
+	f.stationary = u.def.effective_behavior() == UnitBrain.Behavior.ARTILLERY
+	f.scan = _kite_scan
+	f.clear = Callable(self, "_walk_is_clear")
+	_index_ready().scan_kite(u.ground_pos, u.def.vision, u.def.move_speed, UnitBrain.KITE_MARGIN * u.def.danger_margin, UnitBrain.KITE_REACT_S, minf(u.weapon.range_tiles, UnitBrain.KITE_CROWD_MAX) + UnitBrain.KITE_CROWD_EXTRA, _spawn_points, _kite_scan)
+	f.nearest_friend = Vector2(INF, INF)
+	var best := UnitBrain.FRIEND_SPACE * UnitBrain.FRIEND_SPACE
+	for o in units:
+		if o == u or not o.is_alive() or o.def.is_air():
+			continue
+		var d2 := u.ground_pos.distance_squared_to(o.ground_pos)
+		if d2 < best:
+			best = d2
+			f.nearest_friend = o.ground_pos
+	return f
+
+
+## The enemy route nearest to `p` (null on a mission without a spawn).
+func _route_for(p: Vector2) -> Route:
+	var best: Route = null
+	var best_d := INF
+	for r in _routes:
+		var d := r.distance_to(p)
+		if d < best_d:
+			best_d = d
+			best = r
+	return best
+
+
 ## Focus fire (when the unit has the habit): the most dangerous enemy in range, else the nearest.
 func _pick_target(u: BattleUnit) -> BattleEnemy:
+	if u.weapon.needs_spotter or u.weapon.min_range_tiles > 0.0:
+		return _artillery_target(u)
 	if u.def.focus_fire:
 		return _index_ready().best_in_range(u.ground_pos, u.weapon.range_tiles, u.weapon.anti_armor)
 	return _nearest_enemy(u.ground_pos, u.weapon.range_tiles)
+
+
+## Artillery (F3): the enemy to shell, or null. Between the gun's minimum and maximum range; with `needs_spotter` only an
+## enemy that some friendly unit (not the gun itself) or the core can see; otherwise what the gun sees for itself. It looks
+## only when the gun is about to be ready (a reloading gun has nothing to decide).
+func _artillery_target(u: BattleUnit) -> BattleEnemy:
+	var w := u.weapon
+	if u.weapon_state.cooldown_remaining() > ARTILLERY_LOOKAHEAD_S:
+		return null
+	var index := _index_ready()
+	if not w.needs_spotter:
+		return index.best_spotted(u.ground_pos, w.min_range_tiles, w.range_tiles, u.ground_pos, minf(u.def.vision, w.range_tiles))
+	var best: BattleEnemy = null
+	var best_score := -1
+	var best_d2 := INF
+	var spotters: Array = []  # [position, sight range]
+	for o in units:
+		if o != u and o.is_alive() and o.weapon != null:
+			spotters.append([o.ground_pos, o.def.vision])
+	spotters.append([core.ground_pos, CORE_SPOT_RANGE])
+	for s in spotters:
+		var e := index.best_spotted(u.ground_pos, w.min_range_tiles, w.range_tiles, s[0], s[1])
+		if e != null and (best == null or index.pick_score > best_score or (index.pick_score == best_score and index.pick_d2 < best_d2)):
+			best = e
+			best_score = index.pick_score
+			best_d2 = index.pick_d2
+	return best
 
 
 ## True for a mobile unit with the retreat habit whose health fraction is below its threshold.
@@ -773,9 +862,17 @@ func _process(delta: float) -> void:
 	if deck != null:
 		targeting.sync(deck)
 	preview = targeting.preview(self, cell) if not is_ended() else null
-	_preview_node.show_preview(preview, IsoProjection.cell_center(mission.core_cell), mission.deploy_radius)
+	_preview_node.show_preview(preview, IsoProjection.cell_center(mission.core_cell), mission.deploy_radius, _spawn_centers(), mission.spawn_guard_radius)
 	_update_core_fade(delta)
 	update_scenery_fade(delta)
+
+
+## Ground centres of the enemy spawn cells (the preview draws their no-build circles).
+func _spawn_centers() -> Array[Vector2]:
+	var out: Array[Vector2] = []
+	for c in mission.spawn_cells:
+		out.append(IsoProjection.cell_center(c))
+	return out
 
 
 ## The core is tall: fade it when a unit or enemy is behind it (ADR-005).
@@ -836,7 +933,7 @@ func check_card(hand_index: int, cell: Vector2i) -> CardPlayService.Result:
 			return CardPlayService.Result.new(CardPlayService.Reason.UNAVAILABLE, def)  # never played: a mission starts with it
 		match def.card_kind:
 			CardDefinition.CardKind.DEPLOYMENT:
-				placement = PlacementRules.check_deploy(mission.map, cell, mission.core_cell, mission.deploy_radius, occupied_cells())
+				placement = PlacementRules.check_deploy(mission.map, cell, mission.core_cell, mission.deploy_radius, occupied_cells(), mission.spawn_cells, mission.spawn_guard_radius)
 			CardDefinition.CardKind.OPERATION, CardDefinition.CardKind.SORTIE:
 				placement = PlacementRules.check_ground_target(mission.map, cell)
 			CardDefinition.CardKind.TRAP, CardDefinition.CardKind.INTEL:

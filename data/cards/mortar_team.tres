@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CardDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/cards/card_definition.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = "mortar_team"
+display_name = "Mortar Team"
+description = "Lobs blasts over cover. Cannot hit anything close."
+card_kind = 0
+cost = 4
+lockout_s = 0.0
+max_copies = 3
+unit_id = "mortar_team"
+unit_count = 1
+effect_id = ""

@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="DeckDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/cards/deck_definition.gd" id="1_jhree"]
+
+[resource]
+script = ExtResource("1_jhree")
+display_name = "Field Siege"
+card_ids = PackedStringArray("rifle_squad", "rifle_squad", "marksman_team", "marksman_team", "rpg_team", "rpg_team", "gatling_gun", "gatling_gun", "mortar_team", "mortar_team", "howitzer_battery", "howitzer_battery", "rocket_launcher", "sandbags", "sandbags", "barrier", "barrier", "crates", "fuel_drums", "fuel_drums", "artillery_strike")
+id = "field_siege"

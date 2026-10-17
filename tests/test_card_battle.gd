@@ -122,11 +122,10 @@ func test_gatling_and_tank_deploy_the_right_units() -> void:
 func test_invalid_cells_reject_without_any_change() -> void:
 	var b := _battle()
 	var cases: Array = [
-		[Vector2i(5, 19), PlacementRules.Reason.NOT_BUILDABLE],
 		[Vector2i(10, 21), PlacementRules.Reason.NOT_BUILDABLE],
-		[Vector2i(20, 12), PlacementRules.Reason.TOO_FAR_FROM_CORE],
+		[Vector2i(20, 4), PlacementRules.Reason.TOO_CLOSE_TO_SPAWN],
 		[Vector2i(-3, 4), PlacementRules.Reason.OUT_OF_BOUNDS],
-		[b.mission.core_cell, PlacementRules.Reason.NOT_BUILDABLE],
+		[b.mission.core_cell, PlacementRules.Reason.OCCUPIED],
 	]
 	for case in cases:
 		_hand(b, ["rifle_squad"] as Array[String])
@@ -208,7 +207,7 @@ func test_check_card_never_changes_state() -> void:
 	_hand(b, ["rifle_squad"] as Array[String])
 	var before := _snapshot(b)
 	assert_true(b.check_card(0, GOOD).ok)
-	assert_eq(b.check_card(0, Vector2i(5, 19)).placement, PlacementRules.Reason.NOT_BUILDABLE)
+	assert_eq(b.check_card(0, Vector2i(10, 21)).placement, PlacementRules.Reason.NOT_BUILDABLE)
 	assert_eq(_snapshot(b), before)
 	_release()
 

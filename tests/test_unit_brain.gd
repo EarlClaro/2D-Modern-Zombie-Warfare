@@ -122,9 +122,10 @@ func test_fixed_units_and_structures_always_hold_whatever_their_data_says() -> v
 
 func test_mobile_units_use_their_own_behaviour() -> void:
 	var db := ContentDb.load_from()
-	assert_eq(db.unit("rifle_soldier").effective_behavior(), UnitBrain.Behavior.GUARD)
-	assert_eq(db.unit("rpg_soldier").effective_behavior(), UnitBrain.Behavior.GUARD)
-	assert_eq(db.unit("tank").effective_behavior(), UnitBrain.Behavior.ADVANCE)
+	assert_eq(db.unit("rifle_soldier").effective_behavior(), UnitBrain.Behavior.KITE)
+	assert_eq(db.unit("rpg_soldier").effective_behavior(), UnitBrain.Behavior.KITE)
+	assert_eq(db.unit("tank").effective_behavior(), UnitBrain.Behavior.KITE)
+	assert_eq(db.unit("scout").effective_behavior(), UnitBrain.Behavior.KITE)
 
 
 func test_behaviour_distances_must_be_positive() -> void:

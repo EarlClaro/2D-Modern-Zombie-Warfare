@@ -1,0 +1,197 @@
+[gd_resource type="Resource" script_class="MissionDefinition" format=3]
+
+[ext_resource type="Resource" path="res://data/maps/last_airfield.tres" id="1_o3l51"]
+[ext_resource type="Script" path="res://scripts/missions/mission_definition.gd" id="2_m3wmk"]
+[ext_resource type="Script" path="res://scripts/missions/start_unit.gd" id="3_gdwxe"]
+[ext_resource type="Script" path="res://scripts/missions/wave_entry.gd" id="4_buldq"]
+
+[sub_resource type="Resource" id="Resource_5ln54"]
+script = ExtResource("3_gdwxe")
+unit_id = "mg_nest"
+cell = Vector2i(15, 47)
+
+[sub_resource type="Resource" id="Resource_j3tfb"]
+script = ExtResource("3_gdwxe")
+unit_id = "mg_nest"
+cell = Vector2i(14, 47)
+
+[sub_resource type="Resource" id="Resource_i0m3j"]
+script = ExtResource("3_gdwxe")
+unit_id = "gatling_gun"
+cell = Vector2i(13, 47)
+
+[sub_resource type="Resource" id="Resource_ocejb"]
+script = ExtResource("3_gdwxe")
+unit_id = "rifle_soldier"
+cell = Vector2i(12, 47)
+
+[sub_resource type="Resource" id="Resource_3v5sr"]
+script = ExtResource("3_gdwxe")
+unit_id = "rifle_soldier"
+cell = Vector2i(11, 47)
+
+[sub_resource type="Resource" id="Resource_u7xbx"]
+script = ExtResource("3_gdwxe")
+unit_id = "jeep"
+cell = Vector2i(10, 47)
+
+[sub_resource type="Resource" id="Resource_1unu2"]
+script = ExtResource("4_buldq")
+start_s = 5.0
+enemy_id = "shambler"
+count = 84
+interval_s = 0.10000000000000002
+
+[sub_resource type="Resource" id="Resource_jlesd"]
+script = ExtResource("4_buldq")
+start_s = 5.0
+enemy_id = "shambler"
+count = 63
+interval_s = 0.1142857142857143
+spawn_index = 1
+
+[sub_resource type="Resource" id="Resource_vh3kj"]
+script = ExtResource("4_buldq")
+start_s = 24.0
+enemy_id = "runner"
+count = 77
+interval_s = 0.0642857142857143
+spawn_index = 1
+
+[sub_resource type="Resource" id="Resource_7g1nv"]
+script = ExtResource("4_buldq")
+start_s = 30.0
+enemy_id = "spitter"
+count = 13
+interval_s = 0.7142857142857143
+
+[sub_resource type="Resource" id="Resource_mhjuh"]
+script = ExtResource("4_buldq")
+start_s = 46.0
+enemy_id = "shambler"
+count = 252
+interval_s = 0.03571428571428572
+
+[sub_resource type="Resource" id="Resource_68na5"]
+script = ExtResource("4_buldq")
+start_s = 52.0
+enemy_id = "brute"
+count = 11
+interval_s = 1.142857142857143
+spawn_index = 1
+
+[sub_resource type="Resource" id="Resource_hpeok"]
+script = ExtResource("4_buldq")
+start_s = 76.0
+enemy_id = "runner"
+count = 140
+interval_s = 0.04285714285714286
+
+[sub_resource type="Resource" id="Resource_5ma8k"]
+script = ExtResource("4_buldq")
+start_s = 82.0
+enemy_id = "spitter"
+count = 21
+interval_s = 0.5714285714285715
+spawn_index = 1
+
+[sub_resource type="Resource" id="Resource_rgibk"]
+script = ExtResource("4_buldq")
+start_s = 100.0
+enemy_id = "shambler"
+count = 322
+interval_s = 0.028571428571428574
+spawn_index = 1
+
+[sub_resource type="Resource" id="Resource_gqrol"]
+script = ExtResource("4_buldq")
+start_s = 106.0
+enemy_id = "brute"
+count = 24
+interval_s = 0.6428571428571429
+
+[sub_resource type="Resource" id="Resource_72eda"]
+script = ExtResource("4_buldq")
+start_s = 128.0
+enemy_id = "runner"
+count = 140
+interval_s = 0.04285714285714286
+spawn_index = 1
+
+[sub_resource type="Resource" id="Resource_jk6ae"]
+script = ExtResource("4_buldq")
+start_s = 140.0
+enemy_id = "brute"
+count = 14
+interval_s = 0.7142857142857143
+
+[sub_resource type="Resource" id="Resource_gb002"]
+script = ExtResource("4_buldq")
+start_s = 5.0
+enemy_id = "behemoth"
+count = 2
+interval_s = 5.714285714285714
+
+[sub_resource type="Resource" id="Resource_6gocu"]
+script = ExtResource("4_buldq")
+start_s = 18.0
+enemy_id = "behemoth"
+count = 3
+interval_s = 5.714285714285714
+spawn_index = 1
+
+[sub_resource type="Resource" id="Resource_7ec1s"]
+script = ExtResource("4_buldq")
+start_s = 36.0
+enemy_id = "sprinter"
+count = 42
+interval_s = 0.14285714285714288
+spawn_index = 1
+
+[sub_resource type="Resource" id="Resource_p2583"]
+script = ExtResource("4_buldq")
+start_s = 60.0
+enemy_id = "spewer"
+count = 8
+interval_s = 1.4285714285714286
+
+[sub_resource type="Resource" id="Resource_47qs4"]
+script = ExtResource("4_buldq")
+start_s = 80.0
+enemy_id = "sprinter"
+count = 98
+interval_s = 0.07142857142857144
+
+[sub_resource type="Resource" id="Resource_u1s0n"]
+script = ExtResource("4_buldq")
+start_s = 105.0
+enemy_id = "spewer"
+count = 20
+interval_s = 0.7142857142857143
+spawn_index = 1
+
+[sub_resource type="Resource" id="Resource_yft2m"]
+script = ExtResource("4_buldq")
+start_s = 130.0
+enemy_id = "sprinter"
+count = 126
+interval_s = 0.05714285714285715
+spawn_index = 1
+
+[resource]
+script = ExtResource("2_m3wmk")
+display_name = "Last Airfield"
+map = ExtResource("1_o3l51")
+core_cell = Vector2i(8, 40)
+core_health = 1000.0
+duration_s = 175.0
+spawn_cells = Array[Vector2i]([Vector2i(58, 5), Vector2i(58, 43)])
+path_cells = Array[Vector2i]([Vector2i(50, 24), Vector2i(26, 24), Vector2i(26, 40), Vector2i(8, 40)])
+start_units = Array[ExtResource("3_gdwxe")]([SubResource("Resource_5ln54"), SubResource("Resource_j3tfb"), SubResource("Resource_i0m3j"), SubResource("Resource_ocejb"), SubResource("Resource_3v5sr"), SubResource("Resource_u7xbx")])
+waves = Array[ExtResource("4_buldq")]([SubResource("Resource_1unu2"), SubResource("Resource_jlesd"), SubResource("Resource_vh3kj"), SubResource("Resource_7g1nv"), SubResource("Resource_mhjuh"), SubResource("Resource_68na5"), SubResource("Resource_hpeok"), SubResource("Resource_5ma8k"), SubResource("Resource_rgibk"), SubResource("Resource_gqrol"), SubResource("Resource_72eda"), SubResource("Resource_jk6ae"), SubResource("Resource_gb002"), SubResource("Resource_6gocu"), SubResource("Resource_7ec1s"), SubResource("Resource_p2583"), SubResource("Resource_47qs4"), SubResource("Resource_u1s0n"), SubResource("Resource_yft2m")])
+deck_id = "field_arms"
+doctrines = PackedStringArray()
+core_scenery_id = "hq_bunker"
+core_radius = 1.2
+time_of_day = 0.72
+id = "x8_last_airfield"
