@@ -140,11 +140,11 @@ func test_an_upgrade_for_an_unknown_card_or_with_a_bad_patch_stops_the_content_l
 func test_the_patched_content_has_the_new_numbers_and_the_shared_content_does_not() -> void:
 	var db := _get_db()
 	var out := UpgradeApplier.patched_db(db, PackedStringArray(["gatling_ap_belt", "tank_reactive_armor"]))
-	assert_near(out.weapon("gatling").damage, db.weapon("gatling").damage * 2.2)
+	assert_near(out.weapon("gatling").damage, db.weapon("gatling").damage * 3.2)
 	assert_near(out.weapon("gatling").shots_per_second, db.weapon("gatling").shots_per_second * 0.6)
 	assert_true(out.weapon("gatling").anti_armor)
 	assert_near(out.unit("tank").armor, db.unit("tank").armor + 3.0)
-	assert_near(out.unit("tank").max_health, db.unit("tank").max_health * 1.25)
+	assert_near(out.unit("tank").max_health, db.unit("tank").max_health * 1.6)
 	assert_true(not db.weapon("gatling").anti_armor, "the shared definition is untouched")
 	assert_near(db.weapon("gatling").damage, 5.0)
 	assert_near(db.unit("tank").armor, 5.0)
@@ -156,15 +156,15 @@ func test_the_patched_content_has_the_new_numbers_and_the_shared_content_does_no
 func test_two_patches_on_one_definition_stack_and_unknown_ids_are_skipped() -> void:
 	var db := _get_db()
 	var out := UpgradeApplier.patched_db(db, PackedStringArray(["gatling_crowd_spray", "no_such_upgrade", "gatling_ap_belt"]))
-	assert_near(out.weapon("gatling").damage, 5.0 * 0.8 * 2.2)
-	assert_near(out.weapon("gatling").blast_radius, 0.9)
+	assert_near(out.weapon("gatling").damage, 5.0 * 0.65 * 3.2)
+	assert_near(out.weapon("gatling").blast_radius, 0.7)
 
 
 func test_the_card_and_operation_upgrades_land_where_they_point() -> void:
 	var db := _get_db()
 	var out := UpgradeApplier.patched_db(db, PackedStringArray(["helicopter_extended_station", "artillery_heavy_shells"]))
-	assert_near(out.card("helicopter_support").station_time_s, db.card("helicopter_support").station_time_s + 6.0)
-	assert_near(out.operation("artillery_strike").shell_damage, db.operation("artillery_strike").shell_damage * 1.6)
+	assert_near(out.card("helicopter_support").station_time_s, db.card("helicopter_support").station_time_s + 14.0)
+	assert_near(out.operation("artillery_strike").shell_damage, db.operation("artillery_strike").shell_damage * 1.8)
 	assert_near(out.operation("artillery_strike").warning_s, db.operation("artillery_strike").warning_s - 0.4)
 	assert_near(db.card("helicopter_support").station_time_s, 12.0)
 
@@ -298,7 +298,7 @@ func test_a_player_deck_battle_from_the_menu_runs_on_upgraded_content() -> void:
 	b.auto_step = false
 	_in_tree(b)
 	assert_near(b.db.unit("tank").armor, 8.0)
-	assert_near(b.db.unit("tank").max_health, 500.0)
+	assert_near(b.db.unit("tank").max_health, 640.0)
 	assert_near(_get_db().unit("tank").armor, 5.0, 1e-9, "the shared content is not changed by a battle")
 	b.free()
 	_release_temp()

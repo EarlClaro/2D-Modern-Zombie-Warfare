@@ -9,7 +9,7 @@ target = 2
 target_id = "artillery_strike"
 property = "shell_damage"
 op = 1
-value = 1.6
+value = 1.8
 
 [sub_resource type="Resource" id="Resource_n0b3g"]
 script = ExtResource("1_vci14")
@@ -28,7 +28,7 @@ value = -0.4
 [resource]
 script = ExtResource("2_1rw6g")
 display_name = "Heavy Shells"
-description = "Shells hit 60 % harder with a bigger blast and land 0.4 s sooner."
+description = "Shells hit 80 % harder with a bigger blast and land 0.4 s sooner."
 card_id = "artillery_strike"
 patches = Array[ExtResource("1_vci14")]([SubResource("Resource_e4ywp"), SubResource("Resource_n0b3g"), SubResource("Resource_vv74t")])
 id = "artillery_heavy_shells"

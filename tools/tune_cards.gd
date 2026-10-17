@@ -13,6 +13,8 @@ extends SceneTree
 ## Run:  godot --headless --path . --script tools/tune_cards.gd -- [--patterns=idle,spam,mix] [--seeds=10] [--mission=m2_card_defense]
 ##                                                         [--set=card.tank.cost=5 --set=op.artillery_strike.warning_s=1.0 ...]
 ##                                                         [--difficulty=easy|normal|hard (M3.10: enemy counts of the game's own levels)]
+##                                                         [--sample=weak|balanced|strong (5.6: play the mission with an example player's deck, upgrades and doctrine, SampleDecks)]
+##                                                         [--upgrades=id,id|none (5.6: run on the content with exactly these upgrades applied; with --sample it replaces the sample's own)]
 ##                                                         [--typescale=brute:3,spitter:2 (per enemy id, same wave length)] [--timescale=0.6 (wave start times)] [--wavescale=0.8] [--ratescale=2] [--core=700] [--verbose] [--trace] [--drop=card_id,card_id] [--bench] [--benchgap=0.5] [--benchenemy=shambler] [--benchcount=60] [--benchtime=60] [--card=ID]
 ## --bench: one card at a time against the same fixed stream (core cannot fall, CP unlimited): kills and losses per CP.
 ## --drop removes those cards from the deck for every pattern ("does the deck still hold without X?").
@@ -43,6 +45,9 @@ var _wavescale: float = 1.0
 var _ratescale: float = 1.0
 var _core_override: float = -1.0
 var _difficulty: String = ""
+var _sample: String = ""
+var _upgrades: PackedStringArray = PackedStringArray()
+var _upgrades_set: bool = false
 var _timescale: float = 1.0  # multiplies every wave's start time (a long route needs the waves earlier to arrive in time)
 var _typescale: Dictionary = {}  # enemy id -> count multiplier (the wave keeps its length: the interval shrinks by the same factor)
 
@@ -71,6 +76,11 @@ func _init() -> void:
 				_typescale[kv[0]] = float(kv[1])
 		elif a.begins_with("--difficulty="):
 			_difficulty = a.substr(13)
+		elif a.begins_with("--sample="):
+			_sample = a.substr(9)
+		elif a.begins_with("--upgrades="):
+			_upgrades_set = true
+			_upgrades = PackedStringArray() if a.substr(11) == "none" else a.substr(11).split(",")
 		elif a.begins_with("--core="):
 			_core_override = float(a.substr(7))
 		elif a == "--verbose":
@@ -234,6 +244,19 @@ func _run(db: ContentDb, m: MissionDefinition, pattern: String, seed_value: int)
 		m = m.duplicate()
 		m.deck_id = "tune_drop"
 	b.difficulty_id = _difficulty
+	if not _sample.is_empty() and not pattern.begins_with("only="):  # an example player: their deck, upgrades and doctrine
+		var load_out := DeckBuilder.loadout(SampleDecks.profile(db, _sample), db)
+		var run_db := UpgradeApplier.patched_db(db, _upgrades if _upgrades_set else load_out["upgrades"])
+		var sd := DeckDefinition.new()
+		sd.id = "tune_sample"
+		sd.card_ids = load_out["deck"]
+		run_db.decks["tune_sample"] = sd
+		m = m.duplicate()
+		m.deck_id = "tune_sample"
+		b.extra_doctrines = load_out["doctrines"]
+		db = run_db
+	elif _upgrades_set:
+		db = UpgradeApplier.patched_db(db, _upgrades)
 	b.setup(db, m, seed_value)
 	var r := Result.new()
 	var ticks := 0
@@ -507,7 +530,8 @@ func _run_bench(db: ContentDb, base: MissionDefinition) -> void:
 
 
 ## Returns [kills, units lost, time the card was played (-1 = never)].
-func _bench_one(db: ContentDb, m: MissionDefinition, card_id: String, seed_value: int) -> Array:
+func _bench_one(shared_db: ContentDb, m: MissionDefinition, card_id: String, seed_value: int) -> Array:
+	var db := UpgradeApplier.patched_db(shared_db, _upgrades) if _upgrades_set else shared_db
 	var d := DeckDefinition.new()
 	d.id = "tune_bench"
 	d.card_ids = PackedStringArray()

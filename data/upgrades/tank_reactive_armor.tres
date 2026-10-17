@@ -16,12 +16,12 @@ target = 1
 target_id = "tank"
 property = "max_health"
 op = 1
-value = 1.25
+value = 1.6
 
 [resource]
 script = ExtResource("2_1pu5k")
 display_name = "Reactive Armour"
-description = "The tank has 3 more armour and 25 % more health."
+description = "The tank has 3 more armour and 60 % more health."
 card_id = "tank"
 patches = Array[ExtResource("1_r1i35")]([SubResource("Resource_r6qmg"), SubResource("Resource_5d6hr")])
 id = "tank_reactive_armor"

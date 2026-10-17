@@ -9,19 +9,19 @@ target = 1
 target_id = "rifle_soldier"
 property = "max_health"
 op = 1
-value = 1.4
+value = 1.6
 
 [sub_resource type="Resource" id="Resource_shxvi"]
 script = ExtResource("1_ku3cp")
 target = 1
 target_id = "rifle_soldier"
 property = "armor"
-value = 1.0
+value = 2.0
 
 [resource]
 script = ExtResource("2_43w2y")
 display_name = "Body Armour"
-description = "Riflemen have 40 % more health and 1 armour."
+description = "Riflemen have 60 % more health and 2 armour."
 card_id = "rifle_squad"
 patches = Array[ExtResource("1_ku3cp")]([SubResource("Resource_fcul8"), SubResource("Resource_shxvi")])
 id = "rifle_body_armor"

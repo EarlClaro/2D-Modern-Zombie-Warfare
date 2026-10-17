@@ -1,0 +1,186 @@
+[gd_resource type="Resource" script_class="MissionDefinition" format=3]
+
+[ext_resource type="Resource" path="res://data/maps/dead_highway.tres" id="1_3oif6"]
+[ext_resource type="Script" path="res://scripts/missions/mission_definition.gd" id="2_mot3q"]
+[ext_resource type="Script" path="res://scripts/missions/start_unit.gd" id="3_i3547"]
+[ext_resource type="Script" path="res://scripts/missions/wave_entry.gd" id="4_xjryc"]
+
+[sub_resource type="Resource" id="Resource_dsmhc"]
+script = ExtResource("3_i3547")
+unit_id = "mg_nest"
+cell = Vector2i(15, 20)
+
+[sub_resource type="Resource" id="Resource_ftowh"]
+script = ExtResource("3_i3547")
+unit_id = "mg_nest"
+cell = Vector2i(15, 10)
+
+[sub_resource type="Resource" id="Resource_ah2cw"]
+script = ExtResource("3_i3547")
+unit_id = "rifle_soldier"
+cell = Vector2i(15, 21)
+
+[sub_resource type="Resource" id="Resource_n1oux"]
+script = ExtResource("3_i3547")
+unit_id = "rifle_soldier"
+cell = Vector2i(15, 9)
+
+[sub_resource type="Resource" id="Resource_t3623"]
+script = ExtResource("3_i3547")
+unit_id = "jeep"
+cell = Vector2i(15, 8)
+
+[sub_resource type="Resource" id="Resource_gonas"]
+script = ExtResource("4_xjryc")
+start_s = 5.0
+enemy_id = "shambler"
+count = 75
+interval_s = 0.096
+
+[sub_resource type="Resource" id="Resource_liewg"]
+script = ExtResource("4_xjryc")
+start_s = 5.0
+enemy_id = "runner"
+count = 25
+interval_s = 0.16
+spawn_index = 1
+
+[sub_resource type="Resource" id="Resource_sbecs"]
+script = ExtResource("4_xjryc")
+start_s = 26.0
+enemy_id = "runner"
+count = 88
+interval_s = 0.064
+
+[sub_resource type="Resource" id="Resource_p74cy"]
+script = ExtResource("4_xjryc")
+start_s = 30.0
+enemy_id = "spitter"
+count = 9
+interval_s = 0.8
+spawn_index = 1
+
+[sub_resource type="Resource" id="Resource_fn160"]
+script = ExtResource("4_xjryc")
+start_s = 48.0
+enemy_id = "shambler"
+count = 225
+interval_s = 0.04
+spawn_index = 1
+
+[sub_resource type="Resource" id="Resource_lbunv"]
+script = ExtResource("4_xjryc")
+start_s = 54.0
+enemy_id = "brute"
+count = 9
+interval_s = 1.44
+
+[sub_resource type="Resource" id="Resource_ma7o1"]
+script = ExtResource("4_xjryc")
+start_s = 76.0
+enemy_id = "runner"
+count = 150
+interval_s = 0.04
+
+[sub_resource type="Resource" id="Resource_p2y53"]
+script = ExtResource("4_xjryc")
+start_s = 82.0
+enemy_id = "spitter"
+count = 16
+interval_s = 0.72
+spawn_index = 1
+
+[sub_resource type="Resource" id="Resource_4lyij"]
+script = ExtResource("4_xjryc")
+start_s = 100.0
+enemy_id = "shambler"
+count = 281
+interval_s = 0.032
+spawn_index = 1
+
+[sub_resource type="Resource" id="Resource_pit4x"]
+script = ExtResource("4_xjryc")
+start_s = 106.0
+enemy_id = "brute"
+count = 19
+interval_s = 0.8
+
+[sub_resource type="Resource" id="Resource_hrv83"]
+script = ExtResource("4_xjryc")
+start_s = 126.0
+enemy_id = "runner"
+count = 138
+interval_s = 0.048
+spawn_index = 1
+
+[sub_resource type="Resource" id="Resource_m3s78"]
+script = ExtResource("4_xjryc")
+start_s = 5.0
+enemy_id = "behemoth"
+count = 3
+interval_s = 6.4
+
+[sub_resource type="Resource" id="Resource_htb15"]
+script = ExtResource("4_xjryc")
+start_s = 14.0
+enemy_id = "behemoth"
+count = 3
+interval_s = 6.4
+spawn_index = 1
+
+[sub_resource type="Resource" id="Resource_wisnm"]
+script = ExtResource("4_xjryc")
+start_s = 30.0
+enemy_id = "sprinter"
+count = 50
+interval_s = 0.128
+spawn_index = 1
+
+[sub_resource type="Resource" id="Resource_vwulf"]
+script = ExtResource("4_xjryc")
+start_s = 55.0
+enemy_id = "spewer"
+count = 6
+interval_s = 1.6
+
+[sub_resource type="Resource" id="Resource_rexq7"]
+script = ExtResource("4_xjryc")
+start_s = 78.0
+enemy_id = "sprinter"
+count = 100
+interval_s = 0.08
+
+[sub_resource type="Resource" id="Resource_mp0fi"]
+script = ExtResource("4_xjryc")
+start_s = 105.0
+enemy_id = "spewer"
+count = 15
+interval_s = 0.8
+spawn_index = 1
+
+[sub_resource type="Resource" id="Resource_onftj"]
+script = ExtResource("4_xjryc")
+start_s = 118.0
+enemy_id = "sprinter"
+count = 125
+interval_s = 0.064
+spawn_index = 1
+
+[resource]
+script = ExtResource("2_mot3q")
+display_name = "Open Orders"
+map = ExtResource("1_3oif6")
+core_cell = Vector2i(8, 15)
+core_health = 900.0
+duration_s = 170.0
+spawn_cells = Array[Vector2i]([Vector2i(70, 4), Vector2i(70, 25)])
+path_cells = Array[Vector2i]([Vector2i(58, 15), Vector2i(40, 15), Vector2i(8, 15)])
+start_units = Array[ExtResource("3_i3547")]([SubResource("Resource_dsmhc"), SubResource("Resource_ftowh"), SubResource("Resource_ah2cw"), SubResource("Resource_n1oux"), SubResource("Resource_t3623")])
+waves = Array[ExtResource("4_xjryc")]([SubResource("Resource_gonas"), SubResource("Resource_liewg"), SubResource("Resource_sbecs"), SubResource("Resource_p74cy"), SubResource("Resource_fn160"), SubResource("Resource_lbunv"), SubResource("Resource_ma7o1"), SubResource("Resource_p2y53"), SubResource("Resource_4lyij"), SubResource("Resource_pit4x"), SubResource("Resource_hrv83"), SubResource("Resource_m3s78"), SubResource("Resource_htb15"), SubResource("Resource_wisnm"), SubResource("Resource_vwulf"), SubResource("Resource_rexq7"), SubResource("Resource_mp0fi"), SubResource("Resource_onftj")])
+deck_source = 1
+deck_id = "starter"
+doctrines = PackedStringArray()
+core_scenery_id = "hq_bunker"
+core_radius = 1.2
+weather = "dust"
+id = "x12_open_orders"

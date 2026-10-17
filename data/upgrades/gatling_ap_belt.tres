@@ -8,7 +8,7 @@ script = ExtResource("1_c2sa0")
 target_id = "gatling"
 property = "damage"
 op = 1
-value = 2.2
+value = 3.2
 
 [sub_resource type="Resource" id="Resource_ecqhh"]
 script = ExtResource("1_c2sa0")
@@ -27,7 +27,7 @@ value = 1.0
 [resource]
 script = ExtResource("2_324eh")
 display_name = "Armour-Piercing Belt"
-description = "Rounds hit more than twice as hard and go for armoured targets first, but the gun fires 40 % slower."
+description = "Rounds hit more than three times as hard and go for armoured targets first, but the gun fires 40 % slower."
 card_id = "gatling_gun"
 patches = Array[ExtResource("1_c2sa0")]([SubResource("Resource_ugdbq"), SubResource("Resource_ecqhh"), SubResource("Resource_rfvkb")])
 id = "gatling_ap_belt"

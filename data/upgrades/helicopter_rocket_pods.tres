@@ -7,19 +7,19 @@
 script = ExtResource("1_3qfv6")
 target_id = "heli_missile"
 property = "ammo"
-value = 4.0
+value = 3.0
 
 [sub_resource type="Resource" id="Resource_h82cl"]
 script = ExtResource("1_3qfv6")
 target_id = "heli_missile"
 property = "damage"
 op = 1
-value = 1.3
+value = 1.1
 
 [resource]
 script = ExtResource("2_hplgv")
 display_name = "Rocket Pods"
-description = "Four more rockets, each 30 % stronger."
+description = "Three more rockets, each 10 % stronger."
 card_id = "helicopter_support"
 patches = Array[ExtResource("1_3qfv6")]([SubResource("Resource_w6gcw"), SubResource("Resource_h82cl")])
 id = "helicopter_rocket_pods"

@@ -6,7 +6,7 @@
 script = ExtResource("1_camp")
 id = "main"
 display_name = "Last Defense"
-mission_ids = PackedStringArray("m1_hold_the_crossing", "m2_card_defense", "m3_combined_arms", "x1_fortified_crossing", "x2_outskirts", "x3_storm_night", "x4_field_orders", "x5_field_works", "x6_high_tech", "x7_bridge_line", "x8_dead_highway", "x9_last_airfield", "x10_town_siege", "x11_mountain_pass")
+mission_ids = PackedStringArray("m1_hold_the_crossing", "m2_card_defense", "m3_combined_arms", "x1_fortified_crossing", "x2_outskirts", "x3_storm_night", "x4_field_orders", "x5_field_works", "x6_high_tech", "x12_open_orders", "x7_bridge_line", "x8_dead_highway", "x9_last_airfield", "x10_town_siege", "x11_mountain_pass")
 reward_pools = {
 "m1_hold_the_crossing": PackedStringArray("rpg_team", "sandbags", "scout_jeep", "marksman_team", "crates", "rifle_long_barrels", "rifle_body_armor"),
 "m2_card_defense": PackedStringArray("marksman_team", "scout_jeep", "sandbags", "barrier", "fuel_drums", "quick_draw", "gatling_crowd_spray", "gatling_ap_belt"),
@@ -17,6 +17,7 @@ reward_pools = {
 "x4_field_orders": PackedStringArray("minefield", "noise_lure", "quick_draw", "supply_drop", "hollow_points", "fortify"),
 "x5_field_works": PackedStringArray("barracks", "convoy", "minefield", "noise_lure", "hollow_points"),
 "x6_high_tech": PackedStringArray("combat_drones", "convoy", "close_air_support", "missile_strike"),
+"x12_open_orders": PackedStringArray("close_air_support", "missile_strike", "convoy", "combat_drones", "barracks", "helicopter_extended_station", "tank_reactive_armor"),
 "x7_bridge_line": PackedStringArray("close_air_support", "missile_strike", "rocket_launcher", "combat_drones", "barracks"),
 "x8_dead_highway": PackedStringArray("naval_gunfire", "close_air_support", "missile_strike", "ifv", "combat_drones"),
 "x9_last_airfield": PackedStringArray("missile_strike", "hypersonic_missile", "naval_gunfire", "combat_drones"),

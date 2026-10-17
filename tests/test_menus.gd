@@ -149,6 +149,7 @@ func test_every_mission_is_listed_exactly_once() -> void:
 
 
 func test_missions_come_first_then_test_missions_each_sorted() -> void:
+	var camp := _get_db().main_campaign()
 	var list := MissionListing.entries(_get_db())
 	var in_tests := false
 	var prev_id := ""
@@ -157,7 +158,9 @@ func test_missions_come_first_then_test_missions_each_sorted() -> void:
 		if e.group != prev_group:
 			prev_id = ""
 			prev_group = e.group
-		assert_true(prev_id.is_empty() or MissionListing.id_less(prev_id, e.id), "%s sorted inside %s" % [e.id, e.group])
+		# the campaign missions come in the campaign's order, everything else by id
+		var ordered := prev_id.is_empty() or (camp.index_of(prev_id) >= 0 and camp.index_of(e.id) >= 0 and camp.index_of(prev_id) < camp.index_of(e.id)) or (camp.index_of(prev_id) < 0 and camp.index_of(e.id) < 0 and MissionListing.id_less(prev_id, e.id))
+		assert_true(ordered, "%s sorted inside %s" % [e.id, e.group])
 		prev_id = e.id
 		if e.group == MissionListing.GROUP_TESTS:
 			in_tests = true
