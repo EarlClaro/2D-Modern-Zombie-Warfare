@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.10 Card and autonomy balance sweep (2026-10-17; branch m3-10-sweep)
+- **Costs:** Helicopter Support 5 to 4 CP; Close Air Support 6 to 5; Missile Strike 6 to 5; Naval Gunfire 7 to 6 (numbers and method in BALANCE.md "3.10").
+- **Decision:** the six strike cards are not added to the campaign decks. Tried in `field_arms`, `field_siege`, `fortified` and `combined_arms`, they made every mission harder (x10 5/8 to 2/8, x9 2-3/4 to 1/6). They remain in the `strikes` deck as a late tier for the unlock system.
+- **Balance bot:** the mix bot does not hold its CP for a strike costing more than 5 CP (`STRIKE_SAVE_MAX_COST` in `tools/tune_cards.gd`).
+- **Tests:** 890 pass, 0 failed.
+
 ## Cleanup chores (2026-10-17; branch m3-cleanup)
 - **Mission numbers:** the F4 missions are now `x7_bridge_line`, `x8_dead_highway`, `x9_last_airfield`, `x10_town_siege`, `x11_mountain_pass` (no clash with `x6_high_tech`). Older changelog and balance entries keep the old x6..x10 names.
 - **Balance bot:** plays order, supply, deck, reinforcement, drone, trap and intel cards (`tools/tune_cards.gd`), so the state-card and field-works missions can be judged.

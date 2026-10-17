@@ -23,6 +23,7 @@ const DT: float = 1.0 / 60.0
 const REACT_TICKS: int = 15  # bots look at the table 4 times a second
 const MAX_TICKS: int = 60 * 400
 const SAVE_PATIENCE_S: float = 16.0
+const STRIKE_SAVE_MAX_COST: int = 5  # the mix bot never holds its CP for a strike dearer than this
 
 var _patterns: Array[String] = ["idle", "spam", "cheap", "mix"]
 var _seeds: int = 10
@@ -276,6 +277,8 @@ func _act(b: BattleController, pattern: String, r: Result) -> void:
 
 ## Saving for `card` is worth it when it is within reach soon and the horde is not already at the core.
 func _worth_waiting(b: BattleController, card: CardDefinition) -> bool:
+	if card.card_kind == CardDefinition.CardKind.OPERATION and card.cost > STRIKE_SAVE_MAX_COST:
+		return false  # a big strike is opportunistic: a player keeps the army growing meanwhile instead of freezing the bank
 	var core_c := IsoProjection.cell_center(b.mission.core_cell)
 	for e in b.enemies:
 		if e.is_alive() and e.ground_pos.distance_to(core_c) < 6.0:
