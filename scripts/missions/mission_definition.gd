@@ -16,6 +16,8 @@ extends ContentDefinition
 ## `path_cells` is then optional and ignored, and every spawn must be able to reach the core.
 enum Routing { WAYPOINTS, FLOW }
 @export var routing: Routing = Routing.WAYPOINTS
+## Flow missions only: enemies that overlap push each other apart (`Separation`) so a horde does not stack on one point.
+@export var separation: bool = true
 @export var start_units: Array[StartUnit] = []
 @export var waves: Array[WaveEntry] = []
 ## Optional: the deck id the player draws from (empty = no cards, as in M1 missions).

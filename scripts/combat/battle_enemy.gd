@@ -24,6 +24,8 @@ var _wp_index: int = 0
 var _flow: FlowField = null  # set for missions with flow routing; then the waypoints are unused
 var _lane: Vector2 = Vector2.ZERO  # the fixed sideways offset of this walker's lane, so a column spreads instead of stacking
 var _heading: Vector2 = Vector2.ZERO
+var push: Vector2 = Vector2.ZERO  # separation: extra velocity (tiles per second) away from overlapping enemies, refreshed on the steering schedule
+var sep_index: int = -1  # this enemy's slot in the controller's separation snapshot (-1 = not in it yet)
 var steer_lookups: int = 0  # how many times the heading was looked up (the stagger keeps this near ticks / STEER_EVERY)
 var _anim_t: float = 0.0  # walk-cycle clock; only advances while the enemy actually moves
 var _frame: int = 0
@@ -76,13 +78,13 @@ func advance_flow(delta: float, tick: int) -> void:
 		_heading = _look_up_heading()
 	if _heading == Vector2.ZERO:
 		return
-	var step := _heading * (def.move_speed * delta)
+	var step := (_heading * def.move_speed + push) * delta
 	var to := _flow.slide(ground_pos, step)
 	if to.distance_squared_to(ground_pos) < step.length_squared() * 0.25:
 		# the heading runs into an obstacle with no way along it: take the heading of the cell stood in, which always
 		# leads to open ground
 		_heading = _flow.direction_at(Vector2(floorf(ground_pos.x) + 0.5, floorf(ground_pos.y) + 0.5))
-		step = _heading * (def.move_speed * delta)
+		step = (_heading * def.move_speed + push) * delta
 		to = _flow.slide(ground_pos, step)
 	face_toward(ground_pos + _heading)
 	ground_pos = to
