@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.11 Flow-field movement, part 2 of 3: missions and enemies use it (2026-10-17)
+- `MissionDefinition.routing` (`WAYPOINTS` default, `FLOW`). A flow mission needs no `path_cells`; `ContentDb` rejects a spawn that has no way to the core round terrain and scenery (and skips the waypoint scenery rule for flow missions). `ContentDb.scenery_cells(map)` lists the cells scenery covers.
+- `BattleController` builds one `FlowField` per flow mission at setup (terrain and scenery block; units, structures and the core do not) and traces each spawn's `Route` along it, so kiting units still know "forward". `BattleEnemy.advance(delta, tick)` steers by it: the heading is looked up every 4th tick (staggered by uid) at the enemy's fixed lane offset, the step never enters a closed cell (it slides along it), the lane is dropped when it would reach into an obstacle, and a blocked step falls back to the heading of the cell stood in. Found and fixed with a test: a lane pointing into a wall made walkers stand at it forever.
+- New dev mission `dev_flow_outskirts` (the outskirts map with flow routing, no waypoints, a fifth of the waves). Ran 150 s on 3 seeds with an unbreakable core (406 enemies each): none stuck, none on a closed cell.
+- Waypoint missions are unchanged: 12 whole-battle digests (6 missions x 2 seeds x 100 s) identical to before. 23 new tests (944 in all); mutation check 18/18 after closing 10 gaps and removing one redundant check.
+
 ## 3.11 Flow-field movement, part 1 of 3: the field (2026-10-17)
 - New pure `FlowField` (`scripts/combat/flow_field.gd`, ADR-012): a distance map from the goal over open ground cells (8-neighbour, no corner cutting, goal always open, unreachable cells flagged), a heading per cell from its shortest-path parents (equal ways round an obstacle pick one instead of cancelling), a blended `direction_at`, a wall-sliding `slide` step so a walker follows an obstacle instead of cutting its corner, `trace` for the route from a point, and `open_grid(map, blocked)`. Nothing uses it yet: no mission changes. 25 new tests (921 in all); mutation check 25/26 with the survivor equivalent (a performance-only guard).
 

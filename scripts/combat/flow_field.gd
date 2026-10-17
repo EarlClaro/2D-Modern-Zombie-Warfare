@@ -58,6 +58,11 @@ func is_open(cell: Vector2i) -> bool:
 	return _in_bounds(cell.x, cell.y) and _open[cell.y * width + cell.x] == 1
 
 
+## True if the ground position `p` lies on an open cell.
+func open_at(p: Vector2) -> bool:
+	return is_open(Vector2i(floori(p.x), floori(p.y)))
+
+
 ## True if an enemy standing in `cell` has a way to the goal.
 func reachable(cell: Vector2i) -> bool:
 	return _in_bounds(cell.x, cell.y) and _dist[cell.y * width + cell.x] < UNREACHABLE * 0.5

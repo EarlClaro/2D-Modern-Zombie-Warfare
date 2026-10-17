@@ -303,3 +303,12 @@ func test_the_heap_hands_out_the_smallest_key_first() -> void:
 		last = k
 		n += 1
 	assert_eq(n, keys.size())
+
+
+func test_open_at_tells_open_ground_from_walls_and_outside() -> void:
+	var f := _field(["..#", "..."], Vector2i(0, 0))
+	assert_true(f.open_at(Vector2(0.5, 0.5)))
+	assert_true(f.open_at(Vector2(1.99, 1.99)))
+	assert_true(not f.open_at(Vector2(2.5, 0.5)), "a wall cell")
+	assert_true(not f.open_at(Vector2(-0.1, 0.5)), "outside the map")
+	assert_true(not f.open_at(Vector2(0.5, 5.0)), "outside the map")

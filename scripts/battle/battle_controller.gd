@@ -152,6 +152,7 @@ var _wave_count: Array[int] = []  # enemies each wave entry sends at this diffic
 var _wave_gap: Array[float] = []  # seconds between its enemies at this difficulty
 var _difficulty: DifficultyDefinition
 var _waypoints: Array[Vector2] = []
+var _flow: FlowField = null  # the shared flow field of a mission with flow routing (null for waypoint missions)
 var _routes: Array[Route] = []  # one per enemy spawn: spawn -> path -> core (where kiting units scout and fall back)
 var _spawn_points: PackedVector2Array = PackedVector2Array()
 var _kite_scan: KiteScan = KiteScan.new()
@@ -303,13 +304,19 @@ func setup(p_db: ContentDb, p_mission: MissionDefinition, p_seed: int) -> void:
 	_waypoints.clear()
 	for c in mission.path_cells:
 		_waypoints.append(IsoProjection.cell_center(c))
+	_flow = null
+	if mission.routing == MissionDefinition.Routing.FLOW:
+		_flow = FlowField.build(mission.map.width(), mission.map.height(), FlowField.open_grid(mission.map, db.scenery_cells(mission.map)), mission.core_cell)
 	_routes.clear()
 	_spawn_points.clear()
 	for sc in mission.spawn_cells:
 		var pts := PackedVector2Array()
 		pts.append(IsoProjection.cell_center(sc))
-		for wp in _waypoints:
-			pts.append(wp)
+		if _flow != null:
+			pts = _flow.trace(IsoProjection.cell_center(sc), 1.0)
+		else:
+			for wp in _waypoints:
+				pts.append(wp)
 		_routes.append(Route.from_points(pts))
 		_spawn_points.append(IsoProjection.cell_center(sc))
 	_rules = MissionRules.new(mission.duration_s)
@@ -489,7 +496,7 @@ func _enemy_phase(delta: float) -> void:
 			e.attack_state.tick(delta, false)
 			if not (has_lures and _steer_to_lure(e, delta)):
 				e.lure_clear = false
-				e.advance_path(delta)
+				e.advance(delta, _tick)
 		_enemy_index.add(e, e.ground_pos)
 		var core_d2 := e.ground_pos.distance_squared_to(core_pos)
 		if core_d2 < front_d2:
@@ -1400,11 +1407,12 @@ func _spawn_enemy(w: WaveEntry) -> void:
 	var start := IsoProjection.cell_center(mission.spawn_cells[w.spawn_index]) + _jitter(SPAWN_JITTER)
 	var lane := _jitter(LANE_JITTER)
 	var path: Array[Vector2] = []
-	for wp in _waypoints:
-		path.append(wp + lane)
+	if _flow == null:
+		for wp in _waypoints:
+			path.append(wp + lane)
 	var e := BattleEnemy.new()
 	e.name = "Enemy%d" % _next_uid
-	e.setup(_next_uid, def, start, path)
+	e.setup(_next_uid, def, start, path, _flow, lane)
 	_next_uid += 1
 	_entities.add_child(e)
 	e.shadow = _add_shadow(e, def.footprint_radius + 0.1)

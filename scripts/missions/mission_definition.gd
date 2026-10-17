@@ -11,6 +11,11 @@ extends ContentDefinition
 @export var duration_s: float = 0.0
 @export var spawn_cells: Array[Vector2i] = []
 @export var path_cells: Array[Vector2i] = []
+## How enemies find their way (ADR-012). WAYPOINTS: straight segments through `path_cells`, which must be clear of scenery
+## (the default, so no older mission changes). FLOW: they steer down a flow field from the core around terrain and scenery;
+## `path_cells` is then optional and ignored, and every spawn must be able to reach the core.
+enum Routing { WAYPOINTS, FLOW }
+@export var routing: Routing = Routing.WAYPOINTS
 @export var start_units: Array[StartUnit] = []
 @export var waves: Array[WaveEntry] = []
 ## Optional: the deck id the player draws from (empty = no cards, as in M1 missions).
@@ -106,6 +111,8 @@ func _validate_geometry(errs: PackedStringArray) -> void:
 	for s in spawn_cells:
 		if not map.is_walkable(s):
 			errs.append(_err("spawn cell %s is out of bounds or blocked" % _cell_name(s)))
+	if routing == Routing.FLOW:
+		return  # the flow field finds the way; whether every spawn can reach the core is checked by ContentDb (it needs the scenery)
 	if path_cells.is_empty():
 		errs.append(_err("path_cells is empty"))
 		return

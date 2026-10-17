@@ -7,6 +7,9 @@ const CHEST_PX: float = 18.0
 const ATTACK_ANIM_S: float = 0.25  # how long the attack frame shows after a swing
 const STAGGER_PX: float = 2.5
 const STAGGER_RECOVER_PX_PER_S: float = 40.0
+## A flow-field walker looks up its heading only every STEER_EVERY-th tick (staggered by uid): the field changes slowly and
+## the lookup is the most expensive part of the walk (ADR-012).
+const STEER_EVERY: int = 4
 
 var uid: int = 0
 var def: EnemyDefinition
@@ -18,15 +21,22 @@ var shadow: IsoShadow
 var lure_clear: bool = false
 var _waypoints: Array[Vector2] = []
 var _wp_index: int = 0
+var _flow: FlowField = null  # set for missions with flow routing; then the waypoints are unused
+var _lane: Vector2 = Vector2.ZERO  # the fixed sideways offset of this walker's lane, so a column spreads instead of stacking
+var _heading: Vector2 = Vector2.ZERO
+var steer_lookups: int = 0  # how many times the heading was looked up (the stagger keeps this near ticks / STEER_EVERY)
 var _anim_t: float = 0.0  # walk-cycle clock; only advances while the enemy actually moves
 var _frame: int = 0
 var _prev_ground: Vector2 = Vector2.ZERO
 var _stagger: Vector2 = Vector2.ZERO  # draw-only offset from being shot; never moves the sort anchor
 
 
-func setup(p_uid: int, p_def: EnemyDefinition, start_ground: Vector2, waypoints: Array[Vector2]) -> void:
+func setup(p_uid: int, p_def: EnemyDefinition, start_ground: Vector2, waypoints: Array[Vector2], p_flow: FlowField = null, p_lane: Vector2 = Vector2.ZERO) -> void:
 	uid = p_uid
 	def = p_def
+	_flow = p_flow
+	_lane = p_lane
+	_heading = Vector2.ZERO
 	health = Health.new(p_def.max_health)
 	attack_state = WeaponState.new(p_def.attack_interval_s)
 	_waypoints = waypoints
@@ -49,6 +59,46 @@ func face_toward(target_ground: Vector2) -> void:
 
 func has_reached_end() -> bool:
 	return _wp_index >= _waypoints.size()
+
+
+## One tick of walking: down the flow field if the mission has one, else along the waypoints. `tick` is the battle's tick
+## counter (it staggers the heading lookups).
+func advance(delta: float, tick: int) -> void:
+	if _flow != null:
+		advance_flow(delta, tick)
+	else:
+		advance_path(delta)
+
+
+## Walks down the flow field at `def.move_speed`; never into a closed cell (it slides along an obstacle instead).
+func advance_flow(delta: float, tick: int) -> void:
+	if _heading == Vector2.ZERO or (tick + uid) % STEER_EVERY == 0:
+		_heading = _look_up_heading()
+	if _heading == Vector2.ZERO:
+		return
+	var step := _heading * (def.move_speed * delta)
+	var to := _flow.slide(ground_pos, step)
+	if to.distance_squared_to(ground_pos) < step.length_squared() * 0.25:
+		# the heading runs into an obstacle with no way along it: take the heading of the cell stood in, which always
+		# leads to open ground
+		_heading = _flow.direction_at(Vector2(floorf(ground_pos.x) + 0.5, floorf(ground_pos.y) + 0.5))
+		step = _heading * (def.move_speed * delta)
+		to = _flow.slide(ground_pos, step)
+	face_toward(ground_pos + _heading)
+	ground_pos = to
+
+
+## The heading at this walker's lane. The lane offset (less than a cell) is dropped when it would reach into an obstacle
+## (the open cells beyond a wall point somewhere else), so the lane only ever spreads a column over ground that is open.
+func _look_up_heading() -> Vector2:
+	steer_lookups += 1
+	var at := ground_pos + _lane
+	if not _flow.open_at(at):
+		at = ground_pos
+	var h := _flow.direction_at(at)
+	if h == Vector2.ZERO:
+		h = _flow.direction_at(ground_pos)
+	return h
 
 
 ## Walk toward the current waypoint at `def.move_speed` (ground space).
