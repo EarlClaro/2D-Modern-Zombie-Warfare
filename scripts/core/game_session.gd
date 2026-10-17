@@ -7,6 +7,9 @@ const MENU_SCENE: String = "res://scenes/menu/main_menu.tscn"
 const BATTLE_SCENE: String = "res://scenes/battle/battle.tscn"
 
 static var _settings: GameSettings = null
+static var _profile: PlayerProfile = null
+## What loading the profile found (a ProfileStore.Status); the main menu shows `ProfileStore.note_for` of it.
+static var profile_load: ProfileStore.LoadResult = null
 ## The mission the menu chose for the next battle ("" = none, the battle uses its own default) and its seed (0 = default).
 static var pending_mission: String = ""
 static var pending_seed: int = 0
@@ -19,6 +22,26 @@ static func settings() -> GameSettings:
 	if _settings == null:
 		_settings = GameSettings.load_from()
 	return _settings
+
+
+## The player's profile (docs/specs/progression.md), loaded from disk on first use with the content in `db` (a database is
+## loaded for the purpose when none is given). Loading never fails: the worst case is a fresh profile.
+static func profile(db: ContentDb = null) -> PlayerProfile:
+	if _profile == null:
+		var content := db if db != null else ContentDb.load_from()
+		profile_load = ProfileStore.load_from(content)
+		_profile = profile_load.profile
+	return _profile
+
+
+## Replaces the shared profile (tests, and "reset progress").
+static func set_profile(p: PlayerProfile) -> void:
+	_profile = p
+
+
+## Writes the shared profile; false when there is none loaded, it is read-only, or the disk refused.
+static func save_profile() -> bool:
+	return _profile != null and ProfileStore.save(_profile)
 
 
 ## Replaces the shared settings (tests, and "reset to defaults").

@@ -83,6 +83,9 @@ A Sortie card flies one aircraft along a `SortiePlan` (pure: nearest map edge ->
 ## Presentation (as built, M1.5)
 `BattleFeedback` (a child of the battle) is the only presenter: it subscribes to controller signals and spawns transient effects on the controller's Fx layer, plays sounds through `SfxService`, shakes the camera and flashes/kicks entities. Rules never read anything it produces (verified by a test that runs the same battle with and without it). Entities carry only cosmetic helpers (`IsoEntity.flash`, `play_death`, `BattleUnit.kick`). Sound pooling is pure logic (`SfxVoicePool`).
 
+## Progression profile (as built, M5.1)
+`scripts/progression/`: `PlayerProfile` is plain data (collection, deck, doctrines, finished missions, reward offers) with `to_dict` / `from_dict` that never fail and `sanitize(db)` that drops unknown ids and repairs an illegal deck; `ProfileStore` reads and writes `user://profile.json` (every function takes a path; temporary file then swap, `.bak` of the last good file, damaged files set aside, newer files read-only); `ProfileMigration` upgrades old files one version step at a time. `GameSession.profile()` holds the shared profile like it holds the settings (no autoload). Battle, combat and card code never read it. Spec: [progression.md](specs/progression.md).
+
 ## Key design choices
 - **Pure logic classes** (`RefCounted`, no Node dependency) for IsoProjection, DamageService, DeckState, CommandPoints, objective evaluation → trivially headless-testable.
 - **Definitions vs runtime**: `CardDefinition` (Resource, immutable) vs `CardRuntime`/`DeckState` entries (id + mutable lockout).

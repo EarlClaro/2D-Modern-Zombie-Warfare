@@ -1,5 +1,11 @@
 # Changelog
 
+## 5.1 Player profile and safe save (2026-10-17; Milestone 5, branch m5-progression)
+- **Spec and decision:** `docs/specs/progression.md`, ADR-017 (hybrid decks, pick 1 of 3 rewards, linear campaign, one profile).
+- **New:** `PlayerProfile` (collection, deck, doctrines, finished missions, reward offers; tolerant dictionary round trip; `sanitize` drops content the game no longer has and repairs an illegal deck), `ProfileStore` (`user://profile.json`: temporary file then swap, last good file kept as `.bak`, a damaged file is set aside as `.corrupt-<time>.json` and never deleted, a file from a newer game is read-only), `ProfileMigration` (version steps, a file without a version counts as 0), `GameSession.profile()`.
+- **Nothing in the game reads it yet:** menus, unlocks, rewards and the deck editor are 5.2 to 5.4.
+- **Tests:** 24 new (920 in all, 0 failed).
+
 ## 3.10 Card and autonomy balance sweep (2026-10-17)
 - `tools/tune_cards.gd`: the bots now play the 3.5-3.9 card kinds (orders, supply, deck, mines, lure, convoy, drones) and take `--difficulty=`.
 - Hard is x1.2 now (was x1.5: the decent-player bot won 0/10 on every mission at x1.5, 3-4/10 at x1.25 on `m2_card_defense`). `DifficultyDefinition.max_total_enemies` (hard = 2000) keeps a bigger level under about 2,000 enemies (the F5 frame budget) and never below normal; on `x2_outskirts`, `x3_storm_night` and `x9_town_siege` hard is the same as normal.
