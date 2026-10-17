@@ -197,4 +197,4 @@ core_scenery_id = "hq_bunker"
 core_radius = 1.2
 time_of_day = 0.12
 weather = "fog"
-id = "x9_town_siege"
+id = "x10_town_siege"

@@ -315,7 +315,53 @@ func _choose_cell(b: BattleController, card: CardDefinition, pattern: String) ->
 		CardDefinition.CardKind.SORTIE:
 			var need_s := 1 if pattern == "spam" else 7
 			return _crowd_cell(b, 6.0, need_s, 0.0)
+		CardDefinition.CardKind.ORDER, CardDefinition.CardKind.SUPPLY, CardDefinition.CardKind.DECK, CardDefinition.CardKind.REINFORCEMENT, CardDefinition.CardKind.SUPPORT_TECH:
+			return Vector2i.ZERO if _instant_is_worth_it(b, card, pattern) else none  # these take no cell: any cell will do
+		CardDefinition.CardKind.TRAP:  # a minefield on the route, a good way out from the core
+			return _route_cell(b, 15.0)
+		CardDefinition.CardKind.INTEL:  # a lure where the crowd is thickest, or further up the route
+			var crowd := _crowd_cell(b, 6.0, 8, 0.0)
+			return crowd if crowd.x > -999 else none
 	return none
+
+
+## When a bot plays a card that needs no target. `spam` plays them as soon as they are playable; the others wait for a reason.
+func _instant_is_worth_it(b: BattleController, card: CardDefinition, pattern: String) -> bool:
+	if pattern == "spam":
+		return true
+	var core_c := IsoProjection.cell_center(b.mission.core_cell)
+	var near_core := 0
+	var alive := 0
+	var near_units := 0
+	for e in b.enemies:
+		if not e.is_alive():
+			continue
+		alive += 1
+		if e.ground_pos.distance_to(core_c) < 10.0:
+			near_core += 1
+		for u in b.units:
+			if u.is_alive() and not u.def.is_air() and u.ground_pos.distance_to(e.ground_pos) < 6.0:
+				near_units += 1
+				break
+	match card.card_kind:
+		CardDefinition.CardKind.ORDER:  # an order that protects the troops: when they are in a fight
+			return near_units >= 8
+		CardDefinition.CardKind.SUPPLY:  # command points: when the bank is low
+			return b.points.cp <= b.points.cap - 3.0 and b.points.cp < 4.0
+		CardDefinition.CardKind.DECK:  # draw: when the hand has room for two
+			return b.deck.hand.size() <= b.db.deck_rules.hand_cap - 2
+		CardDefinition.CardKind.REINFORCEMENT:  # reinforcements: when the base is under pressure or the army is thin
+			return near_core >= 10 or (b.units.size() < 4 and alive >= 20)
+		CardDefinition.CardKind.SUPPORT_TECH:  # drones: when there is something worth hunting
+			return alive >= 15
+	return false
+
+
+## The cell on the first enemy route `dist` tiles from the core along it.
+func _route_cell(b: BattleController, dist: float) -> Vector2i:
+	if b._routes.is_empty() or b._routes[0].is_empty():
+		return Vector2i(-1000, -1000)
+	return IsoProjection.cell_of(b._routes[0].point_at(dist))
 
 
 ## Where along the lane (spawn -> core) a card wants to stand, as a distance from the core.

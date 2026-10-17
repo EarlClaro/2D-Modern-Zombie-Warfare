@@ -179,4 +179,4 @@ core_scenery_id = "hq_bunker"
 core_radius = 1.2
 time_of_day = 0.45
 weather = "rain"
-id = "x6_bridge_line"
+id = "x7_bridge_line"

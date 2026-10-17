@@ -2,39 +2,59 @@
 
 [ext_resource type="Resource" path="res://data/maps/crossing.tres" id="1_map"]
 [ext_resource type="Script" path="res://scripts/missions/mission_definition.gd" id="2_mission"]
+[ext_resource type="Script" path="res://scripts/missions/start_unit.gd" id="3_jkjld"]
 [ext_resource type="Script" path="res://scripts/missions/wave_entry.gd" id="3_wave"]
 
-[sub_resource type="Resource" id="Resource_w1"]
+[sub_resource type="Resource" id="Resource_a40ci"]
 script = ExtResource("3_wave")
 start_s = 4.0
 enemy_id = "shambler"
-count = 30
-interval_s = 0.2
+count = 29
+interval_s = 0.20512820512820515
 
-[sub_resource type="Resource" id="Resource_w2"]
+[sub_resource type="Resource" id="Resource_pta12"]
 script = ExtResource("3_wave")
 start_s = 25.0
 enemy_id = "shambler"
-count = 100
-interval_s = 0.1
+count = 98
+interval_s = 0.10256410256410257
 
-[sub_resource type="Resource" id="Resource_w3"]
+[sub_resource type="Resource" id="Resource_ajonn"]
 script = ExtResource("3_wave")
 start_s = 55.0
 enemy_id = "shambler"
-count = 220
-interval_s = 0.07
+count = 215
+interval_s = 0.0717948717948718
 
-[sub_resource type="Resource" id="Resource_w4"]
+[sub_resource type="Resource" id="Resource_bkth4"]
 script = ExtResource("3_wave")
 start_s = 85.0
 enemy_id = "shambler"
-count = 360
-interval_s = 0.05
+count = 351
+interval_s = 0.05128205128205129
+
+[sub_resource type="Resource" id="Resource_2tjng"]
+script = ExtResource("3_wave")
+start_s = 30.0
+enemy_id = "behemoth"
+interval_s = 2.0
+
+[sub_resource type="Resource" id="Resource_xcahf"]
+script = ExtResource("3_wave")
+start_s = 55.0
+enemy_id = "sprinter"
+count = 33
+interval_s = 0.12
+
+[sub_resource type="Resource" id="Resource_4u2x8"]
+script = ExtResource("3_wave")
+start_s = 75.0
+enemy_id = "spewer"
+count = 7
+interval_s = 1.1
 
 [resource]
 script = ExtResource("2_mission")
-id = "x5_field_works"
 display_name = "Field Works (entity cards)"
 map = ExtResource("1_map")
 core_cell = Vector2i(3, 20)
@@ -42,6 +62,7 @@ core_health = 500.0
 duration_s = 120.0
 spawn_cells = Array[Vector2i]([Vector2i(20, 3)])
 path_cells = Array[Vector2i]([Vector2i(3, 20)])
-waves = Array[ExtResource("3_wave")]([SubResource("Resource_w1"), SubResource("Resource_w2"), SubResource("Resource_w3"), SubResource("Resource_w4")])
+waves = Array[ExtResource("3_wave")]([SubResource("Resource_a40ci"), SubResource("Resource_pta12"), SubResource("Resource_ajonn"), SubResource("Resource_bkth4"), SubResource("Resource_2tjng"), SubResource("Resource_xcahf"), SubResource("Resource_4u2x8")])
 deck_id = "field_works"
-deploy_radius = 0.0
+doctrines = PackedStringArray()
+id = "x5_field_works"

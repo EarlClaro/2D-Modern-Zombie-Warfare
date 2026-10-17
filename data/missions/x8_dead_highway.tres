@@ -179,4 +179,4 @@ doctrines = PackedStringArray()
 core_scenery_id = "hq_bunker"
 core_radius = 1.2
 weather = "dust"
-id = "x7_dead_highway"
+id = "x8_dead_highway"

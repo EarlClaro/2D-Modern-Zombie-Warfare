@@ -292,16 +292,21 @@ Intent: the more a strike costs and the longer it is locked out, the bigger and 
 | x1_fortified_crossing | 706 (1.5x + specials) | 0/4 | 0/4 | 2/4, core 50 % |
 | x2_outskirts (and x3) | 2,032 (1.4x + specials) | 0/4 | 0/4 | 3/4, core 59 % |
 | x4_field_orders | 747 (1.0x + specials; the bot plays no state cards) | 0/4 | 3/4 | 3/4 |
-| x6_bridge_line | 828 (0.45 of the first draft) | 0/4 | 3/4 | **3/6**, core 47 % |
-| x7_dead_highway | 1,068 (0.5) | 0/4 | 4/4 | 2/4 |
-| x8_last_airfield | 1,460 (0.7) | 0/4 | 4/4 | 3/4 |
-| x9_town_siege | 2,042 (0.85) | 0/4 | 0/4 | 2/4 |
-| x10_mountain_pass | 1,519 (0.62) | 0/4 at 0.55 | 3/4 at 0.55 | 4/4 at 0.55, 1/6 at 0.7: **0.62 chosen in between and not swept** |
+| x7_bridge_line | 828 (0.45 of the first draft) | 0/4 | 3/4 | **3/6**, core 47 % |
+| x8_dead_highway | 1,068 (0.5) | 0/4 | 4/4 | 2/4 |
+| x9_last_airfield | 1,460 (0.7) | 0/4 | 4/4 | 3/4 |
+| x10_town_siege | 2,042 (0.85) | 0/4 | 0/4 | 2/4 |
+| x11_mountain_pass | 1,519 (0.62) | 0/4 at 0.55 | 3/4 at 0.55 | 4/4 at 0.55, 1/6 at 0.7: **0.62 chosen in between and not swept** |
 Reading: nothing is won by doing nothing; the saving player wins about half to three quarters; `cheap` spam is hard on the oldest missions and fine on the new ones (their decks hold cheap, strong cards: scout, mortar, marksman). Seeds are few and the win count is noisy (one seed is 25 points), so treat each cell as plus or minus one win. x4 cannot be judged with these bots (they never play order or supply cards).
 
-**Performance of the bigger missions** (a scratch script, step only, starting defenders only, core made unbreakable so nothing is held back): `x2_outskirts` 2,032 enemies: avg 5.8 ms a step, worst 23 ms, peak 1,924 alive; `x9_town_siege` 2,042: avg 6.8 ms, worst 47 ms once, peak 1,724 alive. In real play the army kills many, so this is the upper bound. Rendering is not included.
+**Performance of the bigger missions** (a scratch script, step only, starting defenders only, core made unbreakable so nothing is held back): `x2_outskirts` 2,032 enemies: avg 5.8 ms a step, worst 23 ms, peak 1,924 alive; `x10_town_siege` 2,042: avg 6.8 ms, worst 47 ms once, peak 1,724 alive. In real play the army kills many, so this is the upper bound. Rendering is not included.
 
 **Left for a human:** feel (is it fun to lose to a Behemoth?), the unmeasured value of Mountain Pass, the rocket salvo landing all six rockets on one spot, state-card use in x4, and a seed sweep above 6.
 
 ### F5 follow-up: shell scatter (playtest fixes, 2026-10-17)
 Shells now scatter: `scatter_tiles` on a weapon (rocket salvo 2.6, howitzer 1.2, mortar 1.0; others 0), uniform over a disc from the shell RNG, so a six-rocket salvo covers an area instead of one point. This weakens artillery a little, so the mix bot was re-swept (same bot, 4 to 8 seeds): Mountain Pass at its final 0.62 **4/6** (core 67 %); Outskirts 2/4; Dead Highway 2/4; Last Airfield 2/4 (was 3/4); Bridge Line 1/4 at 0.45, then **4/8** at 0.4 (734 enemies); Town Siege 1/4 at 0.85, 1/8 at 0.78, then **5/8** at **0.6** (1,440 enemies, core 61 %). `WAVE_SCALE` in `tools/gen_field_maps.gd` holds the final numbers (x6 0.4, x7 0.5, x8 0.7, x9 0.6, x10 0.62). Dead Highway and Last Airfield were left alone (2/4 is inside the noise).
+
+### Cleanup: state-card bots, the 3.6 and 3.7 missions, renamed missions (2026-10-17)
+`tools/tune_cards.gd` bots now play the cards that need no target or a special aim: order (when the troops are in a fight), supply (when the bank is low), deck (when the hand has room for two), reinforcement (base under pressure or the army thin), drones (15 or more enemies alive), minefield (on the route 15 tiles out) and noise lure (on the thickest crowd). Check run on `x4_field_orders` (4 seeds, mix): 3/4, with Fortify, Supply Drop and Quick Draw all played; cheap 3/4, idle 0/4. The earlier x4 numbers were produced without those cards.
+The other session's missions `x5_field_works` and `x6_high_tech` were still too easy (mix 4/4, 100 % core). At 1.5x with the new enemies they were 0/6 (both bots), at 0.8x of that 0/6, at 0.65x of that 4/6 and 3/6. Shipped: 0.975x of the original waves plus a Behemoth, 33 Sprinters and 7 Spewers (734 enemies): idle 0/6, cheap 0/6, **mix 3/6 on both** (core 50 %). The cliff between 0.65x and 0.8x is steep: one more Sprinter wave tips them, so treat these two as tuned only to plus or minus one wave.
+The five F4 missions were renamed to `x7_bridge_line`, `x8_dead_highway`, `x9_last_airfield`, `x10_town_siege` and `x11_mountain_pass` (they shared the number 6 with `x6_high_tech`). Older tables in this file keep the old names: x6 to x10 there are x7 to x11 now.

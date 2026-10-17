@@ -194,4 +194,4 @@ doctrines = PackedStringArray()
 core_scenery_id = "hq_bunker"
 core_radius = 1.2
 time_of_day = 0.72
-id = "x8_last_airfield"
+id = "x9_last_airfield"

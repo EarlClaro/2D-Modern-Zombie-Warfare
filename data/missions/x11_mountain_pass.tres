@@ -197,4 +197,4 @@ core_scenery_id = "hq_bunker"
 core_radius = 1.2
 time_of_day = 0.28
 weather = "fog"
-id = "x10_mountain_pass"
+id = "x11_mountain_pass"
