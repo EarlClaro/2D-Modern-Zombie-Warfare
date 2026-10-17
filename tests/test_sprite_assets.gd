@@ -6,6 +6,9 @@ const FACINGS: Array[String] = ["e", "se", "s", "sw", "w", "nw", "n", "ne"]
 const SHEETS: Dictionary = {
 	"runner": [72, 72, 3, 10],
 	"brute": [80, 72, 3, 10],
+	"sprinter": [80, 72, 3, 10],
+	"behemoth": [120, 108, 3, 10],
+	"spewer": [104, 84, 3, 10],
 	"rpg_soldier": [124, 76, 3, 10],
 	"howitzer": [128, 104, 3, 6],
 	"marksman": [124, 76, 3, 10],

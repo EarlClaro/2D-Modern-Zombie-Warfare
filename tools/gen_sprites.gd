@@ -160,6 +160,9 @@ func _initialize() -> void:
 		{"dir": "helicopter", "frame": Vector2i(96, 64), "origin": Vector2(48, 46), "frames": 8, "columns": 2, "ss": 1},
 		{"dir": "runner", "frame": Vector2i(72, 72), "origin": Vector2(36, 44), "frames": 10, "columns": 3, "ss": 3},
 		{"dir": "brute", "frame": Vector2i(80, 72), "origin": Vector2(40, 54), "frames": 10, "columns": 3, "ss": 3},
+		{"dir": "sprinter", "frame": Vector2i(80, 72), "origin": Vector2(40, 44), "frames": 10, "columns": 3, "ss": 3},
+		{"dir": "behemoth", "frame": Vector2i(120, 108), "origin": Vector2(60, 82), "frames": 10, "columns": 3, "ss": 3},
+		{"dir": "spewer", "frame": Vector2i(104, 84), "origin": Vector2(52, 52), "frames": 10, "columns": 3, "ss": 3},
 		{"dir": "spitter", "frame": Vector2i(88, 72), "origin": Vector2(44, 44), "frames": 10, "columns": 3, "ss": 3},
 		{"dir": "rpg_soldier", "frame": Vector2i(124, 76), "origin": Vector2(62, 46), "frames": 10, "columns": 3, "ss": 3},
 		{"dir": "howitzer", "frame": Vector2i(128, 104), "origin": Vector2(64, 62), "frames": 6, "columns": 3, "ss": 1},
@@ -392,6 +395,25 @@ func _model(unit: String, frame: int) -> Array[Prim]:
 			_z_lean = -0.06
 			_zombie(m, frame)
 			_remap(m, {"shirt": "rags"})
+		"sprinter":  # a stripped, starving sprinter: the longest stride and the deepest lean of all
+			_z_stride = 2.4
+			_z_lean = 0.24
+			_zombie(m, frame)
+			_remap(m, {"shirt": "zskin", "shirtd": "zdark", "pants": "rpants"})
+			_scale(m, 0.94)
+		"behemoth":  # a brute in welded plates: slab chest, shoulder guards, huge
+			_z_kind = "armored"
+			_z_stride = 0.65
+			_z_lean = 0.04
+			_zombie(m, frame)
+			_remap(m, {"shirt": "zskin", "shirtd": "zdark", "pants": "bpants"})
+			_scale(m, 1.75)
+		"spewer":  # a spitter swollen further: dark skin, a huge sac
+			_z_kind = "spitter"
+			_z_lean = -0.1
+			_zombie(m, frame)
+			_remap(m, {"shirt": "rags", "zskin": "zdark"})
+			_scale(m, 1.14)
 		"brute":  # hulking, slow, bare-chested
 			_z_stride = 0.75
 			_z_lean = 0.05
@@ -1076,6 +1098,13 @@ func _zombie(m: Array[Prim], frame: int) -> void:
 				body.append(Prim.new(SPH, head + Vector3(0.14 + 0.12 * float(k), 0.0, -0.04 - 0.02 * float(k)), Vector3(r, r, r), "acid"))
 		else:
 			body.append(Prim.new(BOX, head + Vector3(0.082, 0, -0.1), Vector3(0.008, 0.008, 0.03), "acid"))  # drool
+	if _z_kind == "armored":
+		body.append(Prim.new(BOX, hip + tb * Vector3(0.075, 0, 0.17), Vector3(0.03, 0.12, 0.13), "steel", 0.0, 0.0, lean))  # chest slab
+		body.append(Prim.new(BOX, hip + tb * Vector3(0.0, 0, 0.3), Vector3(0.075, 0.13, 0.025), "steel", 0.0, 0.0, lean))  # collar
+		for side in [1, -1]:
+			body.append(Prim.new(SPH, hip + tb * Vector3(0.0, 0.17 * side, 0.27), Vector3(0.07, 0.06, 0.05), "steel"))  # shoulder guards
+			body.append(Prim.new(BOX, hip + tb * Vector3(0.06, 0.1 * side, 0.01), Vector3(0.02, 0.05, 0.06), "steel", 0.0, 0.0, lean))  # hip plates
+		body.append(Prim.new(BOX, head + Vector3(0.0, 0, 0.085), Vector3(0.07, 0.075, 0.018), "steel"))  # welded helmet cap
 	if d > 0:
 		var phi: float = [0.4, 0.85, 1.3, PI * 0.5][d - 1]
 		_xform(body, _ry(phi), Vector3(-0.4 * sin(phi), 0, 0.12 * sin(phi)))

@@ -269,3 +269,27 @@ Add per synergy: intended counterplay and balance risk (post-MVP).
 | Satellite Laser | 9 | 100 s | 36 beams on an 18-tile line, 0.05 s apart | 55 | 1.5 | 2.8 s |
 | Nuclear Bomb | 10 | 150 s | 1 bomb | 2500 | 9.0 | 4.0 s |
 Intent: the more a strike costs and the longer it is locked out, the bigger and later it lands. Needs a sweep with real decks (and the cards need to enter a deck first) before any number is trusted.
+
+## F5: the harder game (field command, 2026-10-17; spec [field-command.md](specs/field-command.md))
+**Why:** after F2 (kiting army) and F3 (spotted long-range artillery, new units) the shipped missions were far too easy. Baseline, mix bot, 3 seeds, shipped waves: Bridge Line 2/2 with 100 % core, Town Siege and Mountain Pass 3/3 even with 2,500 enemies and no unit lost; the older missions (m2, x1, x2) 3/3. At 2x to 3x the bodies the three open maps fell to about 1/3, the two long or chokey maps (town, pass) still did not. **Finding:** more bodies cannot be the lever: about 2,000 alive costs 6 to 7 ms a step (measured below) and the cap is the frame budget, so the pressure had to come from quality.
+
+**What was added:** three enemies (data/enemies, art from `tools/gen_sprites.gd`): **Sprinter** (45 HP, speed 3.7: faster than every soldier, so kiters must stand and fight), **Behemoth** (1,400 HP, armour 8, speed 0.55, 80 damage, reach 1.5: rifles lose more than half of each round, rockets and the marksman barely notice), **Spewer** (90 HP, acid range 7, threat 3: its danger zone is wider than a rifle reach, so only the marksman, tank, mortar and artillery answer it from outside). Behemoths walk in at the start of a mission and arrive as a late push. `tools/harden_missions.gd` scales the older missions and adds the specials (run once; data as committed = its PLAN); the new missions waves carry the specials in `tools/gen_field_maps.gd`, scaled by `WAVE_SCALE`. `tools/tune_cards.gd` gained `--typescale=enemy:factor` and `--timescale=` and now places cards along the enemy route (winding maps), with preferred spots for the new units (artillery stays back).
+
+**Calibration** (`tools/tune_cards.gd`, 3 to 6 seeds, headless, runs about 1 to 2 minutes each; mix = a decent saving player, cheap = cheapest-first, idle = nothing). First hardened waves: mix 0/3 on 7 of 10 missions (too hard), then scaled:
+| Mission | Enemies (total) | idle | cheap | mix (4 seeds unless noted) |
+|---|---|---|---|---|
+| m2_card_defense | 1,450 (2.0x + sprinters) | 0/4 | 0/4 | 3/4, core 68 % |
+| m3_combined_arms | 537 (1.12x + behemoth, sprinters, spewers) | 0/4 | 2/4 | 2/4, core 37 % |
+| x1_fortified_crossing | 706 (1.5x + specials) | 0/4 | 0/4 | 2/4, core 50 % |
+| x2_outskirts (and x3) | 2,032 (1.4x + specials) | 0/4 | 0/4 | 3/4, core 59 % |
+| x4_field_orders | 747 (1.0x + specials; the bot plays no state cards) | 0/4 | 3/4 | 3/4 |
+| x6_bridge_line | 828 (0.45 of the first draft) | 0/4 | 3/4 | **3/6**, core 47 % |
+| x7_dead_highway | 1,068 (0.5) | 0/4 | 4/4 | 2/4 |
+| x8_last_airfield | 1,460 (0.7) | 0/4 | 4/4 | 3/4 |
+| x9_town_siege | 2,042 (0.85) | 0/4 | 0/4 | 2/4 |
+| x10_mountain_pass | 1,519 (0.62) | 0/4 at 0.55 | 3/4 at 0.55 | 4/4 at 0.55, 1/6 at 0.7: **0.62 chosen in between and not swept** |
+Reading: nothing is won by doing nothing; the saving player wins about half to three quarters; `cheap` spam is hard on the oldest missions and fine on the new ones (their decks hold cheap, strong cards: scout, mortar, marksman). Seeds are few and the win count is noisy (one seed is 25 points), so treat each cell as plus or minus one win. x4 cannot be judged with these bots (they never play order or supply cards).
+
+**Performance of the bigger missions** (a scratch script, step only, starting defenders only, core made unbreakable so nothing is held back): `x2_outskirts` 2,032 enemies: avg 5.8 ms a step, worst 23 ms, peak 1,924 alive; `x9_town_siege` 2,042: avg 6.8 ms, worst 47 ms once, peak 1,724 alive. In real play the army kills many, so this is the upper bound. Rendering is not included.
+
+**Left for a human:** feel (is it fun to lose to a Behemoth?), the unmeasured value of Mountain Pass, the rocket salvo landing all six rockets on one spot, state-card use in x4, and a seed sweep above 6.

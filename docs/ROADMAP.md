@@ -20,7 +20,7 @@ Legend: ☐ not started · ◐ in progress · ☑ done (acceptance criteria chec
 
 ## Next tasks
 
-0b. **Field command package (user request 2026-10-17, ADR-016, [spec](specs/field-command.md)):** F1 build anywhere, F2 smart army and mobile vehicles, F3 roster realism and artillery and F4 five new missions on five new maps are done on branch `m3-field-command` (not merged yet); F5 balance (harder game) follows.
+0b. **Field command package (user request 2026-10-17, ADR-016, [spec](specs/field-command.md)):** F1 build anywhere, F2 smart army and mobile vehicles, F3 roster realism and artillery and F4 five new missions on five new maps and F5 the harder game (three new enemies, scaled waves, bot sweeps) are done on branch `m3-field-command` (not merged yet); the package is complete and waits for your play-test and the merge.
 
 0. **Game shell (user request 2026-10-17, ADR-015, [spec](specs/menus.md)):** start menu, mission select, settings, pause menu and a strike test mission are built on branch `m3-menu`; needs your look-and-feel check (mouse and keyboard, fullscreen, volume, pause) before merging.
 1. **Now:** 3.6 entity cards (Minefield, Barracks, Convoy, Noise Lure). 3.3, 3.4 and 3.8 are on `main` (`a6df704`); 3.5 is committed locally (`4bdb177`) and merged with them.

@@ -23,6 +23,8 @@ var _errors: int = 0
 var _spawns: Array[Vector2i] = []
 var _path: Array[Vector2i] = []
 var _core: Vector2i = Vector2i.ZERO
+## F5: how hard each mission is after the balance sweeps (a factor on every wave's count; the interval shrinks with it).
+const WAVE_SCALE := {"x6_bridge_line": 0.45, "x7_dead_highway": 0.5, "x8_last_airfield": 0.7, "x9_town_siege": 0.85, "x10_mountain_pass": 0.62}
 
 
 func _initialize() -> void:
@@ -317,6 +319,10 @@ func _save_mission(mission_id: String, name: String, map: MapDefinition, deck: S
 	m.time_of_day = tod
 	m.day_length_s = day_len
 	m.start_units = _defenders(units)
+	var k: float = WAVE_SCALE.get(mission_id, 1.0)
+	for w in waves:
+		w.count = maxi(1, int(round(float(w.count) * k)))
+		w.interval_s = w.interval_s / k
 	m.waves = waves
 	for e in m.validate():
 		push_error(e)
@@ -414,6 +420,9 @@ func _bridge_line() -> void:
 		_wave(76.0, "runner", 170, 0.03, 1), _wave(80.0, "spitter", 28, 0.45, 0),
 		_wave(98.0, "shambler", 420, 0.02, 0), _wave(104.0, "brute", 32, 0.5, 1),
 		_wave(122.0, "runner", 170, 0.035, 0),
+		_wave(5.0, "behemoth", 3, 4.0, 0), _wave(14.0, "behemoth", 3, 4.0, 1),
+		_wave(36.0, "sprinter", 60, 0.1, 0), _wave(60.0, "spewer", 8, 1.0, 1), _wave(84.0, "sprinter", 140, 0.05, 1),
+		_wave(100.0, "spewer", 20, 0.6, 0), _wave(120.0, "sprinter", 150, 0.05, 0),
 	]
 	_save_mission("x6_bridge_line", "Bridge Line", map, "field_arms", 950.0, 160.0, "rain", 0.45, 0.0, waves, ["mg_nest", "mg_nest", "rifle_soldier", "rifle_soldier", "jeep"])
 
@@ -480,6 +489,9 @@ func _dead_highway() -> void:
 		_wave(76.0, "runner", 240, 0.025, 0), _wave(82.0, "spitter", 26, 0.45, 1),
 		_wave(100.0, "shambler", 450, 0.02, 1), _wave(106.0, "brute", 30, 0.5, 0),
 		_wave(126.0, "runner", 220, 0.03, 1),
+		_wave(5.0, "behemoth", 3, 4.0, 0), _wave(14.0, "behemoth", 3, 4.0, 1),
+		_wave(30.0, "sprinter", 80, 0.08, 1), _wave(55.0, "spewer", 10, 1.0, 0), _wave(78.0, "sprinter", 160, 0.05, 0),
+		_wave(105.0, "spewer", 24, 0.5, 1), _wave(118.0, "sprinter", 200, 0.04, 1),
 	]
 	_save_mission("x7_dead_highway", "Dead Highway", map, "field_arms", 900.0, 170.0, "dust", 0.5, 0.0, waves, ["mg_nest", "mg_nest", "rifle_soldier", "rifle_soldier", "jeep"])
 
@@ -543,6 +555,9 @@ func _last_airfield() -> void:
 		_wave(76.0, "runner", 200, 0.03, 0), _wave(82.0, "spitter", 30, 0.4, 1),
 		_wave(100.0, "shambler", 460, 0.02, 1), _wave(106.0, "brute", 34, 0.45, 0),
 		_wave(128.0, "runner", 200, 0.03, 1), _wave(140.0, "brute", 20, 0.5, 0),
+		_wave(5.0, "behemoth", 3, 4.0, 0), _wave(18.0, "behemoth", 4, 4.0, 1),
+		_wave(36.0, "sprinter", 60, 0.1, 1), _wave(60.0, "spewer", 12, 1.0, 0), _wave(80.0, "sprinter", 140, 0.05, 0),
+		_wave(105.0, "spewer", 28, 0.5, 1), _wave(130.0, "sprinter", 180, 0.04, 1),
 	]
 	_save_mission("x8_last_airfield", "Last Airfield", map, "field_arms", 1000.0, 175.0, "clear", 0.72, 0.0, waves, ["mg_nest", "mg_nest", "gatling_gun", "rifle_soldier", "rifle_soldier", "jeep"])
 
@@ -606,6 +621,9 @@ func _town_siege() -> void:
 		_wave(74.0, "runner", 220, 0.03, 0), _wave(80.0, "spitter", 34, 0.4, 1),
 		_wave(98.0, "shambler", 480, 0.02, 1), _wave(104.0, "brute", 36, 0.45, 0),
 		_wave(124.0, "runner", 220, 0.03, 1), _wave(138.0, "spitter", 30, 0.4, 0),
+		_wave(5.0, "behemoth", 4, 4.0, 0), _wave(20.0, "behemoth", 4, 4.0, 1), _wave(40.0, "behemoth", 3, 4.0, 0),
+		_wave(30.0, "sprinter", 100, 0.08, 1), _wave(55.0, "spewer", 20, 0.8, 0), _wave(80.0, "sprinter", 220, 0.04, 0),
+		_wave(100.0, "spewer", 40, 0.4, 1), _wave(125.0, "sprinter", 250, 0.04, 1),
 	]
 	_save_mission("x9_town_siege", "Town Siege", map, "field_siege", 1000.0, 180.0, "fog", 0.12, 0.0, waves, ["mg_nest", "mg_nest", "rifle_soldier", "rifle_soldier", "gatling_gun"])
 
@@ -658,5 +676,8 @@ func _mountain_pass() -> void:
 		_wave(78.0, "runner", 200, 0.03, 0), _wave(84.0, "spitter", 34, 0.4, 1),
 		_wave(102.0, "shambler", 500, 0.02, 0), _wave(108.0, "brute", 40, 0.45, 1),
 		_wave(130.0, "runner", 230, 0.03, 1), _wave(145.0, "brute", 24, 0.5, 0),
+		_wave(5.0, "behemoth", 4, 4.0, 0), _wave(20.0, "behemoth", 4, 4.0, 1), _wave(40.0, "behemoth", 3, 4.0, 0),
+		_wave(30.0, "sprinter", 100, 0.08, 1), _wave(55.0, "spewer", 20, 0.8, 1), _wave(80.0, "sprinter", 220, 0.04, 0),
+		_wave(100.0, "spewer", 40, 0.4, 0), _wave(125.0, "sprinter", 250, 0.04, 1),
 	]
 	_save_mission("x10_mountain_pass", "Mountain Pass", map, "field_siege", 1000.0, 185.0, "fog", 0.28, 0.0, waves, ["mg_nest", "mg_nest", "gatling_gun", "rifle_soldier", "rifle_soldier"])

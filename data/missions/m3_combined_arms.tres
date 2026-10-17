@@ -2,60 +2,78 @@
 
 [ext_resource type="Resource" path="res://data/maps/crossing.tres" id="1_map"]
 [ext_resource type="Script" path="res://scripts/missions/mission_definition.gd" id="2_mission"]
+[ext_resource type="Script" path="res://scripts/missions/start_unit.gd" id="3_uruf3"]
 [ext_resource type="Script" path="res://scripts/missions/wave_entry.gd" id="3_wave"]
 
-[sub_resource type="Resource" id="Resource_w1"]
+[sub_resource type="Resource" id="Resource_0rn01"]
 script = ExtResource("3_wave")
 start_s = 4.0
 enemy_id = "shambler"
-count = 48
-interval_s = 0.15
+count = 54
+interval_s = 0.13392857142857142
 
-[sub_resource type="Resource" id="Resource_w2"]
+[sub_resource type="Resource" id="Resource_46jgs"]
 script = ExtResource("3_wave")
 start_s = 20.0
 enemy_id = "runner"
-count = 40
-interval_s = 0.1
+count = 45
+interval_s = 0.08928571428571429
 
-[sub_resource type="Resource" id="Resource_w3"]
+[sub_resource type="Resource" id="Resource_1do0j"]
 script = ExtResource("3_wave")
 start_s = 38.0
 enemy_id = "shambler"
-count = 100
-interval_s = 0.075
+count = 112
+interval_s = 0.06696428571428571
 
-[sub_resource type="Resource" id="Resource_w4"]
+[sub_resource type="Resource" id="Resource_bfiwr"]
 script = ExtResource("3_wave")
 start_s = 48.0
 enemy_id = "brute"
-count = 6
-interval_s = 1.5
+count = 7
+interval_s = 1.3392857142857142
 
-[sub_resource type="Resource" id="Resource_w5"]
+[sub_resource type="Resource" id="Resource_xv5ia"]
 script = ExtResource("3_wave")
 start_s = 72.0
 enemy_id = "runner"
-count = 80
-interval_s = 0.0625
+count = 90
+interval_s = 0.055803571428571425
 
-[sub_resource type="Resource" id="Resource_w6"]
+[sub_resource type="Resource" id="Resource_o1v3p"]
 script = ExtResource("3_wave")
 start_s = 76.0
 enemy_id = "shambler"
-count = 160
-interval_s = 0.05
+count = 179
+interval_s = 0.044642857142857144
 
-[sub_resource type="Resource" id="Resource_w7"]
+[sub_resource type="Resource" id="Resource_4ra4s"]
 script = ExtResource("3_wave")
 start_s = 95.0
 enemy_id = "brute"
-count = 12
-interval_s = 1.0
+count = 13
+interval_s = 0.8928571428571428
+
+[sub_resource type="Resource" id="Resource_3ka7q"]
+script = ExtResource("3_wave")
+start_s = 30.0
+enemy_id = "behemoth"
+
+[sub_resource type="Resource" id="Resource_dl50v"]
+script = ExtResource("3_wave")
+start_s = 60.0
+enemy_id = "sprinter"
+count = 30
+interval_s = 0.1
+
+[sub_resource type="Resource" id="Resource_p1naf"]
+script = ExtResource("3_wave")
+start_s = 80.0
+enemy_id = "spewer"
+count = 6
 
 [resource]
 script = ExtResource("2_mission")
-id = "m3_combined_arms"
 display_name = "Hold the Crossing (Combined Arms)"
 map = ExtResource("1_map")
 core_cell = Vector2i(3, 20)
@@ -63,6 +81,7 @@ core_health = 500.0
 duration_s = 120.0
 spawn_cells = Array[Vector2i]([Vector2i(20, 3)])
 path_cells = Array[Vector2i]([Vector2i(3, 20)])
-waves = Array[ExtResource("3_wave")]([SubResource("Resource_w1"), SubResource("Resource_w2"), SubResource("Resource_w3"), SubResource("Resource_w4"), SubResource("Resource_w5"), SubResource("Resource_w6"), SubResource("Resource_w7")])
+waves = Array[ExtResource("3_wave")]([SubResource("Resource_0rn01"), SubResource("Resource_46jgs"), SubResource("Resource_1do0j"), SubResource("Resource_bfiwr"), SubResource("Resource_xv5ia"), SubResource("Resource_o1v3p"), SubResource("Resource_4ra4s"), SubResource("Resource_3ka7q"), SubResource("Resource_dl50v"), SubResource("Resource_p1naf")])
 deck_id = "combined_arms"
-deploy_radius = 0.0
+doctrines = PackedStringArray()
+id = "m3_combined_arms"

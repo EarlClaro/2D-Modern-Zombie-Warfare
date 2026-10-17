@@ -39,91 +39,144 @@ cell = Vector2i(10, 47)
 script = ExtResource("4_buldq")
 start_s = 5.0
 enemy_id = "shambler"
-count = 120
-interval_s = 0.07
+count = 84
+interval_s = 0.10000000000000002
 
 [sub_resource type="Resource" id="Resource_jlesd"]
 script = ExtResource("4_buldq")
 start_s = 5.0
 enemy_id = "shambler"
-count = 90
-interval_s = 0.08
+count = 63
+interval_s = 0.1142857142857143
 spawn_index = 1
 
 [sub_resource type="Resource" id="Resource_vh3kj"]
 script = ExtResource("4_buldq")
 start_s = 24.0
 enemy_id = "runner"
-count = 110
-interval_s = 0.045
+count = 77
+interval_s = 0.0642857142857143
 spawn_index = 1
 
 [sub_resource type="Resource" id="Resource_7g1nv"]
 script = ExtResource("4_buldq")
 start_s = 30.0
 enemy_id = "spitter"
-count = 18
-interval_s = 0.5
+count = 13
+interval_s = 0.7142857142857143
 
 [sub_resource type="Resource" id="Resource_mhjuh"]
 script = ExtResource("4_buldq")
 start_s = 46.0
 enemy_id = "shambler"
-count = 360
-interval_s = 0.025
+count = 252
+interval_s = 0.03571428571428572
 
 [sub_resource type="Resource" id="Resource_68na5"]
 script = ExtResource("4_buldq")
 start_s = 52.0
 enemy_id = "brute"
-count = 16
-interval_s = 0.8
+count = 11
+interval_s = 1.142857142857143
 spawn_index = 1
 
 [sub_resource type="Resource" id="Resource_hpeok"]
 script = ExtResource("4_buldq")
 start_s = 76.0
 enemy_id = "runner"
-count = 200
-interval_s = 0.03
+count = 140
+interval_s = 0.04285714285714286
 
 [sub_resource type="Resource" id="Resource_5ma8k"]
 script = ExtResource("4_buldq")
 start_s = 82.0
 enemy_id = "spitter"
-count = 30
-interval_s = 0.4
+count = 21
+interval_s = 0.5714285714285715
 spawn_index = 1
 
 [sub_resource type="Resource" id="Resource_rgibk"]
 script = ExtResource("4_buldq")
 start_s = 100.0
 enemy_id = "shambler"
-count = 460
-interval_s = 0.02
+count = 322
+interval_s = 0.028571428571428574
 spawn_index = 1
 
 [sub_resource type="Resource" id="Resource_gqrol"]
 script = ExtResource("4_buldq")
 start_s = 106.0
 enemy_id = "brute"
-count = 34
-interval_s = 0.45
+count = 24
+interval_s = 0.6428571428571429
 
 [sub_resource type="Resource" id="Resource_72eda"]
 script = ExtResource("4_buldq")
 start_s = 128.0
 enemy_id = "runner"
-count = 200
-interval_s = 0.03
+count = 140
+interval_s = 0.04285714285714286
 spawn_index = 1
 
 [sub_resource type="Resource" id="Resource_jk6ae"]
 script = ExtResource("4_buldq")
 start_s = 140.0
 enemy_id = "brute"
+count = 14
+interval_s = 0.7142857142857143
+
+[sub_resource type="Resource" id="Resource_gb002"]
+script = ExtResource("4_buldq")
+start_s = 5.0
+enemy_id = "behemoth"
+count = 2
+interval_s = 5.714285714285714
+
+[sub_resource type="Resource" id="Resource_6gocu"]
+script = ExtResource("4_buldq")
+start_s = 18.0
+enemy_id = "behemoth"
+count = 3
+interval_s = 5.714285714285714
+spawn_index = 1
+
+[sub_resource type="Resource" id="Resource_7ec1s"]
+script = ExtResource("4_buldq")
+start_s = 36.0
+enemy_id = "sprinter"
+count = 42
+interval_s = 0.14285714285714288
+spawn_index = 1
+
+[sub_resource type="Resource" id="Resource_p2583"]
+script = ExtResource("4_buldq")
+start_s = 60.0
+enemy_id = "spewer"
+count = 8
+interval_s = 1.4285714285714286
+
+[sub_resource type="Resource" id="Resource_47qs4"]
+script = ExtResource("4_buldq")
+start_s = 80.0
+enemy_id = "sprinter"
+count = 98
+interval_s = 0.07142857142857144
+
+[sub_resource type="Resource" id="Resource_u1s0n"]
+script = ExtResource("4_buldq")
+start_s = 105.0
+enemy_id = "spewer"
 count = 20
-interval_s = 0.5
+interval_s = 0.7142857142857143
+spawn_index = 1
+
+[sub_resource type="Resource" id="Resource_yft2m"]
+script = ExtResource("4_buldq")
+start_s = 130.0
+enemy_id = "sprinter"
+count = 126
+interval_s = 0.05714285714285715
+spawn_index = 1
 
 [resource]
 script = ExtResource("2_m3wmk")
@@ -135,7 +188,7 @@ duration_s = 175.0
 spawn_cells = Array[Vector2i]([Vector2i(58, 5), Vector2i(58, 43)])
 path_cells = Array[Vector2i]([Vector2i(50, 24), Vector2i(26, 24), Vector2i(26, 40), Vector2i(8, 40)])
 start_units = Array[ExtResource("3_gdwxe")]([SubResource("Resource_5ln54"), SubResource("Resource_j3tfb"), SubResource("Resource_i0m3j"), SubResource("Resource_ocejb"), SubResource("Resource_3v5sr"), SubResource("Resource_u7xbx")])
-waves = Array[ExtResource("4_buldq")]([SubResource("Resource_1unu2"), SubResource("Resource_jlesd"), SubResource("Resource_vh3kj"), SubResource("Resource_7g1nv"), SubResource("Resource_mhjuh"), SubResource("Resource_68na5"), SubResource("Resource_hpeok"), SubResource("Resource_5ma8k"), SubResource("Resource_rgibk"), SubResource("Resource_gqrol"), SubResource("Resource_72eda"), SubResource("Resource_jk6ae")])
+waves = Array[ExtResource("4_buldq")]([SubResource("Resource_1unu2"), SubResource("Resource_jlesd"), SubResource("Resource_vh3kj"), SubResource("Resource_7g1nv"), SubResource("Resource_mhjuh"), SubResource("Resource_68na5"), SubResource("Resource_hpeok"), SubResource("Resource_5ma8k"), SubResource("Resource_rgibk"), SubResource("Resource_gqrol"), SubResource("Resource_72eda"), SubResource("Resource_jk6ae"), SubResource("Resource_gb002"), SubResource("Resource_6gocu"), SubResource("Resource_7ec1s"), SubResource("Resource_p2583"), SubResource("Resource_47qs4"), SubResource("Resource_u1s0n"), SubResource("Resource_yft2m")])
 deck_id = "field_arms"
 doctrines = PackedStringArray()
 core_scenery_id = "hq_bunker"

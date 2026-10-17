@@ -34,91 +34,151 @@ cell = Vector2i(15, 52)
 script = ExtResource("4_ifpwf")
 start_s = 5.0
 enemy_id = "shambler"
-count = 130
-interval_s = 0.06
+count = 81
+interval_s = 0.0967741935483871
 
 [sub_resource type="Resource" id="Resource_m2m5x"]
 script = ExtResource("4_ifpwf")
 start_s = 6.0
 enemy_id = "shambler"
-count = 100
-interval_s = 0.08
+count = 62
+interval_s = 0.12903225806451613
 spawn_index = 1
 
 [sub_resource type="Resource" id="Resource_1n0cw"]
 script = ExtResource("4_ifpwf")
 start_s = 26.0
 enemy_id = "runner"
-count = 110
-interval_s = 0.045
+count = 68
+interval_s = 0.07258064516129031
 spawn_index = 1
 
 [sub_resource type="Resource" id="Resource_gygif"]
 script = ExtResource("4_ifpwf")
 start_s = 32.0
 enemy_id = "spitter"
-count = 22
-interval_s = 0.5
+count = 14
+interval_s = 0.8064516129032259
 
 [sub_resource type="Resource" id="Resource_2m0i0"]
 script = ExtResource("4_ifpwf")
 start_s = 48.0
 enemy_id = "shambler"
-count = 400
-interval_s = 0.025
+count = 248
+interval_s = 0.040322580645161296
 spawn_index = 1
 
 [sub_resource type="Resource" id="Resource_ik13m"]
 script = ExtResource("4_ifpwf")
 start_s = 54.0
 enemy_id = "brute"
-count = 20
-interval_s = 0.8
+count = 12
+interval_s = 1.2903225806451615
 
 [sub_resource type="Resource" id="Resource_26pe3"]
 script = ExtResource("4_ifpwf")
 start_s = 78.0
 enemy_id = "runner"
-count = 200
-interval_s = 0.03
+count = 124
+interval_s = 0.04838709677419355
 
 [sub_resource type="Resource" id="Resource_fq37l"]
 script = ExtResource("4_ifpwf")
 start_s = 84.0
 enemy_id = "spitter"
-count = 34
-interval_s = 0.4
+count = 21
+interval_s = 0.6451612903225807
 spawn_index = 1
 
 [sub_resource type="Resource" id="Resource_w3pex"]
 script = ExtResource("4_ifpwf")
 start_s = 102.0
 enemy_id = "shambler"
-count = 500
-interval_s = 0.02
+count = 310
+interval_s = 0.03225806451612903
 
 [sub_resource type="Resource" id="Resource_mq8fj"]
 script = ExtResource("4_ifpwf")
 start_s = 108.0
 enemy_id = "brute"
-count = 40
-interval_s = 0.45
+count = 25
+interval_s = 0.7258064516129032
 spawn_index = 1
 
 [sub_resource type="Resource" id="Resource_e1rfn"]
 script = ExtResource("4_ifpwf")
 start_s = 130.0
 enemy_id = "runner"
-count = 230
-interval_s = 0.03
+count = 143
+interval_s = 0.04838709677419355
 spawn_index = 1
 
 [sub_resource type="Resource" id="Resource_2id10"]
 script = ExtResource("4_ifpwf")
 start_s = 145.0
 enemy_id = "brute"
-count = 24
-interval_s = 0.5
+count = 15
+interval_s = 0.8064516129032259
+
+[sub_resource type="Resource" id="Resource_dvg6a"]
+script = ExtResource("4_ifpwf")
+start_s = 5.0
+enemy_id = "behemoth"
+count = 2
+interval_s = 6.451612903225807
+
+[sub_resource type="Resource" id="Resource_2c3x2"]
+script = ExtResource("4_ifpwf")
+start_s = 20.0
+enemy_id = "behemoth"
+count = 2
+interval_s = 6.451612903225807
+spawn_index = 1
+
+[sub_resource type="Resource" id="Resource_plht5"]
+script = ExtResource("4_ifpwf")
+start_s = 40.0
+enemy_id = "behemoth"
+count = 2
+interval_s = 6.451612903225807
+
+[sub_resource type="Resource" id="Resource_jph3c"]
+script = ExtResource("4_ifpwf")
+start_s = 30.0
+enemy_id = "sprinter"
+count = 62
+interval_s = 0.12903225806451613
+spawn_index = 1
+
+[sub_resource type="Resource" id="Resource_vw4nl"]
+script = ExtResource("4_ifpwf")
+start_s = 55.0
+enemy_id = "spewer"
+count = 12
+interval_s = 1.2903225806451615
+spawn_index = 1
+
+[sub_resource type="Resource" id="Resource_ewsc2"]
+script = ExtResource("4_ifpwf")
+start_s = 80.0
+enemy_id = "sprinter"
+count = 136
+interval_s = 0.06451612903225806
+
+[sub_resource type="Resource" id="Resource_b8oae"]
+script = ExtResource("4_ifpwf")
+start_s = 100.0
+enemy_id = "spewer"
+count = 25
+interval_s = 0.6451612903225807
+
+[sub_resource type="Resource" id="Resource_mgdq7"]
+script = ExtResource("4_ifpwf")
+start_s = 125.0
+enemy_id = "sprinter"
+count = 155
+interval_s = 0.06451612903225806
+spawn_index = 1
 
 [resource]
 script = ExtResource("2_d60by")
@@ -130,7 +190,7 @@ duration_s = 185.0
 spawn_cells = Array[Vector2i]([Vector2i(20, 2), Vector2i(28, 2)])
 path_cells = Array[Vector2i]([Vector2i(24, 10), Vector2i(14, 22), Vector2i(30, 34), Vector2i(16, 46), Vector2i(22, 57)])
 start_units = Array[ExtResource("3_cnikx")]([SubResource("Resource_n1vtl"), SubResource("Resource_15p5a"), SubResource("Resource_u18x2"), SubResource("Resource_lhepb"), SubResource("Resource_dttln")])
-waves = Array[ExtResource("4_ifpwf")]([SubResource("Resource_grtk5"), SubResource("Resource_m2m5x"), SubResource("Resource_1n0cw"), SubResource("Resource_gygif"), SubResource("Resource_2m0i0"), SubResource("Resource_ik13m"), SubResource("Resource_26pe3"), SubResource("Resource_fq37l"), SubResource("Resource_w3pex"), SubResource("Resource_mq8fj"), SubResource("Resource_e1rfn"), SubResource("Resource_2id10")])
+waves = Array[ExtResource("4_ifpwf")]([SubResource("Resource_grtk5"), SubResource("Resource_m2m5x"), SubResource("Resource_1n0cw"), SubResource("Resource_gygif"), SubResource("Resource_2m0i0"), SubResource("Resource_ik13m"), SubResource("Resource_26pe3"), SubResource("Resource_fq37l"), SubResource("Resource_w3pex"), SubResource("Resource_mq8fj"), SubResource("Resource_e1rfn"), SubResource("Resource_2id10"), SubResource("Resource_dvg6a"), SubResource("Resource_2c3x2"), SubResource("Resource_plht5"), SubResource("Resource_jph3c"), SubResource("Resource_vw4nl"), SubResource("Resource_ewsc2"), SubResource("Resource_b8oae"), SubResource("Resource_mgdq7")])
 deck_id = "field_siege"
 doctrines = PackedStringArray()
 core_scenery_id = "hq_bunker"
