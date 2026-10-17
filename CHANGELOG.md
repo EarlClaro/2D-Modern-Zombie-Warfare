@@ -1,5 +1,8 @@
 # Changelog
 
+## 3.10 (in progress): hard has a ceiling (2026-10-17)
+- `DifficultyDefinition.max_total_enemies` (hard = 2000): a level that makes missions bigger never takes one past about 2,000 enemies (F5's frame budget) and never makes one easier than normal, so on `x2_outskirts`, `x3_storm_night` and `x9_town_siege` hard equals normal. `scaled_count` / `scaled_interval` take the mission's base total. 6 new tests, 894 in all.
+
 ## 3.9 Selectable difficulty (2026-10-17)
 - Easy / normal / hard (`DifficultyDefinition`, `data/difficulties/`) scale how many enemies each wave sends (0.6 / 1.0 / 1.5, rounded, at least 1 per entry; a denser wave keeps its first and last enemy times). Chosen with `--difficulty=`, in mission select (buttons or Left / Right, remembered in `GameSettings.difficulty`) or by a mission's `difficulty_id`; named on the HUD unless normal. Normal changes nothing: whole-battle digests of 6 missions x 2 seeds are identical to before. `ContentDb` requires a `normal` of exactly 1.0. `GameSession.prepare_battle`, `MissionDefinition.total_enemies_at`, `MissionListing.facts` takes a level. 29 new tests.
 

@@ -294,11 +294,12 @@ func setup(p_db: ContentDb, p_mission: MissionDefinition, p_seed: int) -> void:
 	_difficulty = _resolve_difficulty()
 	_wave_count.clear()
 	_wave_gap.clear()
+	var base_total := mission.total_enemies()
 	for i in mission.waves.size():
 		_wave_spawned.append(0)
 		var w := mission.waves[i]
-		_wave_count.append(_difficulty.scaled_count(w.count) if _difficulty != null else w.count)
-		_wave_gap.append(_difficulty.scaled_interval(w.count, w.interval_s) if _difficulty != null else w.interval_s)
+		_wave_count.append(_difficulty.scaled_count(w.count, base_total) if _difficulty != null else w.count)
+		_wave_gap.append(_difficulty.scaled_interval(w.count, w.interval_s, base_total) if _difficulty != null else w.interval_s)
 	_waypoints.clear()
 	for c in mission.path_cells:
 		_waypoints.append(IsoProjection.cell_center(c))
