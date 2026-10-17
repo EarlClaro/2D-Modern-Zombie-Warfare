@@ -1,5 +1,8 @@
 # Changelog
 
+## 3.11 Flow-field movement, part 1 of 3: the field (2026-10-17)
+- New pure `FlowField` (`scripts/combat/flow_field.gd`, ADR-012): a distance map from the goal over open ground cells (8-neighbour, no corner cutting, goal always open, unreachable cells flagged), a heading per cell from its shortest-path parents (equal ways round an obstacle pick one instead of cancelling), a blended `direction_at`, a wall-sliding `slide` step so a walker follows an obstacle instead of cutting its corner, `trace` for the route from a point, and `open_grid(map, blocked)`. Nothing uses it yet: no mission changes. 25 new tests (921 in all); mutation check 25/26 with the survivor equivalent (a performance-only guard).
+
 ## 3.10 Card and autonomy balance sweep (2026-10-17)
 - `tools/tune_cards.gd`: the bots now play the 3.5-3.9 card kinds (orders, supply, deck, mines, lure, convoy, drones) and take `--difficulty=`.
 - Hard is x1.2 now (was x1.5: the decent-player bot won 0/10 on every mission at x1.5, 3-4/10 at x1.25 on `m2_card_defense`). `DifficultyDefinition.max_total_enemies` (hard = 2000) keeps a bigger level under about 2,000 enemies (the F5 frame budget) and never below normal; on `x2_outskirts`, `x3_storm_night` and `x9_town_siege` hard is the same as normal.
