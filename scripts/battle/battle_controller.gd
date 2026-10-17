@@ -136,6 +136,10 @@ var _seed: int = 0  # seed of the current battle; restart replays it
 var _next_uid: int = 1
 var _wave_spawned: Array[int] = []
 var _waypoints: Array[Vector2] = []
+var _routes: Array[Route] = []  # one per enemy spawn: spawn -> path -> core (where kiting units scout and fall back)
+var _spawn_points: PackedVector2Array = PackedVector2Array()
+var _kite_scan: KiteScan = KiteScan.new()
+var _kite_facts: UnitBrain.KiteFacts = UnitBrain.KiteFacts.new()
 var _pending: Array[Hit] = []
 var _enemy_index: EnemyIndex = EnemyIndex.new()  # filled by the enemy phase; queried by unit targeting and blasts
 var _enemy_index_valid: bool = false  # false once `enemies` changed after the index was built
@@ -262,6 +266,15 @@ func setup(p_db: ContentDb, p_mission: MissionDefinition, p_seed: int) -> void:
 	_waypoints.clear()
 	for c in mission.path_cells:
 		_waypoints.append(IsoProjection.cell_center(c))
+	_routes.clear()
+	_spawn_points.clear()
+	for sc in mission.spawn_cells:
+		var pts := PackedVector2Array()
+		pts.append(IsoProjection.cell_center(sc))
+		for wp in _waypoints:
+			pts.append(wp)
+		_routes.append(Route.from_points(pts))
+		_spawn_points.append(IsoProjection.cell_center(sc))
 	_rules = MissionRules.new(mission.duration_s)
 	_rules.ended.connect(_on_rules_ended)
 	_build_map()
@@ -467,6 +480,8 @@ func _think_and_move(u: BattleUnit, delta: float) -> BattleEnemy:
 			UnitBrain.Behavior.SUPPORT:
 				var friend := _nearest_friend(u)
 				decision = UnitBrain.support(u.ground_pos, friend != null, friend.ground_pos if friend != null else Vector2.ZERO)
+			UnitBrain.Behavior.KITE:
+				decision = UnitBrain.kite(_kite_facts_for(u, target != null))
 	if decision != null:
 		_carry_out(u, decision)
 	var before := u.ground_pos
@@ -476,6 +491,48 @@ func _think_and_move(u: BattleUnit, delta: float) -> BattleEnemy:
 	if u.ground_pos != before:  # it arrived this tick: the target may have changed
 		target = _pick_target(u)
 	return target
+
+
+## The facts the kiting brain needs for `u`: one pass over the enemies it can see, the route it scouts along, a friend
+## that is too close.
+func _kite_facts_for(u: BattleUnit, in_range: bool) -> UnitBrain.KiteFacts:
+	var f := _kite_facts
+	var route := _route_for(u.ground_pos)
+	f.pos = u.ground_pos
+	f.speed = u.def.move_speed
+	f.weapon_range = u.weapon.range_tiles
+	f.danger_margin = u.def.danger_margin
+	f.courage = u.def.courage
+	f.core = core.ground_pos
+	f.route = route
+	f.post_s = maxf(route.length() - u.def.scout_post, 0.0) if route != null else 0.0
+	f.post_side = float(u.uid % 5 - 2) * 0.9
+	f.in_range = in_range
+	f.scan = _kite_scan
+	f.clear = Callable(self, "_walk_is_clear")
+	_index_ready().scan_kite(u.ground_pos, u.def.vision, u.def.move_speed, UnitBrain.KITE_MARGIN * u.def.danger_margin, UnitBrain.KITE_REACT_S, u.weapon.range_tiles + UnitBrain.KITE_CROWD_EXTRA, _spawn_points, _kite_scan)
+	f.nearest_friend = Vector2(INF, INF)
+	var best := UnitBrain.FRIEND_SPACE * UnitBrain.FRIEND_SPACE
+	for o in units:
+		if o == u or not o.is_alive() or o.def.is_air():
+			continue
+		var d2 := u.ground_pos.distance_squared_to(o.ground_pos)
+		if d2 < best:
+			best = d2
+			f.nearest_friend = o.ground_pos
+	return f
+
+
+## The enemy route nearest to `p` (null on a mission without a spawn).
+func _route_for(p: Vector2) -> Route:
+	var best: Route = null
+	var best_d := INF
+	for r in _routes:
+		var d := r.distance_to(p)
+		if d < best_d:
+			best_d = d
+			best = r
+	return best
 
 
 ## Focus fire (when the unit has the habit): the most dangerous enemy in range, else the nearest.

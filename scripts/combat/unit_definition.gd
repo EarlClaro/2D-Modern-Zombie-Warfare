@@ -36,6 +36,13 @@ const HIGH_AIR_ALTITUDE: float = 6.0
 @export var retreats: bool = true
 @export_range(0.0, 1.0) var retreat_below: float = 0.35
 @export var focus_fire: bool = true
+## Kiting (UnitBrain.KITE): how far the unit sees enemies, how far from the enemy spawn along the route it waits while
+## scouting, how many enemies around it it fights before falling back, and how bold it is (multiplies the safety
+## margin kept from an enemy's reach: a heavily armoured tank can be bolder than a rifleman).
+@export var vision: float = 16.0
+@export var scout_post: float = 12.0
+@export var courage: int = 14
+@export var danger_margin: float = 1.0
 ## Optional second weapon (aircraft only for now), fired independently of the first.
 @export var secondary_weapon_id: String = ""
 @export var placeholder_color: Color = Color.WHITE
@@ -70,6 +77,8 @@ func validate() -> PackedStringArray:
 			errs.append(_err("a structure must be a ground entity"))
 	if retreat_below < 0.0 or retreat_below >= 1.0:
 		errs.append(_err("retreat_below must be within 0..1 (exclusive of 1)"))
+	if vision <= 0.0 or scout_post < 0.0 or courage < 1 or danger_margin < 0.0:
+		errs.append(_err("vision must be > 0, scout_post >= 0, courage >= 1 and danger_margin >= 0"))
 	if leash <= 0.0 or advance_limit <= 0.0 or follow_range <= 0.0:
 		errs.append(_err("leash, advance_limit and follow_range must be > 0"))
 	if death_blast_damage < 0.0 or death_blast_radius < 0.0:

@@ -185,3 +185,50 @@ func box_candidates(center: Vector2, radius: float) -> PackedInt32Array:
 				j = _next[j]
 	out.sort()
 	return out
+
+
+## Fills `out` with what a unit at `origin` sees within `vision` tiles: which enemies it must keep clear of, how crowded it
+## is, and the enemy nearest any of `spawns` (see KiteScan). One pass over the cells around the unit.
+## An enemy is dangerous when its distance is under reach + margin + speed * react_s; `my_speed` decides which of those
+## the unit can outrun (an enemy slower than 95 % of it).
+func scan_kite(origin: Vector2, vision: float, my_speed: float, margin: float, react_s: float, crowd_radius: float, spawns: PackedVector2Array, out: KiteScan) -> void:
+	out.reset()
+	var r := maxf(vision, 0.0)
+	var r2 := r * r
+	var crowd2 := crowd_radius * crowd_radius
+	var x0 := clampi(int((origin.x - r) * _inv), 0, _cw - 1)
+	var x1 := clampi(int((origin.x + r) * _inv), 0, _cw - 1)
+	var y0 := clampi(int((origin.y - r) * _inv), 0, _ch - 1)
+	var y1 := clampi(int((origin.y + r) * _inv), 0, _ch - 1)
+	for cy in range(y0, y1 + 1):
+		for cx in range(x0, x1 + 1):
+			var j := _head[cy * _cw + cx]
+			while j != -1:
+				var p := _pos[j]
+				var d2 := origin.distance_squared_to(p)
+				if d2 <= r2:
+					var def := _who[j].def
+					out.visible += 1
+					if d2 <= crowd2:
+						out.crowd += 1
+					var d := sqrt(d2)
+					var speed := def.move_speed
+					var slack := d - (def.attack_range + margin + speed * react_s)
+					if slack < 0.0:
+						out.danger_count += 1
+						if speed < my_speed * 0.95:
+							out.danger_slower += 1
+						out.away += (origin - p) / maxf(d2, 0.04)
+					if slack < out.worst_slack:
+						out.worst_slack = slack
+					var up := INF
+					for sp in spawns:
+						up = minf(up, p.distance_squared_to(sp))
+					if up < out._upstream_d2 or (up == out._upstream_d2 and _uid[j] < out._upstream_uid):
+						out._upstream_d2 = up
+						out._upstream_uid = _uid[j]
+						out.has_upstream = true
+						out.upstream_pos = p
+						out.upstream_reach = def.attack_range
+						out.upstream_speed = speed
+				j = _next[j]

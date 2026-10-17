@@ -249,6 +249,8 @@ func test_soldier_does_not_fire_while_moving() -> void:
 	var soldier_only := _variant([_su("rifle_soldier", Vector2i(18, 5))])
 	# Control: standing soldier with an enemy in range fires on the first tick.
 	var control := _battle(soldier_only)
+	control.units[0].def = control.units[0].def.duplicate()
+	control.units[0].def.behavior = UnitBrain.Behavior.HOLD  # the shipped rifleman would back away from an enemy this close
 	_inject_enemy(control, control.units[0].ground_pos + Vector2(2.0, 0.0))
 	control.step(DT)
 	assert_true(control.stats["shots"] >= 1, "standing unit fires")

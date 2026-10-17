@@ -13,6 +13,16 @@ var _made: Array[BattleController] = []
 func _get_db() -> ContentDb:
 	if _db == null:
 		_db = ContentDb.load_from()
+		# These tests are about the older behaviours: pin copies of the shipped units to them (the shipped riflemen and
+		# the tank now kite; see test_kite.gd). Copies, because loaded resources are shared between tests.
+		for id in ["rifle_soldier", "rpg_soldier"]:
+			var guard: UnitDefinition = _db.units[id].duplicate()
+			guard.behavior = UnitBrain.Behavior.GUARD
+			_db.units[id] = guard
+		var tank: UnitDefinition = _db.units["tank"].duplicate()
+		tank.behavior = UnitBrain.Behavior.ADVANCE
+		tank.move_speed = 1.0
+		_db.units["tank"] = tank
 	return _db
 
 

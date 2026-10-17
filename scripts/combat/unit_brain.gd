@@ -9,9 +9,13 @@ extends RefCounted
 ##   ADVANCE  walks toward the enemy closest to the core until it has something in range; never farther than
 ##            `advance_limit` from the core.
 ##   SUPPORT  follows the nearest friendly fighting unit.
+##   KITE     a skirmisher: scouts up the enemy route toward the spawn, fights the enemies nearest the spawn from the edge of
+##            its weapon range, keeps out of every enemy's danger zone (backing away along the route when something gets
+##            close, one short step at a time so it can fire in between), and falls back toward the core when the crowd
+##            is bigger than it can handle. Against enemies it cannot outrun it holds its ground instead.
 ## All behaviours stop as soon as something is in weapon range (units must stand still to fire).
 
-enum Behavior { HOLD, GUARD, ADVANCE, SUPPORT }
+enum Behavior { HOLD, GUARD, ADVANCE, SUPPORT, KITE }
 enum Action { STAY, MOVE }
 
 ## A unit takes up its firing spot at this fraction of its weapon range from the enemy, so a small step by the enemy does
@@ -32,6 +36,17 @@ const COVER_MAX_WALK: float = 6.0
 ## within COVER_ABORT it fights where it stands instead of walking to cover.
 const COVER_OK: float = 1.5
 const COVER_ABORT: float = 3.0
+## Kiting. The safety margin added to an enemy's reach, the time (s) an enemy is assumed to close in while the unit reacts,
+## the shortest and longest backward step, and the radius around a unit that counts for "crowded".
+const KITE_MARGIN: float = 1.2
+const KITE_REACT_S: float = 0.7
+const KITE_STEP_MIN: float = 1.0
+const KITE_STEP_MAX: float = 3.0
+const KITE_CROWD_EXTRA: float = 3.0
+## Two friends closer than this nudge each other apart so nobody stands in another's way.
+const FRIEND_SPACE: float = 0.7
+## A retreating unit leans this much on "away from the enemies" versus "back along the route".
+const KITE_AWAY_WEIGHT: float = 0.6
 
 
 class Decision:
@@ -47,6 +62,107 @@ class Decision:
 		d.action = Action.MOVE
 		d.dest = to
 		return d
+
+
+## Everything the kiting brain needs for one unit (the battle fills it; nothing here touches nodes).
+class KiteFacts:
+	extends RefCounted
+	var pos: Vector2 = Vector2.ZERO
+	var speed: float = 3.0
+	var weapon_range: float = 8.0
+	var danger_margin: float = 1.0  # multiplies KITE_MARGIN (a heavy tank is bolder than a rifleman)
+	var courage: int = 14  # enemies within the crowd radius it will fight alone before falling back
+	var core: Vector2 = Vector2.ZERO
+	var route: Route = null
+	var post_s: float = 0.0  # distance from the core along the route where it waits when nothing is in sight
+	var post_side: float = 0.0  # sideways offset of its waiting spot (so a group does not stack up)
+	var in_range: bool = false  # something is already in weapon range
+	var scan: KiteScan = null
+	var nearest_friend: Vector2 = Vector2(INF, INF)  # a friendly unit's position, if one is close
+	## Optional: `clear(a, b) -> bool`, true if the walk from a to b is open ground. Without it every walk counts as open.
+	var clear: Callable = Callable()
+
+
+## Kite: see the class comment. Returns where to stand or walk.
+static func kite(f: KiteFacts) -> Decision:
+	var scan := f.scan
+	# 1. Overwhelmed: fall back toward the core and fight with the rest of the army there.
+	if scan.crowd > f.courage and f.pos.distance_to(f.core) > RETREAT_STAND * 2.0 + ARRIVE_EPS:
+		var back: Variant = _step_back(f, -1.0, true)
+		if back != null:
+			return Decision.move(back)
+		return Decision.stay()
+	# 2. Something can reach it soon: back off if it can outrun them, otherwise stand and fight.
+	if scan.danger_count > 0:
+		if scan.danger_slower < scan.danger_count:
+			return Decision.stay()  # a faster enemy would catch it from behind: face it instead
+		if f.pos.distance_to(f.core) <= RETREAT_STAND + ARRIVE_EPS:
+			return Decision.stay()  # nowhere left to go
+		var step: Variant = _step_back(f, scan.worst_slack, false)
+		return Decision.move(step) if step != null else Decision.stay()
+	# 3. Safe and something to shoot: stand and fire.
+	if f.in_range:
+		return _unstack(f)
+	# 4. Enemies in sight: go for the one nearest the spawn, stopping at the edge of weapon range and outside its zone.
+	if scan.has_upstream:
+		var zone := scan.upstream_reach + KITE_MARGIN * f.danger_margin + scan.upstream_speed * KITE_REACT_S
+		var want := maxf(f.weapon_range * RANGE_MARGIN, zone + 0.6)
+		if want > f.weapon_range:
+			return _unstack(f)  # it could never be shot from outside its own reach: leave it to the others
+		var off := f.pos - scan.upstream_pos
+		if off.length() <= want + ARRIVE_EPS:
+			return _unstack(f)
+		var spot: Vector2 = scan.upstream_pos + off.normalized() * want
+		if f.pos.distance_to(spot) <= ARRIVE_EPS:
+			return _unstack(f)
+		if f.clear.is_valid() and not f.clear.call(f.pos, spot):
+			return _unstack(f)
+		return Decision.move(spot)
+	# 5. Nothing in sight: scout up the route to the waiting post.
+	if f.route != null and not f.route.is_empty():
+		var post := f.route.point_at(f.post_s)
+		var along := f.route.dir_to_core(post)
+		post += Vector2(-along.y, along.x) * f.post_side
+		if f.pos.distance_to(post) > ARRIVE_EPS * 3.0 and (not f.clear.is_valid() or f.clear.call(f.pos, post)):
+			return Decision.move(post)
+	return _unstack(f)
+
+
+## A step back from the enemies: along the route toward the core, pushed away from whatever is close. `slack` is how far
+## outside the worst danger zone the unit stands (negative = inside); the step is just long enough to get clear again.
+## `far` asks for the long fall-back to the core instead. Returns null when no open step exists.
+static func _step_back(f: KiteFacts, slack: float, far: bool) -> Variant:
+	var scan := f.scan
+	var back := Vector2.ZERO
+	if f.route != null and not f.route.is_empty():
+		back = f.route.dir_to_core(f.pos)
+	if back == Vector2.ZERO:
+		back = (f.core - f.pos).normalized()
+	var away := scan.away.normalized() if scan.away.length_squared() > 1e-9 else back
+	var dir := (away * KITE_AWAY_WEIGHT + back * (1.0 - KITE_AWAY_WEIGHT)).normalized()
+	var to_core := f.pos.distance_to(f.core)
+	var step := clampf(-slack + 0.8, KITE_STEP_MIN, KITE_STEP_MAX)
+	if far:
+		step = KITE_STEP_MAX * 2.0
+	step = minf(step, maxf(to_core - RETREAT_STAND, 0.0))
+	if step < ARRIVE_EPS:
+		return null
+	for turn in [0.0, 0.5, -0.5, 1.0, -1.0]:
+		var spot: Vector2 = f.pos + dir.rotated(turn) * step
+		if not f.clear.is_valid() or f.clear.call(f.pos, spot):
+			return spot
+	return null
+
+
+## Standing still: but a unit that has a friend almost on top of it steps aside so they do not block each other.
+static func _unstack(f: KiteFacts) -> Decision:
+	if f.nearest_friend.x < INF and f.pos.distance_to(f.nearest_friend) < FRIEND_SPACE:
+		var out := f.pos - f.nearest_friend
+		var dir := out.normalized() if out.length_squared() > 1e-6 else Vector2(1, 0)
+		var spot := f.pos + dir * (FRIEND_SPACE - out.length() + 0.15)
+		if not f.clear.is_valid() or f.clear.call(f.pos, spot):
+			return Decision.move(spot)
+	return Decision.stay()
 
 
 ## Guard: `enemy` is the enemy to deal with (the nearest one near the anchor) if `has_enemy`.
