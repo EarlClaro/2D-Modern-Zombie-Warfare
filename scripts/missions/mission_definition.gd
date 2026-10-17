@@ -20,6 +20,8 @@ extends ContentDefinition
 ## 0 = no limit: cards may be placed anywhere on the map (every shipped mission). Otherwise the limit above applies.
 ## Enemy spawn cells: a deployment card cannot be placed closer than this to one (tiles; 0 = no guard).
 @export var spawn_guard_radius: float = 6.0
+## Optional: the difficulty this mission uses when none is chosen (empty = normal).
+@export var difficulty_id: String = ""
 ## Optional: ids of DOCTRINE cards in force for the whole mission (until the pre-mission picker exists, M5).
 @export var doctrines: PackedStringArray = PackedStringArray()
 ## Optional: scenery id of the command-bunker art drawn for the core (empty = the plain box), and how far
@@ -42,6 +44,15 @@ func total_enemies() -> int:
 	for w in waves:
 		if w != null:
 			n += maxi(w.count, 0)
+	return n
+
+
+## Enemies the mission sends at a difficulty (the base total when `diff` is null).
+func total_enemies_at(diff: DifficultyDefinition) -> int:
+	var n := 0
+	for w in waves:
+		if w != null:
+			n += diff.scaled_count(maxi(w.count, 0)) if diff != null else maxi(w.count, 0)
 	return n
 
 

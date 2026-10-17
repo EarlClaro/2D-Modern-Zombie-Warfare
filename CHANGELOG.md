@@ -4,6 +4,9 @@
 - **Shell scatter:** weapons gain `scatter_tiles` (random landing point within that radius, from the seeded shell RNG): rocket salvo 2.6, howitzer 1.2, mortar 1.0. A rocket salvo now covers an area. Tests in `tests/test_field_artillery.gd` (spread within the radius, none without scatter, same result every run); removing the scatter line makes the spread test fail.
 - **Re-balance after the scatter:** Bridge Line 0.45 to 0.4 (734 enemies), Town Siege 0.85 to 0.6 (1,440 enemies); Mountain Pass confirmed at 0.62 (4/6). Numbers in docs/BALANCE.md.
 
+## 3.9 Selectable difficulty (2026-10-17)
+- Easy / normal / hard (`DifficultyDefinition`, `data/difficulties/`) scale how many enemies each wave sends (0.6 / 1.0 / 1.5, rounded, at least 1 per entry; a denser wave keeps its first and last enemy times). Chosen with `--difficulty=`, in mission select (buttons or Left / Right, remembered in `GameSettings.difficulty`) or by a mission's `difficulty_id`; named on the HUD unless normal. Normal changes nothing: whole-battle digests of 6 missions x 2 seeds are identical to before. `ContentDb` requires a `normal` of exactly 1.0. `GameSession.prepare_battle`, `MissionDefinition.total_enemies_at`, `MissionListing.facts` takes a level. 29 new tests.
+
 ## Merge of the field command package with 3.6 and 3.7 (2026-10-17)
 - `UnitBrain.Behavior` is now HOLD, GUARD, ADVANCE, SUPPORT, KITE, ARTILLERY, HUNT (HUNT moved from 4 to 6; the combat drone data follows). `PlacementRules.Reason` keeps `NOT_WALKABLE` and `NO_ROUTE` before `TOO_CLOSE_TO_SPAWN`.
 - The 3.6 and 3.7 missions `x5_field_works` and `x6_high_tech` lost their 10-tile deploy circle (everything is buildable anywhere now). Note: the new F4 mission `x6_bridge_line` shares the number 6 with `x6_high_tech`; mission select orders them by id.

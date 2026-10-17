@@ -32,7 +32,7 @@ Today the game opens straight into one fixed mission and every other mission, op
 - `project.godot`: main scene = the main menu.
 
 ## Non-goals
-Campaign map, save slots, unlocks, deck editor (Milestone 5), key rebinding, resolution list and graphics presets, music, language options, difficulty selector (increment 3.9 adds it to mission select), gamepad-specific layouts, animated backgrounds and final art (Milestone 7).
+Campaign map, save slots, unlocks, deck editor (Milestone 5), key rebinding, resolution list and graphics presets, music, language options, difficulty selector (added to mission select in increment 3.9: three buttons or Left / Right, remembered in the settings), gamepad-specific layouts, animated backgrounds and final art (Milestone 7).
 
 ## Increments
 1. `GameSettings`, `GameSession`, `MissionListing` with tests.

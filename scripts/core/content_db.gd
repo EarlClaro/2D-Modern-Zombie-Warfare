@@ -15,12 +15,16 @@ var operations: Dictionary = {}  # id -> OperationDefinition (battle effects of 
 var effects: Dictionary = {}  # id -> StateEffectDefinition (battle effects of Order / Supply / Deck / Doctrine cards)
 var cutaways: Dictionary = {}  # id -> CutawayDefinition (full-screen clips of big supports)
 var entities: Dictionary = {}  # id -> FieldEntityDefinition (mines and lures of Trap / Intel cards)
+var difficulties: Dictionary = {}  # id -> DifficultyDefinition (enemy-count multipliers)
 var scenery_defs: Dictionary = {}  # id -> SceneryDefinition (decorations placed by maps)
 var deck_rules: DeckRules  # data/config/deck_rules.tres; null if missing/invalid (reported in errors)
 var errors: PackedStringArray = PackedStringArray()
 
+## The level a mission uses when nothing else is chosen; it must exist and must not change any count.
+const NORMAL_DIFFICULTY: String = "normal"
 
-## Loads data/{weapons,units,enemies,maps,missions,cards,decks,operations,effects,entities} and data/config/deck_rules.tres under `root`, then verifies cross-references.
+
+## Loads data/{weapons,units,enemies,maps,missions,cards,decks,operations,effects,entities,difficulties} and data/config/deck_rules.tres under `root`, then verifies cross-references.
 static func load_from(root: String = "res://data") -> ContentDb:
 	var db := ContentDb.new()
 	db._load_dir(root + "/weapons", "weapon")
@@ -33,6 +37,7 @@ static func load_from(root: String = "res://data") -> ContentDb:
 	db._load_dir(root + "/operations", "operation")
 	db._load_dir(root + "/effects", "effect")
 	db._load_dir(root + "/entities", "entity")
+	db._load_dir(root + "/difficulties", "difficulty")
 	db._load_dir(root + "/cutaways", "cutaway")
 	db._load_dir(root + "/scenery", "scenery", false)
 	db._load_deck_rules(root + "/config/deck_rules.tres")
@@ -82,6 +87,22 @@ func effect(id: String) -> StateEffectDefinition:
 
 func entity(id: String) -> FieldEntityDefinition:
 	return entities.get(id)
+
+
+func difficulty(id: String) -> DifficultyDefinition:
+	return difficulties.get(id)
+
+
+## The level ids in menu order (easiest first).
+func difficulty_ids() -> Array[String]:
+	var ids: Array[String] = []
+	for id: String in difficulties:
+		ids.append(id)
+	ids.sort_custom(func(a: String, b: String) -> bool:
+		var da: DifficultyDefinition = difficulties[a]
+		var db_: DifficultyDefinition = difficulties[b]
+		return da.order < db_.order or (da.order == db_.order and a < b))
+	return ids
 func cutaway(id: String) -> CutawayDefinition:
 	return cutaways.get(id)
 
@@ -108,6 +129,10 @@ func add_effect(def: StateEffectDefinition) -> bool:
 
 func add_entity(def: FieldEntityDefinition) -> bool:
 	return _register(entities, def)
+
+
+func add_difficulty(def: DifficultyDefinition) -> bool:
+	return _register(difficulties, def)
 
 
 func add_card(def: CardDefinition) -> bool:
@@ -164,12 +189,20 @@ func validate_references() -> void:
 			errors.append("mission '%s': unknown core_scenery_id '%s'" % [id, m.core_scenery_id])
 		if not m.deck_id.is_empty() and not decks.has(m.deck_id):
 			errors.append("mission '%s': unknown deck_id '%s'" % [id, m.deck_id])
+		if not m.difficulty_id.is_empty() and not difficulties.has(m.difficulty_id):
+			errors.append("mission '%s': unknown difficulty_id '%s'" % [id, m.difficulty_id])
 		for did in m.doctrines:
 			var dc: CardDefinition = cards.get(did)
 			if dc == null:
 				errors.append("mission '%s': unknown doctrine card '%s'" % [id, did])
 			elif dc.card_kind != CardDefinition.CardKind.DOCTRINE:
 				errors.append("mission '%s': doctrine '%s' is not a doctrine card" % [id, did])
+	if not missions.is_empty() or not difficulties.is_empty():
+		var normal: DifficultyDefinition = difficulties.get(NORMAL_DIFFICULTY)
+		if normal == null:
+			errors.append("difficulty '%s' is missing (it is the default level)" % NORMAL_DIFFICULTY)
+		elif normal.enemy_count_mult != 1.0:
+			errors.append("difficulty '%s' must multiply enemy counts by exactly 1 (it is %s)" % [NORMAL_DIFFICULTY, str(normal.enemy_count_mult)])
 	for eid in effects:
 		for wid in (effects[eid] as StateEffectDefinition).weapon_ids:
 			if not weapons.has(wid):
@@ -385,6 +418,11 @@ func _load_dir(path: String, kind: String, required: bool = true) -> void:
 					add_operation(res)
 				else:
 					errors.append("%s is not an OperationDefinition" % full)
+			"difficulty":
+				if res is DifficultyDefinition:
+					add_difficulty(res)
+				else:
+					errors.append("%s is not a DifficultyDefinition" % full)
 			"entity":
 				if res is FieldEntityDefinition:
 					add_entity(res)

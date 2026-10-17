@@ -83,5 +83,5 @@ Pixel or hybrid pixel art, 2:1 iso, modern lighting/particles, placeholders (col
 | A7 | Occlusion approach | fade occluders (ADR-005) | validate in spike steps 5+ |
 | A8 | Sprite directions | 8 | assumed; 5-mirrored is fallback |
 | A9 | Real title | Last Defense is placeholder | open |
-| A11 | Selectable difficulty | easy / normal / hard scale enemy counts only (user, 2026-10-16) | decided, built in 3.9 |
+| A11 | Selectable difficulty | easy / normal / hard scale enemy counts only (user, 2026-10-16) | decided, built in 3.9 (easy 0.6 / normal 1.0 / hard 1.5 on enemy counts, chosen in mission select or with `--difficulty=`) |
 | A10 | Starting deck contents | 4× Rifle Squad, 3× Gatling, 2× Tank, 3× Artillery Strike, 2× Helicopter, 2× Ammo Resupply = 16 (tune later) | proposed |
