@@ -34,132 +34,133 @@ cell = Vector2i(10, 28)
 script = ExtResource("4_m1ptr")
 start_s = 5.0
 enemy_id = "shambler"
-count = 50
-interval_s = 0.15555555555555556
+count = 44
+interval_s = 0.17500000000000002
 
 [sub_resource type="Resource" id="Resource_nm5ey"]
 script = ExtResource("4_m1ptr")
 start_s = 5.0
 enemy_id = "shambler"
-count = 36
-interval_s = 0.19999999999999998
+count = 32
+interval_s = 0.22499999999999998
 spawn_index = 1
 
 [sub_resource type="Resource" id="Resource_qrl2a"]
 script = ExtResource("4_m1ptr")
 start_s = 24.0
 enemy_id = "runner"
-count = 41
-interval_s = 0.11111111111111112
+count = 36
+interval_s = 0.125
 
 [sub_resource type="Resource" id="Resource_hfyfb"]
 script = ExtResource("4_m1ptr")
 start_s = 30.0
 enemy_id = "spitter"
-count = 8
-interval_s = 1.1111111111111112
+count = 7
+interval_s = 1.25
 spawn_index = 1
 
 [sub_resource type="Resource" id="Resource_0y25b"]
 script = ExtResource("4_m1ptr")
 start_s = 46.0
 enemy_id = "shambler"
-count = 144
-interval_s = 0.06666666666666667
+count = 128
+interval_s = 0.075
 
 [sub_resource type="Resource" id="Resource_t63mk"]
 script = ExtResource("4_m1ptr")
 start_s = 52.0
 enemy_id = "brute"
 count = 6
-interval_s = 2.0
+interval_s = 2.25
 spawn_index = 1
 
 [sub_resource type="Resource" id="Resource_ibmd4"]
 script = ExtResource("4_m1ptr")
 start_s = 76.0
 enemy_id = "runner"
-count = 77
-interval_s = 0.06666666666666667
+count = 68
+interval_s = 0.075
 spawn_index = 1
 
 [sub_resource type="Resource" id="Resource_2l5l2"]
 script = ExtResource("4_m1ptr")
 start_s = 80.0
 enemy_id = "spitter"
-count = 13
+count = 11
+interval_s = 1.125
 
 [sub_resource type="Resource" id="Resource_5f8h6"]
 script = ExtResource("4_m1ptr")
 start_s = 98.0
 enemy_id = "shambler"
-count = 189
-interval_s = 0.044444444444444446
+count = 168
+interval_s = 0.049999999999999996
 
 [sub_resource type="Resource" id="Resource_gxuyc"]
 script = ExtResource("4_m1ptr")
 start_s = 104.0
 enemy_id = "brute"
-count = 14
-interval_s = 1.1111111111111112
+count = 13
+interval_s = 1.25
 spawn_index = 1
 
 [sub_resource type="Resource" id="Resource_w7ti1"]
 script = ExtResource("4_m1ptr")
 start_s = 122.0
 enemy_id = "runner"
-count = 77
-interval_s = 0.07777777777777778
+count = 68
+interval_s = 0.08750000000000001
 
 [sub_resource type="Resource" id="Resource_8ohlo"]
 script = ExtResource("4_m1ptr")
 start_s = 5.0
 enemy_id = "behemoth"
-interval_s = 8.88888888888889
+interval_s = 10.0
 
 [sub_resource type="Resource" id="Resource_62ibd"]
 script = ExtResource("4_m1ptr")
 start_s = 14.0
 enemy_id = "behemoth"
-interval_s = 8.88888888888889
+interval_s = 10.0
 spawn_index = 1
 
 [sub_resource type="Resource" id="Resource_p224j"]
 script = ExtResource("4_m1ptr")
 start_s = 36.0
 enemy_id = "sprinter"
-count = 27
-interval_s = 0.22222222222222224
+count = 24
+interval_s = 0.25
 
 [sub_resource type="Resource" id="Resource_ipx6m"]
 script = ExtResource("4_m1ptr")
 start_s = 60.0
 enemy_id = "spewer"
-count = 4
-interval_s = 2.2222222222222223
+count = 3
+interval_s = 2.5
 spawn_index = 1
 
 [sub_resource type="Resource" id="Resource_sgtro"]
 script = ExtResource("4_m1ptr")
 start_s = 84.0
 enemy_id = "sprinter"
-count = 63
-interval_s = 0.11111111111111112
+count = 56
+interval_s = 0.125
 spawn_index = 1
 
 [sub_resource type="Resource" id="Resource_045i6"]
 script = ExtResource("4_m1ptr")
 start_s = 100.0
 enemy_id = "spewer"
-count = 9
-interval_s = 1.3333333333333333
+count = 8
+interval_s = 1.4999999999999998
 
 [sub_resource type="Resource" id="Resource_ma7cl"]
 script = ExtResource("4_m1ptr")
 start_s = 120.0
 enemy_id = "sprinter"
-count = 68
-interval_s = 0.11111111111111112
+count = 60
+interval_s = 0.125
 
 [resource]
 script = ExtResource("2_bko4m")

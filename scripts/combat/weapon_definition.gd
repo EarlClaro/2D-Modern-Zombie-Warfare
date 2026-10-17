@@ -32,6 +32,9 @@ enum Delivery { HITSCAN, PROJECTILE }
 @export var burst_size: int = 1
 @export var burst_pause_s: float = 0.0
 @export var needs_spotter: bool = false
+## PROJECTILE weapons: each shell lands at a random point within this many tiles of the aimed spot (0 = dead on). A salvo
+## of rockets spreads over an area instead of landing on one point.
+@export var scatter_tiles: float = 0.0
 
 
 func kind() -> String:
@@ -52,6 +55,8 @@ func validate() -> PackedStringArray:
 		errs.append(_err("blast_radius must be >= 0"))
 	if min_range_tiles < 0.0 or min_range_tiles >= range_tiles:
 		errs.append(_err("min_range_tiles must be >= 0 and below range_tiles"))
+	if scatter_tiles < 0.0:
+		errs.append(_err("scatter_tiles must be >= 0"))
 	if burst_size < 1 or burst_pause_s < 0.0:
 		errs.append(_err("burst_size must be >= 1 and burst_pause_s >= 0"))
 	if not SfxFactory.is_shot_sound(sfx_id):

@@ -14,3 +14,4 @@ blast_radius = 1.8
 projectile_speed = 9.0
 projectile_arc = 6.0
 sfx_id = "missile"
+scatter_tiles = 1.0

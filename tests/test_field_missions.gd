@@ -30,7 +30,7 @@ func test_the_five_missions_load_and_are_valid() -> void:
 		assert_true(m != null, id)
 		assert_eq(m.validate().size(), 0, id)
 		assert_eq(m.deploy_radius, 0.0, "%s: build anywhere" % id)
-		assert_true(m.total_enemies() >= 800, "%s is a long fight (%d enemies)" % [id, m.total_enemies()])
+		assert_true(m.total_enemies() >= 700, "%s is a long fight (%d enemies)" % [id, m.total_enemies()])
 		assert_true(m.spawn_cells.size() == 2, "%s has two spawns" % id)
 
 

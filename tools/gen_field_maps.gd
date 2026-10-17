@@ -24,7 +24,7 @@ var _spawns: Array[Vector2i] = []
 var _path: Array[Vector2i] = []
 var _core: Vector2i = Vector2i.ZERO
 ## F5: how hard each mission is after the balance sweeps (a factor on every wave's count; the interval shrinks with it).
-const WAVE_SCALE := {"x6_bridge_line": 0.45, "x7_dead_highway": 0.5, "x8_last_airfield": 0.7, "x9_town_siege": 0.85, "x10_mountain_pass": 0.62}
+const WAVE_SCALE := {"x6_bridge_line": 0.4, "x7_dead_highway": 0.5, "x8_last_airfield": 0.7, "x9_town_siege": 0.6, "x10_mountain_pass": 0.62}
 
 
 func _initialize() -> void:

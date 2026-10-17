@@ -322,3 +322,49 @@ func test_the_roster_test_mission_and_deck_are_valid_and_hold_every_new_card() -
 	var m := db.mission("dev_roster_range")
 	assert_true(m != null and m.deck_id == "roster")
 	assert_eq(MissionListing.group_of(m.id), MissionListing.GROUP_TESTS)
+
+
+# --- scatter -----------------------------------------------------------------------------------------------------------------
+
+func _salvo_landings(scatter: float) -> Array:
+	var db := _get_db()
+	var w: WeaponDefinition = db.weapon("rocket_salvo").duplicate()
+	w.scatter_tiles = scatter
+	db.weapons["rocket_salvo"] = w  # shared database: restored by the caller
+	var b := _battle([["rocket_launcher", GUN_CELL], ["mg_nest", NEST_CELL]])
+	var e := _inject(b, "shambler", Vector2(20.5, 4.5))
+	e.def = e.def.duplicate()
+	e.def.move_speed = 0.0001  # a target that stays where it is
+	var landings: Array = []
+	b.projectile_launched.connect(func(s: BattleUnit, wd: WeaponDefinition, f: Vector2, t: Vector2): landings.append(t - e.ground_pos))
+	_run(b, 2.0)
+	_release()
+	return landings
+
+
+func test_a_salvo_spreads_over_an_area_and_a_dead_on_weapon_does_not() -> void:
+	var db := _get_db()
+	var original: WeaponDefinition = db.weapon("rocket_salvo")
+	var dead_on := _salvo_landings(0.0)
+	var spread := _salvo_landings(2.6)
+	var again := _salvo_landings(2.6)
+	db.weapons["rocket_salvo"] = original
+	assert_true(dead_on.size() >= 5 and spread.size() >= 5, "a burst of rockets went out")
+	for off in dead_on:
+		assert_vec_near(off, Vector2.ZERO, 1e-4, "no scatter: every rocket on the target")
+	var distinct := {}
+	for off in spread:
+		assert_true((off as Vector2).length() <= 2.6 + 1e-4, "within the scatter radius")
+		distinct[snappedf(off.x, 0.01)] = true
+	assert_true(distinct.size() >= 4, "the rockets land in different places")
+	assert_eq(spread, again, "and the same way every time (seeded)")
+
+
+func test_the_shipped_artillery_scatters_in_proportion_to_its_size() -> void:
+	var db := _get_db()
+	assert_true(db.weapon("rocket_salvo").scatter_tiles > db.weapon("howitzer").scatter_tiles)
+	assert_true(db.weapon("howitzer").scatter_tiles > 0.0 and db.weapon("mortar").scatter_tiles > 0.0)
+	assert_eq(db.weapon("rifle").scatter_tiles, 0.0)
+	var w: WeaponDefinition = db.weapon("mortar").duplicate()
+	w.scatter_tiles = -1.0
+	assert_true(w.validate().size() > 0)
