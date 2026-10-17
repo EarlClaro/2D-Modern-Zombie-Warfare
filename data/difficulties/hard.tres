@@ -6,6 +6,6 @@
 script = ExtResource("1_diff")
 id = "hard"
 display_name = "Hard"
-enemy_count_mult = 1.5
+enemy_count_mult = 1.2
 order = 2
 max_total_enemies = 2000

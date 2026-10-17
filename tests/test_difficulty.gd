@@ -99,7 +99,7 @@ func test_the_three_shipped_levels_exist_in_menu_order() -> void:
 	assert_eq(db.difficulty_ids(), ["easy", "normal", "hard"] as Array[String])
 	assert_near(db.difficulty("easy").enemy_count_mult, 0.6)
 	assert_near(db.difficulty("normal").enemy_count_mult, 1.0, 0.0)
-	assert_near(db.difficulty("hard").enemy_count_mult, 1.5)
+	assert_near(db.difficulty("hard").enemy_count_mult, 1.2)
 
 
 func test_normal_must_exist_and_must_not_change_anything() -> void:

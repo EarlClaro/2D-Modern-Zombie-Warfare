@@ -1,10 +1,13 @@
 # Changelog
 
-## 3.10 (in progress): hard has a ceiling (2026-10-17)
-- `DifficultyDefinition.max_total_enemies` (hard = 2000): a level that makes missions bigger never takes one past about 2,000 enemies (F5's frame budget) and never makes one easier than normal, so on `x2_outskirts`, `x3_storm_night` and `x9_town_siege` hard equals normal. `scaled_count` / `scaled_interval` take the mission's base total. 6 new tests, 894 in all.
+## 3.10 Card and autonomy balance sweep (2026-10-17)
+- `tools/tune_cards.gd`: the bots now play the 3.5-3.9 card kinds (orders, supply, deck, mines, lure, convoy, drones) and take `--difficulty=`.
+- Hard is x1.2 now (was x1.5: the decent-player bot won 0/10 on every mission at x1.5, 3-4/10 at x1.25 on `m2_card_defense`). `DifficultyDefinition.max_total_enemies` (hard = 2000) keeps a bigger level under about 2,000 enemies (the F5 frame budget) and never below normal; on `x2_outskirts`, `x3_storm_night` and `x9_town_siege` hard is the same as normal.
+- Helicopter 5 -> 4 CP (3.5 -> 4.4 kills per CP in the bench; the saving bot won 6/20 at 5 CP and 8/20 at 4 CP). Minefield 8 -> 12 mines (1.8 -> 2.4 kills per CP). Drone gun 4 -> 6 damage (1.8 -> 4.4 kills per CP). Evidence and caveats in BALANCE.md.
+- 6 new tests (the cap), 894 in all.
 
 ## 3.9 Selectable difficulty (2026-10-17)
-- Easy / normal / hard (`DifficultyDefinition`, `data/difficulties/`) scale how many enemies each wave sends (0.6 / 1.0 / 1.5, rounded, at least 1 per entry; a denser wave keeps its first and last enemy times). Chosen with `--difficulty=`, in mission select (buttons or Left / Right, remembered in `GameSettings.difficulty`) or by a mission's `difficulty_id`; named on the HUD unless normal. Normal changes nothing: whole-battle digests of 6 missions x 2 seeds are identical to before. `ContentDb` requires a `normal` of exactly 1.0. `GameSession.prepare_battle`, `MissionDefinition.total_enemies_at`, `MissionListing.facts` takes a level. 29 new tests.
+- Easy / normal / hard (`DifficultyDefinition`, `data/difficulties/`) scale how many enemies each wave sends (0.6 / 1.0 / 1.5 at first, hard is 1.2 since 3.10; rounded, at least 1 per entry; a denser wave keeps its first and last enemy times). Chosen with `--difficulty=`, in mission select (buttons or Left / Right, remembered in `GameSettings.difficulty`) or by a mission's `difficulty_id`; named on the HUD unless normal. Normal changes nothing: whole-battle digests of 6 missions x 2 seeds are identical to before. `ContentDb` requires a `normal` of exactly 1.0. `GameSession.prepare_battle`, `MissionDefinition.total_enemies_at`, `MissionListing.facts` takes a level. 29 new tests.
 
 ## Merge of the field command package with 3.6 and 3.7 (2026-10-17)
 - `UnitBrain.Behavior` is now HOLD, GUARD, ADVANCE, SUPPORT, KITE, ARTILLERY, HUNT (HUNT moved from 4 to 6; the combat drone data follows). `PlacementRules.Reason` keeps `NOT_WALKABLE` and `NO_ROUTE` before `TOO_CLOSE_TO_SPAWN`.

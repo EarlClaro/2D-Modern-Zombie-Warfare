@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1_weapon")
 id = "drone_gun"
-damage = 4.0
+damage = 6.0
 shots_per_second = 4.0
 range_tiles = 5.5
 delivery = 0
