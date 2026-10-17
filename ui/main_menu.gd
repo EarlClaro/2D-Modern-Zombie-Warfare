@@ -22,6 +22,9 @@ func _ready() -> void:
 	_build_home()
 	if not _db.is_valid():
 		_show_content_errors()
+	else:
+		GameSession.profile(_db)
+		_show_profile_note()
 
 
 func _build_home() -> void:
@@ -94,6 +97,21 @@ func _focus_first_button() -> void:
 		if not (b as Button).disabled:
 			(b as Button).grab_focus()
 			return
+
+
+## Says so on the start screen when the progress file was damaged, restored from its backup or comes from a newer game.
+func _show_profile_note() -> void:
+	var load_result := GameSession.profile_load
+	var text := ProfileStore.note_for(load_result) if load_result != null else ""
+	if text.is_empty():
+		return
+	var l := UiKit.label(text, 20, Color(1.0, 0.8, 0.45))
+	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	l.custom_minimum_size = Vector2(1100, 0)
+	l.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
+	l.position.y -= 60
+	add_child(l)
 
 
 func _show_content_errors() -> void:

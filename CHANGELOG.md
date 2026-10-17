@@ -1,5 +1,12 @@
 # Changelog
 
+## 5.2 Campaign chain, locks and progress records (2026-10-17; Milestone 5)
+- **Campaign:** `CampaignDefinition` + `data/campaigns/main.tres` (m1, m2, m3, x1 to x11 in that order). Only the first mission is open at the start; a win opens the next. Test missions are never locked.
+- **Mission select:** follows the campaign order, greys locked missions (`[locked]`, Start disabled, "Locked: win X first."), marks won ones (`[won]`, best core and level), and pre-selects the next mission to play. Test missions are hidden unless the new Settings switch "List test missions in mission select" is on.
+- **Progress:** a battle started from the menu records a win in the profile and saves it (`ProgressRecorder`); the result panel says what it unlocked. A mission started from the command line records nothing and ignores all locks.
+- **Settings:** the test-missions switch, and "Reset progress" (asks twice; hidden in the pause menu). The main menu says so when the progress file was damaged, restored from its backup or comes from a newer game.
+- **Tests:** 18 new (938 in all, 0 failed).
+
 ## 5.1 Player profile and safe save (2026-10-17; Milestone 5, branch m5-progression)
 - **Spec and decision:** `docs/specs/progression.md`, ADR-017 (hybrid decks, pick 1 of 3 rewards, linear campaign, one profile).
 - **New:** `PlayerProfile` (collection, deck, doctrines, finished missions, reward offers; tolerant dictionary round trip; `sanitize` drops content the game no longer has and repairs an illegal deck), `ProfileStore` (`user://profile.json`: temporary file then swap, last good file kept as `.bak`, a damaged file is set aside as `.corrupt-<time>.json` and never deleted, a file from a newer game is read-only), `ProfileMigration` (version steps, a file without a version counts as 0), `GameSession.profile()`.

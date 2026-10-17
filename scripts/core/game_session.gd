@@ -8,6 +8,8 @@ const BATTLE_SCENE: String = "res://scenes/battle/battle.tscn"
 
 static var _settings: GameSettings = null
 static var _profile: PlayerProfile = null
+## Where the profile lives; tests point it at a temporary file.
+static var profile_path: String = ProfileStore.PATH
 ## What loading the profile found (a ProfileStore.Status); the main menu shows `ProfileStore.note_for` of it.
 static var profile_load: ProfileStore.LoadResult = null
 ## The mission the menu chose for the next battle ("" = none, the battle uses its own default) and its seed (0 = default).
@@ -29,7 +31,7 @@ static func settings() -> GameSettings:
 static func profile(db: ContentDb = null) -> PlayerProfile:
 	if _profile == null:
 		var content := db if db != null else ContentDb.load_from()
-		profile_load = ProfileStore.load_from(content)
+		profile_load = ProfileStore.load_from(content, profile_path)
 		_profile = profile_load.profile
 	return _profile
 
@@ -39,9 +41,18 @@ static func set_profile(p: PlayerProfile) -> void:
 	_profile = p
 
 
+## Starts the player's progress over: a new profile with a new reward seed, saved at once (the old file stays as the
+## backup). Returns false if it could not be written.
+static func reset_profile(db: ContentDb = null) -> bool:
+	var content := db if db != null else ContentDb.load_from()
+	_profile = PlayerProfile.new_game(content, ProfileStore.random_seed())
+	profile_load = null
+	return ProfileStore.save(_profile, profile_path)
+
+
 ## Writes the shared profile; false when there is none loaded, it is read-only, or the disk refused.
 static func save_profile() -> bool:
-	return _profile != null and ProfileStore.save(_profile)
+	return _profile != null and ProfileStore.save(_profile, profile_path)
 
 
 ## Replaces the shared settings (tests, and "reset to defaults").

@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="CampaignDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/progression/campaign_definition.gd" id="1_camp"]
+
+[resource]
+script = ExtResource("1_camp")
+id = "main"
+display_name = "Last Defense"
+mission_ids = PackedStringArray("m1_hold_the_crossing", "m2_card_defense", "m3_combined_arms", "x1_fortified_crossing", "x2_outskirts", "x3_storm_night", "x4_field_orders", "x5_field_works", "x6_high_tech", "x7_bridge_line", "x8_dead_highway", "x9_last_airfield", "x10_town_siege", "x11_mountain_pass")

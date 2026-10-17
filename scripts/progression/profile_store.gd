@@ -66,7 +66,7 @@ static func load_from(db: ContentDb, path: String = PATH, new_seed: int = -1) ->
 		data = _read_dict(backup_path(path))
 		from_backup = not data.is_empty()
 	if data.is_empty():
-		res.profile = PlayerProfile.new_game(db, new_seed if new_seed >= 0 else _random_seed())
+		res.profile = PlayerProfile.new_game(db, new_seed if new_seed >= 0 else random_seed())
 		if res.status != Status.DAMAGED:
 			res.status = Status.NEW
 		return res
@@ -81,7 +81,7 @@ static func load_from(db: ContentDb, path: String = PATH, new_seed: int = -1) ->
 		_copy(path, "%s.v%d.bak" % [path.get_basename(), mig.from_version])
 	res.profile = PlayerProfile.from_dict(mig.data)
 	if res.profile.reward_seed <= 0:
-		res.profile.reward_seed = new_seed if new_seed >= 0 else _random_seed()
+		res.profile.reward_seed = new_seed if new_seed >= 0 else random_seed()
 	res.repaired = res.profile.sanitize(db)
 	if from_backup:
 		res.status = Status.RECOVERED
@@ -108,7 +108,8 @@ static func note_for(res: LoadResult) -> String:
 	return ""
 
 
-static func _random_seed() -> int:
+## A fresh reward seed.
+static func random_seed() -> int:
 	var rng := RandomNumberGenerator.new()
 	rng.randomize()
 	return rng.randi_range(1, MAX_SEED)

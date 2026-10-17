@@ -223,6 +223,7 @@ func _ready() -> void:
 		return  # already set up by a test or caller
 	var cli := parse_user_args(OS.get_cmdline_user_args())
 	var pending := GameSession.take_pending()
+	var from_menu := not String(pending["mission"]).is_empty() and not cli.has("mission")
 	if not String(pending["mission"]).is_empty():
 		mission_id = pending["mission"]  # picked in the menu; a command-line mission below still wins
 		difficulty_id = pending["difficulty"]  # likewise a command-line difficulty
@@ -250,6 +251,12 @@ func _ready() -> void:
 	var panel := ResultPanel.new()
 	add_child(panel)
 	panel.bind(self)
+	if from_menu:  # only a battle the player started from the menu counts towards their progress
+		var recorder := ProgressRecorder.new()
+		recorder.name = "ProgressRecorder"
+		add_child(recorder)
+		recorder.bind(self)
+		recorder.recorded.connect(func(_unlocked: String, note: String) -> void: panel.add_note(note))
 	var pause_menu := PauseMenu.new()
 	pause_menu.name = "PauseMenu"
 	add_child(pause_menu)

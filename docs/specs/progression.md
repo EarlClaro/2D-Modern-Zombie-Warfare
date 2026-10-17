@@ -1,6 +1,6 @@
 # Spec: Progression, rewards, deck editor and the local save (Milestone 5)
 
-Status: **v0.1, decisions taken in a user interview on 2026-10-17** (ADR-017). Increment 5.1 is built. Source of intent: MasterPrompt.md section 12 and Milestone 5 ("mission reward choice, unlockable cards, deck editing between missions, basic upgrades, persistent local save, tests for save/load and progression edge cases").
+Status: **v0.1, decisions taken in a user interview on 2026-10-17** (ADR-017). Increments 5.1 and 5.2 are built. Source of intent: MasterPrompt.md section 12 and Milestone 5 ("mission reward choice, unlockable cards, deck editing between missions, basic upgrades, persistent local save, tests for save/load and progression edge cases").
 
 ## Purpose
 Today every mission hands you a fixed deck and nothing you do is remembered. The player should keep what they earn: finish a mission, choose a new card, build a deck from the cards they own, and find the same collection and campaign position when the game is started again.
@@ -76,7 +76,7 @@ Currency, shops, research tree, military doctrine trees, rarity-weighted drops, 
 
 ## Increments
 1. **5.1 Profile and safe save (done 2026-10-17, 24 tests):** `PlayerProfile`, `ProfileStore`, `ProfileMigration`, `GameSession.profile()`; tests for round trip, defaults, wrong types, unknown ids, corrupt file, backup fallback, future version read-only, migration from version 0, atomic write.
-2. **5.2 Campaign and unlocks:** `CampaignDefinition`, unlock rules, recording a win, mission select locks and marks, "show test missions" setting, "reset progress".
+2. **5.2 Campaign and unlocks (done 2026-10-17, 18 tests):** `CampaignDefinition`, unlock rules, recording a win, mission select locks and marks, "show test missions" setting, "reset progress".
 3. **5.3 Rewards:** `reward_pool`, `RewardPicker`, offer saved on win, result-panel choice, collection grows; reward pools written for the existing campaign.
 4. **5.4 Deck editor and player-deck missions:** `DeckBuilder`, deck screen, doctrine picker, `deck_source`, the battle gets the player's deck.
 5. **5.5 Upgrades:** short interview with the user first; then the data model, tests and the first few upgrades.

@@ -232,8 +232,19 @@ func _in_tree(n: Node) -> Node:
 	return n
 
 
+## A profile that has won every campaign mission, so mission select shows nothing locked.
+func _all_won_profile() -> PlayerProfile:
+	var p := PlayerProfile.new_game(_get_db(), 1)
+	for id in _get_db().main_campaign().mission_ids:
+		p.record_win(id, 1.0, "normal", 1.0)
+	return p
+
+
 func test_mission_select_lists_every_mission_with_headings_and_selects_one() -> void:
-	GameSession.set_settings(GameSettings.new())
+	var s := GameSettings.new()
+	s.show_test_missions = true
+	GameSession.set_settings(s)
+	GameSession.set_profile(_all_won_profile())
 	var sel := MissionSelect.new()
 	sel.bind(_get_db())
 	_in_tree(sel)
@@ -255,18 +266,21 @@ func test_mission_select_lists_every_mission_with_headings_and_selects_one() -> 
 	assert_eq(ids.size(), 1)
 	assert_eq(ids[0], sel.selected_id())
 	sel.free()
+	GameSession.set_profile(null)
 
 
 func test_mission_select_preselects_the_last_mission_played() -> void:
 	var s := GameSettings.new()
 	s.last_mission = "x2_outskirts"
 	GameSession.set_settings(s)
+	GameSession.set_profile(_all_won_profile())
 	var sel := MissionSelect.new()
 	sel.bind(_get_db())
 	_in_tree(sel)
 	assert_eq(sel.selected_id(), "x2_outskirts")
 	sel.free()
 	GameSession.set_settings(GameSettings.new())
+	GameSession.set_profile(null)
 
 
 func test_the_settings_screen_shows_the_values_and_writes_changes_back() -> void:
@@ -279,7 +293,7 @@ func test_the_settings_screen_shows_the_values_and_writes_changes_back() -> void
 	var slider: HSlider = scr.find_children("*", "HSlider", true, false)[0]
 	assert_near(slider.value, 40.0)
 	var toggles := scr.find_children("*", "CheckButton", true, false)
-	assert_eq(toggles.size(), 3)
+	assert_eq(toggles.size(), 4)  # fullscreen, clips, FPS, test missions
 	assert_true(not (toggles[2] as CheckButton).button_pressed, "FPS counter is off")
 	(toggles[1] as CheckButton).button_pressed = false  # strike clips off
 	assert_true(not s.cutaways)

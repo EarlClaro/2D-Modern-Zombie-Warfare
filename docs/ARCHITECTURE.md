@@ -85,6 +85,7 @@ A Sortie card flies one aircraft along a `SortiePlan` (pure: nearest map edge ->
 
 ## Progression profile (as built, M5.1)
 `scripts/progression/`: `PlayerProfile` is plain data (collection, deck, doctrines, finished missions, reward offers) with `to_dict` / `from_dict` that never fail and `sanitize(db)` that drops unknown ids and repairs an illegal deck; `ProfileStore` reads and writes `user://profile.json` (every function takes a path; temporary file then swap, `.bak` of the last good file, damaged files set aside, newer files read-only); `ProfileMigration` upgrades old files one version step at a time. `GameSession.profile()` holds the shared profile like it holds the settings (no autoload). Battle, combat and card code never read it. Spec: [progression.md](specs/progression.md).
+Campaign (M5.2): `CampaignDefinition` (`data/campaigns/main.tres`, loaded by `ContentDb`, ids checked against the missions) holds the unlock order and the unlock rules; `MissionListing` orders and tags the missions from it; `MissionSelect` shows locks and results. `ProgressRecorder` is a node the battle gets only when the menu started it; it listens to `battle_ended` and writes a win into the profile and the file, so the battle's own rules never see the profile.
 
 ## Key design choices
 - **Pure logic classes** (`RefCounted`, no Node dependency) for IsoProjection, DamageService, DeckState, CommandPoints, objective evaluation → trivially headless-testable.

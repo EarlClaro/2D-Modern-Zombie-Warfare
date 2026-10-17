@@ -7,6 +7,7 @@ var _root: Control
 var _title: Label
 var _reason: Label
 var _stats: Label
+var _note: Label
 
 
 func bind(battle: BattleController) -> void:
@@ -39,6 +40,12 @@ func _ready() -> void:
 	_stats.add_theme_font_size_override("font_size", 20)
 	_stats.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(_stats)
+	_note = Label.new()
+	_note.add_theme_font_size_override("font_size", 22)
+	_note.add_theme_color_override("font_color", Color(0.75, 0.9, 0.6))
+	_note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_note.visible = false
+	box.add_child(_note)
 	var button := Button.new()
 	button.text = "Restart (R)"
 	button.add_theme_font_size_override("font_size", 26)
@@ -55,6 +62,14 @@ func _ready() -> void:
 func _on_started() -> void:
 	if _root != null:
 		_root.visible = false
+		_note.visible = false
+
+
+## A line under the stats (what the win unlocked, whether progress was saved).
+func add_note(text: String) -> void:
+	if _note != null:
+		_note.text = text
+		_note.visible = not text.is_empty()
 
 
 func _on_ended(res: MissionRules.Result) -> void:
