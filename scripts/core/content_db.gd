@@ -144,6 +144,18 @@ func scenery(id: String) -> SceneryDefinition:
 	return scenery_defs.get(id)
 
 
+## The cells covered by the scenery pieces placed on `map` (cell -> true). Unknown scenery ids are skipped (reported elsewhere).
+func scenery_cells(map: MapDefinition) -> Dictionary:
+	var out: Dictionary = {}
+	for p in map.placements():
+		var def: SceneryDefinition = scenery_defs.get(p.scenery_id)
+		if def == null:
+			continue
+		for c in def.cells_at(p.cell):
+			out[c] = true
+	return out
+
+
 func add_scenery(def: SceneryDefinition) -> bool:
 	return _register(scenery_defs, def)
 
@@ -309,6 +321,12 @@ func _validate_scenery() -> void:
 		for c in special:
 			if taken.has(c):
 				errors.append("mission '%s': (%d, %d) is covered by scenery" % [id, c.x, c.y])
+		if mission.routing == MissionDefinition.Routing.FLOW:
+			var field := FlowField.build(mission.map.width(), mission.map.height(), FlowField.open_grid(mission.map, taken), mission.core_cell)
+			for s in mission.spawn_cells:
+				if not field.reachable(s):
+					errors.append("mission '%s': spawn (%d, %d) has no way to the core round the terrain and scenery" % [id, s.x, s.y])
+			continue
 		for s in mission.spawn_cells:
 			var from := IsoProjection.cell_center(s)
 			for pc in mission.path_cells:

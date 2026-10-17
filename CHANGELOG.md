@@ -40,6 +40,21 @@
 - **Nothing in the game reads it yet:** menus, unlocks, rewards and the deck editor are 5.2 to 5.4.
 - **Tests:** 24 new (920 in all, 0 failed).
 
+## 3.11 Flow-field movement, part 3 of 3: separation (2026-10-17)
+- New pure `Separation` (`scripts/combat/separation.gd`, ADR-012): a 1-tile spatial hash (linked lists in packed arrays) over a snapshot of enemy positions and radii; a push looks at the first 8 other bodies in the 3x3 cells around a position and sums the unit vectors away from each overlapping one, weighted by overlap depth and clamped to 1. Enemies only.
+- `MissionDefinition.separation` (default on, flow missions only). The controller rebuilds the snapshot every 4th tick and each enemy asks for its push every 4th tick (staggered by uid); `BattleEnemy.push` (tiles per second, 1.5 x its speed at full overlap) is added to its walk. Waypoint missions have none.
+- Measured (docs/BALANCE.md "Separation"): near-overlap of walking enemies at 8 spawns a second drops from about 65 % to 20 %; at 25 a second only from about 94 % to 80 % (bodies cannot fit, as ADR-012 predicted). Cost about +10-25 % of a step (+0.6 ms at 500 alive, +1.0 ms at 1000, +3-4 ms at 2000 on this machine under load).
+- 22 new tests (966 in all); mutation check 20/20 after closing 6 gaps. Milestone 3's part 3.11 is complete: 70 new tests across the three parts.
+
+## 3.11 Flow-field movement, part 2 of 3: missions and enemies use it (2026-10-17)
+- `MissionDefinition.routing` (`WAYPOINTS` default, `FLOW`). A flow mission needs no `path_cells`; `ContentDb` rejects a spawn that has no way to the core round terrain and scenery (and skips the waypoint scenery rule for flow missions). `ContentDb.scenery_cells(map)` lists the cells scenery covers.
+- `BattleController` builds one `FlowField` per flow mission at setup (terrain and scenery block; units, structures and the core do not) and traces each spawn's `Route` along it, so kiting units still know "forward". `BattleEnemy.advance(delta, tick)` steers by it: the heading is looked up every 4th tick (staggered by uid) at the enemy's fixed lane offset, the step never enters a closed cell (it slides along it), the lane is dropped when it would reach into an obstacle, and a blocked step falls back to the heading of the cell stood in. Found and fixed with a test: a lane pointing into a wall made walkers stand at it forever.
+- New dev mission `dev_flow_outskirts` (the outskirts map with flow routing, no waypoints, a fifth of the waves). Ran 150 s on 3 seeds with an unbreakable core (406 enemies each): none stuck, none on a closed cell.
+- Waypoint missions are unchanged: 12 whole-battle digests (6 missions x 2 seeds x 100 s) identical to before. 23 new tests (944 in all); mutation check 18/18 after closing 10 gaps and removing one redundant check.
+
+## 3.11 Flow-field movement, part 1 of 3: the field (2026-10-17)
+- New pure `FlowField` (`scripts/combat/flow_field.gd`, ADR-012): a distance map from the goal over open ground cells (8-neighbour, no corner cutting, goal always open, unreachable cells flagged), a heading per cell from its shortest-path parents (equal ways round an obstacle pick one instead of cancelling), a blended `direction_at`, a wall-sliding `slide` step so a walker follows an obstacle instead of cutting its corner, `trace` for the route from a point, and `open_grid(map, blocked)`. Nothing uses it yet: no mission changes. 25 new tests (921 in all); mutation check 25/26 with the survivor equivalent (a performance-only guard).
+
 ## 3.10 Card and autonomy balance sweep (2026-10-17)
 - `tools/tune_cards.gd`: the bots now play the 3.5-3.9 card kinds (orders, supply, deck, mines, lure, convoy, drones) and take `--difficulty=`.
 - Hard is x1.2 now (was x1.5: the decent-player bot won 0/10 on every mission at x1.5, 3-4/10 at x1.25 on `m2_card_defense`). `DifficultyDefinition.max_total_enemies` (hard = 2000) keeps a bigger level under about 2,000 enemies (the F5 frame budget) and never below normal; on `x2_outskirts`, `x3_storm_night` and `x9_town_siege` hard is the same as normal.

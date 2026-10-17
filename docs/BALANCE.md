@@ -274,6 +274,24 @@ Tool: `tools/tune_cards.gd` with new bot rules for the 3.5-3.9 card kinds (order
 
 **Not settled (needs a human or more seeds):** whether orders, lure and Barracks are worth their cost in real play; the `x5`/`x6` card comparison above was made before they were hardened and before the other session's bot rules for the new card kinds replaced mine (the wave-size and helicopter results use decks that hold none of those cards), so it should be redone; easy and hard on the hardened missions were checked on 6 seeds only (`m2` easy 6/6 mix; `x8_dead_highway`'s neighbour `x9_last_airfield` (then called `x8_last_airfield`) easy 6/6, normal 5/6; hard was tried at x1.5 only: `m2` 1/6, `x9_last_airfield` 2/6).
 
+## Separation (M3.11 part 3, 2026-10-17)
+Measured on `dev_flow_outskirts` (two spawns merging, 64x48 map; the core made unbreakable; shamblers from one spawn; this machine, with other work running at times). "Near" = another enemy within half the two radii, "touching" = within the two radii together; walking = more than 5 tiles from the core (arrived enemies stand in a ring and are not moved by separation).
+| Spawn rate | Count | Separation | Walking at end of spawning | Near | Touching |
+|---|---|---|---|---|---|
+| 8 / s | 500 | off | 396 | 65 % | 97 % |
+| 8 / s | 500 | on | 402 | **18 %** | 96 % |
+| 8 / s | 1000 | off | 395 | 67 % | 97 % |
+| 8 / s | 1000 | on | 403 | **22 %** | 96 % |
+| 25 / s | 500 | off | 500 | 93 % | 100 % |
+| 25 / s | 500 | on | 500 | 80 % | 100 % |
+| 25 / s | 1000 | off | 1000 | 95 % | 100 % |
+| 25 / s | 1000 | on | 1000 | 79 % | 100 % |
+Reading: at the density of the shipped waves (up to 8 a second from one spawn) separation spreads a column a lot; at 25 a second from one point the bodies cannot fit in the space around the spawn, so little changes (this is what the 3.1 prototype found too). Bodies still touch: separation removes deep overlap, it does not make a crowd loose.
+
+Step cost (the whole battle step, all alive and walking, 6 s window, `ms` per tick): 8 / s: 500 alive 5.8 -> 6.4, 1000 alive 8.0 -> 9.0, 2000 alive 13.0 -> 16.8; 25 / s: 500 alive 5.7 -> 6.9, 1000 alive 11.8 -> 15.0, 2000 alive 19.5 -> 23.8 (so +10 % to +25 %, in line with the 16-22 % of ADR-012; the 2000-alive steps are over the 16.7 ms tick on this machine, with or without separation, which is a 3.14 question). These were taken under whatever else was running, so read the differences, not the absolute times.
+
+Not changed by 3.11: no shipped mission uses flow routing yet (only the dev mission `dev_flow_outskirts`), so no balance number moves. Moving a mission to flow means re-sweeping it (separation also changes how many enemies reach the defence at once).
+
 ## Synergy notes
 Add per synergy: intended counterplay and balance risk (post-MVP).
 
