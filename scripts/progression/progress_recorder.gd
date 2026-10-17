@@ -52,7 +52,7 @@ static func record(profile: PlayerProfile, db: ContentDb, mission_id: String, co
 	var offer := PackedStringArray()
 	var camp2 := db.main_campaign()
 	if camp2 != null and profile.wins_of(mission_id) == 1 and not profile.rewards.has(mission_id):
-		offer = RewardPicker.offer(camp2.pool_of(mission_id), profile.collection, profile.reward_seed, mission_id)
+		offer = profile.offer_for(db, mission_id)
 		if not offer.is_empty():
 			profile.open_reward(mission_id, offer)
 	return {"unlocked": unlocked, "text": text, "offer": offer}

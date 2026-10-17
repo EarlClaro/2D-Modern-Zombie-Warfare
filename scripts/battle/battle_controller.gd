@@ -242,11 +242,14 @@ func _ready() -> void:
 	if not difficulty_id.is_empty() and loaded.difficulty(difficulty_id) == null:
 		_show_fatal("Unknown difficulty '%s' (%s)" % [difficulty_id, ", ".join(loaded.difficulty_ids())])
 		return
-	if from_menu and m.deck_source == MissionDefinition.DeckSource.PLAYER:  # the deck the player built
+	var run_db := loaded
+	if from_menu and m.deck_source == MissionDefinition.DeckSource.PLAYER:  # the deck and upgrades the player chose
 		var load_out := DeckBuilder.loadout(GameSession.profile(loaded), loaded)
 		deck_override = load_out["deck"]
 		extra_doctrines.append_array(load_out["doctrines"])
-	setup(loaded, m, rng_seed)
+		run_db = UpgradeApplier.patched_db(loaded, load_out["upgrades"])
+		m = run_db.mission(m.id)
+	setup(run_db, m, rng_seed)
 	var hud := BattleHud.new()
 	add_child(hud)
 	hud.bind(self)

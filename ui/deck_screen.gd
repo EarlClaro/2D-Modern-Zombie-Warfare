@@ -13,6 +13,7 @@ var _deck: ItemList
 var _details: Label
 var _status: Label
 var _doctrine: Label
+var _upgrades: VBoxContainer
 var _add: Button
 var _owned_ids: Array[String] = []  # row -> card id (deckable cards, then doctrine cards)
 var _deck_ids: Array[String] = []  # row -> card id
@@ -45,6 +46,10 @@ func _ready() -> void:
 	_details = UiKit.label("", 22)
 	_details.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	side.add_child(_details)
+	_upgrades = VBoxContainer.new()
+	_upgrades.name = "Upgrades"
+	_upgrades.add_theme_constant_override("separation", 6)
+	side.add_child(_upgrades)
 	_doctrine = UiKit.label("", 22, UiKit.DIM)
 	_doctrine.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	side.add_child(_doctrine)
@@ -172,8 +177,43 @@ func _show_selected_details() -> void:
 	if cid.is_empty():
 		_details.text = ""
 		_add.text = "Add"
+		_show_upgrades("")
 		return
 	_show_card(cid)
+	_show_upgrades(cid)
+
+
+## The upgrades of a card: earned ones can be switched on (one at a time), the others are shown as not earned yet.
+func _show_upgrades(card_id: String) -> void:
+	for c in _upgrades.get_children():
+		_upgrades.remove_child(c)  # out of the tree at once, so a rebuilt button keeps its name
+		c.queue_free()
+	if card_id.is_empty():
+		return
+	var ids := _db.upgrades_of(card_id)
+	if ids.is_empty():
+		return
+	_upgrades.add_child(UiKit.label("Upgrades (player-deck missions)", 20, UiKit.DIM))
+	for uid in ids:
+		var up := _db.upgrade(uid)
+		var have := _profile.unlocked_upgrades.has(uid)
+		var on := String(_profile.equipped.get(card_id, "")) == uid
+		var b := UiKit.button("%s%s" % [up.display_name, " (on)" if on else ("" if have else " (not earned)")], 20, Vector2(420, 44))
+		b.name = "Upgrade_%s" % uid
+		b.tooltip_text = up.description
+		b.disabled = not have
+		b.pressed.connect(_on_upgrade.bind(uid, card_id, on))
+		_upgrades.add_child(b)
+		var d := UiKit.label(up.description, 16, UiKit.DIM)
+		d.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		d.custom_minimum_size = Vector2(420, 0)
+		_upgrades.add_child(d)
+
+
+## Switches an upgrade on (replacing the other branch of the card) or, pressed again, off.
+func _on_upgrade(upgrade_id: String, card_id: String, was_on: bool) -> void:
+	var why := DeckBuilder.unequip_upgrade(_profile, card_id) if was_on else DeckBuilder.equip_upgrade(_profile, _db, upgrade_id)
+	_after_change(why, selected_owned(), selected_deck())
 
 
 func _show_card(card_id: String) -> void:

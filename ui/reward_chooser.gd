@@ -20,9 +20,16 @@ func setup(db: ContentDb, mission_id: String, offer: PackedStringArray) -> void:
 	add_child(UiKit.label("CHOOSE A REWARD", 26, UiKit.ACCENT))
 	for cid in offer:
 		var card := db.card(cid)
-		if card == null:
+		var up := db.upgrade(cid)
+		var text := ""
+		if up != null:
+			var base := db.card(up.card_id)
+			text = "Upgrade: %s   (%s)\n%s" % [up.display_name, base.display_name if base != null else up.card_id, up.description]
+		elif card != null:
+			text = "%s   (%d CP)\n%s" % [card.display_name, card.cost, card.description]
+		else:
 			continue
-		var b := UiKit.button("%s   (%d CP)\n%s" % [card.display_name, card.cost, card.description], 20, Vector2(560, 84))
+		var b := UiKit.button(text, 20, Vector2(560, 84))
 		b.name = "Reward_%s" % cid
 		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		b.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART

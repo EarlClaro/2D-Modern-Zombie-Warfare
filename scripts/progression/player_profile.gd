@@ -18,6 +18,9 @@ var deck: PackedStringArray = PackedStringArray()
 var doctrines: PackedStringArray = PackedStringArray()
 ## Finished missions: id -> {"wins": int, "best_core": float, "best_difficulty": String, "best_scale": float}.
 var missions: Dictionary = {}
+## Upgrades the player has earned, and the one equipped for each card (card id -> upgrade id; at most one per card).
+var unlocked_upgrades: PackedStringArray = PackedStringArray()
+var equipped: Dictionary = {}
 ## Reward offers: mission id -> the card taken ("" while the offer waits for an answer).
 var rewards: Dictionary = {}
 ## The cards on offer while a reward waits for an answer: mission id -> card ids. Saved with the win, so quitting and
@@ -51,6 +54,44 @@ func _reset_to_starter(db: ContentDb) -> void:
 
 func owns(card_id: String) -> bool:
 	return collection.has(card_id)
+
+
+## Everything the player holds that a reward can give: cards and upgrades (what the reward picker must not offer again).
+func holdings() -> PackedStringArray:
+	var out := collection.duplicate()
+	out.append_array(unlocked_upgrades)
+	return out
+
+
+## The upgrade ids equipped now.
+func equipped_ids() -> PackedStringArray:
+	var out := PackedStringArray()
+	var cards: Array = equipped.keys()
+	cards.sort()
+	for cid: String in cards:
+		out.append(equipped[cid])
+	return out
+
+
+## The cards a first win of `mission_id` can offer this player (empty = none).
+func offer_for(db: ContentDb, mission_id: String) -> PackedStringArray:
+	var camp := db.main_campaign()
+	if camp == null:
+		return PackedStringArray()
+	return RewardPicker.offer(RewardPicker.usable_pool(db, self, camp.pool_of(mission_id)), holdings(), reward_seed, mission_id)
+
+
+## Equips an unlocked upgrade on its card (replacing the one that was equipped there). False if it is not unlocked.
+func equip(db: ContentDb, upgrade_id: String) -> bool:
+	var up := db.upgrade(upgrade_id)
+	if up == null or not unlocked_upgrades.has(upgrade_id) or not owns(up.card_id):
+		return false
+	equipped[up.card_id] = upgrade_id
+	return true
+
+
+func unequip(card_id: String) -> void:
+	equipped.erase(card_id)
 
 
 func wins_of(mission_id: String) -> int:
@@ -107,9 +148,10 @@ func has_pending_reward(mission_id: String) -> bool:
 	return rewards.has(mission_id) and String(rewards[mission_id]).is_empty()
 
 
-## Takes `card_id` as the reward of `mission_id`: the offer is answered and the card is owned. Refuses (false) a card
-## that was not on the saved offer, and a reward that was already answered.
-func take_reward(mission_id: String, card_id: String) -> bool:
+## Takes `card_id` as the reward of `mission_id`: the offer is answered and the card is owned (or, when `db` knows the id
+## as an upgrade, the upgrade is unlocked and equipped if its card has none). Refuses (false) a card that was not on the
+## saved offer, and a reward that was already answered.
+func take_reward(mission_id: String, card_id: String, db: ContentDb = null) -> bool:
 	if rewards.has(mission_id) and not String(rewards[mission_id]).is_empty():
 		return false
 	var saved := offer_of(mission_id)
@@ -117,7 +159,13 @@ func take_reward(mission_id: String, card_id: String) -> bool:
 		return false
 	rewards[mission_id] = card_id
 	offers.erase(mission_id)
-	if not collection.has(card_id):
+	var up := db.upgrade(card_id) if db != null else null
+	if up != null:
+		if not unlocked_upgrades.has(card_id):
+			unlocked_upgrades.append(card_id)
+		if not equipped.has(up.card_id):
+			equipped[up.card_id] = card_id
+	elif not collection.has(card_id):
 		collection.append(card_id)
 	return true
 
@@ -131,7 +179,7 @@ func backfill_rewards(db: ContentDb) -> int:
 	var opened := 0
 	for mid in camp.mission_ids:
 		if is_won(mid) and not rewards.has(mid):
-			var offer := RewardPicker.offer(camp.pool_of(mid), collection, reward_seed, mid)
+			var offer := offer_for(db, mid)
 			if not offer.is_empty():
 				open_reward(mid, offer)
 				opened += 1
@@ -150,6 +198,8 @@ func to_dict() -> Dictionary:
 		"missions": missions.duplicate(true),
 		"rewards": rewards.duplicate(true),
 		"offers": _offers_to_json(),
+		"unlocked_upgrades": Array(unlocked_upgrades),
+		"equipped": equipped.duplicate(),
 	}
 
 
@@ -178,6 +228,12 @@ static func from_dict(d: Dictionary) -> PlayerProfile:
 		for id: Variant in rs:
 			if id is String and rs[id] is String:
 				p.rewards[id] = rs[id]
+	p.unlocked_upgrades = _ids_of(d.get("unlocked_upgrades"))
+	var eq: Variant = d.get("equipped")
+	if eq is Dictionary:
+		for cid: Variant in eq:
+			if cid is String and eq[cid] is String:
+				p.equipped[cid] = eq[cid]
 	var os: Variant = d.get("offers")
 	if os is Dictionary:
 		for id: Variant in os:
@@ -204,13 +260,25 @@ func sanitize(db: ContentDb) -> int:
 		if db.mission(id) == null:
 			missions.erase(id)
 			changes += 1
+	for i in range(unlocked_upgrades.size() - 1, -1, -1):
+		if db.upgrade(unlocked_upgrades[i]) == null:
+			unlocked_upgrades.remove_at(i)
+			changes += 1
 	for id in rewards.keys():
 		var taken := String(rewards[id])
-		if db.mission(id) == null or (not taken.is_empty() and db.card(taken) == null):
+		if db.mission(id) == null or (not taken.is_empty() and db.card(taken) == null and db.upgrade(taken) == null):
 			rewards.erase(id)
 			changes += 1
+		elif not taken.is_empty() and db.upgrade(taken) != null:
+			if not unlocked_upgrades.has(taken):
+				unlocked_upgrades.append(taken)  # a taken reward is always held
 		elif not taken.is_empty() and not collection.has(taken):
-			collection.append(taken)  # a taken reward is always owned
+			collection.append(taken)
+	for cid in equipped.keys():  # an equipped upgrade must be unlocked, belong to that card, and the card must be owned
+		var up := db.upgrade(String(equipped[cid]))
+		if up == null or up.card_id != cid or not unlocked_upgrades.has(up.id) or not collection.has(cid):
+			equipped.erase(cid)
+			changes += 1
 	for id in offers.keys():
 		if db.mission(id) == null or not rewards.has(id) or not String(rewards[id]).is_empty():
 			offers.erase(id)
@@ -218,7 +286,11 @@ func sanitize(db: ContentDb) -> int:
 			continue
 		var kept := PackedStringArray()
 		for cid in offers[id]:
-			if db.card(cid) != null and not collection.has(cid):
+			var offered_up := db.upgrade(cid)
+			if offered_up != null:
+				if not unlocked_upgrades.has(cid) and collection.has(offered_up.card_id):
+					kept.append(cid)
+			elif db.card(cid) != null and not collection.has(cid):
 				kept.append(cid)
 		if kept.size() != (offers[id] as PackedStringArray).size():
 			changes += 1

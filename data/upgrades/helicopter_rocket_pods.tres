@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="UpgradeDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/progression/upgrade_patch.gd" id="1_3qfv6"]
+[ext_resource type="Script" path="res://scripts/progression/upgrade_definition.gd" id="2_hplgv"]
+
+[sub_resource type="Resource" id="Resource_w6gcw"]
+script = ExtResource("1_3qfv6")
+target_id = "heli_missile"
+property = "ammo"
+value = 4.0
+
+[sub_resource type="Resource" id="Resource_h82cl"]
+script = ExtResource("1_3qfv6")
+target_id = "heli_missile"
+property = "damage"
+op = 1
+value = 1.3
+
+[resource]
+script = ExtResource("2_hplgv")
+display_name = "Rocket Pods"
+description = "Four more rockets, each 30 % stronger."
+card_id = "helicopter_support"
+patches = Array[ExtResource("1_3qfv6")]([SubResource("Resource_w6gcw"), SubResource("Resource_h82cl")])
+id = "helicopter_rocket_pods"

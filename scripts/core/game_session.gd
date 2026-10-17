@@ -59,8 +59,7 @@ static func pending_offer(db: ContentDb, mission_id: String) -> PackedStringArra
 	var saved := p.offer_of(mission_id)
 	if not saved.is_empty():
 		return saved
-	var camp := db.main_campaign()
-	return RewardPicker.offer(camp.pool_of(mission_id) if camp != null else PackedStringArray(), p.collection, p.reward_seed, mission_id)
+	return p.offer_for(db, mission_id)
 
 
 ## Takes `card_id` as the reward of `mission_id` and saves. False if it was not on offer or the reward is not waiting.
@@ -68,7 +67,7 @@ static func claim_reward(db: ContentDb, mission_id: String, card_id: String) -> 
 	var p := profile(db)
 	if p.read_only or not p.has_pending_reward(mission_id) or not pending_offer(db, mission_id).has(card_id):
 		return false
-	if not p.take_reward(mission_id, card_id):
+	if not p.take_reward(mission_id, card_id, db):
 		return false
 	save_profile()
 	return true

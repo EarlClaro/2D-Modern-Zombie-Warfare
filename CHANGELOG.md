@@ -1,5 +1,13 @@
 # Changelog
 
+## 5.5 Card upgrades (2026-10-17; Milestone 5)
+- **Ten upgrades**, two exclusive branches for each of the five starter cards (Rifle Squad, Gatling Gun, Tank, Artillery Strike, Helicopter): e.g. Gatling Crowd Spray or Armour-Piercing Belt, Tank High-Explosive Shells or Reactive Armour. Numbers are first guesses (table in `docs/specs/progression.md`, check in 5.6).
+- **Earned as rewards:** the pick-1-of-3 after a first win can offer an upgrade for a card you own. Taking one unlocks it and switches it on if that card has none.
+- **Deck screen:** select a card to see its upgrades; earned ones can be switched on and off (one branch per card), unearned ones show "(not earned)". Saved at once.
+- **Where they apply:** only on a player-deck mission started from the menu (`dev_player_deck` for now). Fixed-deck missions and command-line runs use the unchanged content, so every balance number stands.
+- **Under the hood:** `UpgradeDefinition` + `UpgradePatch` (data, checked on load), `UpgradeApplier` builds a per-battle copy of the content; the shared definitions are never changed.
+- **Tests:** 22 new (1000 in all, 0 failed).
+
 ## 5.4 Deck editor and player-deck missions (2026-10-17; Milestone 5)
 - **Deck screen** (main menu "Deck"): your cards (cost, copies in the deck / allowed) on the left, the deck on the right. Add a copy with Add, Enter or a double-click, remove one the same way, "Starter deck" puts the starting deck back. A change that would break the deck rules (more than a card's copy limit, over 24 or under 12 cards, a card you do not own) is refused and the reason is shown. Everything is saved at once. Owned doctrine cards (Hollow Points) are chosen here for the next player-deck mission.
 - **Player-deck missions:** a mission can now be flagged `deck_source = PLAYER`; started from the menu it draws your deck and starts with your doctrine. From the command line it keeps its own `deck_id`, so the bots and tools are unaffected. No campaign mission uses it yet (5.6); `dev_player_deck` (test missions) is a copy of m2 on your deck for trying the editor.

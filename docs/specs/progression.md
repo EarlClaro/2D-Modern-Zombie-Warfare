@@ -1,6 +1,6 @@
 # Spec: Progression, rewards, deck editor and the local save (Milestone 5)
 
-Status: **v0.1, decisions taken in a user interview on 2026-10-17** (ADR-017). Increments 5.1 to 5.4 are built. Source of intent: MasterPrompt.md section 12 and Milestone 5 ("mission reward choice, unlockable cards, deck editing between missions, basic upgrades, persistent local save, tests for save/load and progression edge cases").
+Status: **v0.1, decisions taken in a user interview on 2026-10-17** (ADR-017). Increments 5.1 to 5.5 are built. Source of intent: MasterPrompt.md section 12 and Milestone 5 ("mission reward choice, unlockable cards, deck editing between missions, basic upgrades, persistent local save, tests for save/load and progression edge cases").
 
 ## Purpose
 Today every mission hands you a fixed deck and nothing you do is remembered. The player should keep what they earn: finish a mission, choose a new card, build a deck from the cards they own, and find the same collection and campaign position when the game is started again.
@@ -49,8 +49,20 @@ Derived, never stored: which missions are unlocked, which cards are still locked
 - The battle receives the deck the way it receives the mission today; nothing in `scripts/combat` or `scripts/cards` reads the profile. The profile is read by `GameSession` when the menu starts a battle, and by the result panel when it ends.
 - A first player-deck mission (increment 5.6) is balanced against the bots with three sample decks built from the starting collection plus rewards, because the player's choice changes every number in BALANCE.md.
 
-### Upgrades (increment 5.5; design confirmed with the user before it starts)
-Master prompt wants meaningful, branching card upgrades (a machine gun that becomes crowd-control or armour-piercing). With no currency in the first version, the proposed form is: **upgrades are rewards too.** A reward offer may include an upgrade for a card the player owns; each card has at most two mutually exclusive branches; an upgrade is a data-driven patch to the unit's or weapon's numbers applied when the battle starts. The profile gains `upgrades` (card id to branch id). Details (which cards, which numbers, whether to add salvage) are decided with the user at the start of 5.5, so this section is a proposal, not a promise.
+### Upgrades (increment 5.5; decided in a user interview on 2026-10-17)
+Decisions: (1) **obtained as a reward option**: a pick-1-of-3 offer may contain an upgrade for a card the player owns, next to new cards, so it is "a new card or a better card"; no currency; (2) **one tier, two exclusive branches** per card (more tiers can be added later); (3) **the five starter cards first**; (4) **they apply only on player-deck missions**: fixed-deck missions and command-line runs never see them, so every bot number in BALANCE.md stays valid.
+- `UpgradeDefinition` (`data/upgrades/*.tres`, written by `tools/gen_upgrades.gd`): `card_id` plus a list of `UpgradePatch`es (target kind weapon / unit / operation / card, target id, property, ADD / MUL / SET, value), validated against the real definitions when the content loads.
+- `UpgradeApplier.patched_db(db, ids)` builds a copy of the content in which only the changed definitions are duplicated and patched; the shared definitions are never touched. The battle scene hands the patched copy to the battle for a menu-started player-deck mission.
+- The profile keeps `unlocked_upgrades` and `equipped` (card id to upgrade id, one per card). Taking an upgrade unlocks it and equips it when the card has none; the deck screen switches the branch on and off at will (free, saved at once). The reward picker offers an upgrade only for an owned card and never twice.
+- Reward pools: m1 offers the Rifle Squad upgrades next to its cards, m2 the Gatling, m3 the Tank, x1 the Artillery Strike, x2 the Helicopter.
+First-guess numbers (not swept; the bot check is 5.6):
+| Card | Branch A | Branch B |
+|---|---|---|
+| Rifle Squad | **Long Barrels**: rifle range +2 tiles | **Body Armour**: rifleman health x1.4, armour +1 |
+| Gatling Gun | **Crowd Spray**: splash 0.9 tiles, damage x0.8 | **Armour-Piercing Belt**: damage x2.2, fire rate x0.6, prefers armoured targets |
+| Tank | **High-Explosive Shells**: blast +0.9 tiles, damage x0.9 | **Reactive Armour**: armour +3, health x1.25 |
+| Artillery Strike | **Saturation Barrage**: +4 shells, +1 tile area, shell damage x0.85 | **Heavy Shells**: shell damage x1.6, blast +0.4, lands 0.4 s sooner |
+| Helicopter Support | **Extended Station**: +6 s on station, health x1.2 | **Rocket Pods**: +4 rockets, rocket damage x1.3 |
 
 ## Rules that must hold
 - **Rules never depend on the profile.** The battle, combat and card code stay as testable as today: a battle is given a deck and doctrines, never a profile. Profile-aware code lives in `scripts/progression/`, `GameSession` and `ui/`.
@@ -79,7 +91,7 @@ Currency, shops, research tree, military doctrine trees, rarity-weighted drops, 
 2. **5.2 Campaign and unlocks (done 2026-10-17, 18 tests):** `CampaignDefinition`, unlock rules, recording a win, mission select locks and marks, "show test missions" setting, "reset progress".
 3. **5.3 Rewards (done 2026-10-17, 19 tests):** `reward_pools`, `RewardPicker`, offer saved on win, `RewardChooser` in the result panel and in mission select, collection grows; pools written for all 14 campaign missions (every non-starter card can be won; Nuclear Bomb and Satellite Laser only in the last two missions).
 4. **5.4 Deck editor and player-deck missions (done 2026-10-17, 21 tests):** `DeckBuilder`, `DeckScreen` (main menu "Deck"), doctrine picker, `MissionDefinition.deck_source`, `BattleController.deck_override`; the test mission `dev_player_deck` (a copy of m2 on the player's deck) lets the editor be tried end to end. Rules as built: a change that would make the deck illegal is refused with the reason (so a swap is "add, then remove"); the doctrine is one card at a time; only a battle started from the menu uses the player's deck, the command line keeps the mission's own `deck_id`.
-5. **5.5 Upgrades:** short interview with the user first; then the data model, tests and the first few upgrades.
+5. **5.5 Upgrades (done 2026-10-17, 22 tests):** interview, then `UpgradeDefinition` / `UpgradePatch` / `UpgradeApplier`, ten upgrades, rewards, the deck-screen switches.
 6. **5.6 First player-deck mission and hand-over:** one new mission balanced with bots on three sample decks; docs; manual checklist for the user.
 
 Each increment ends with tests, a headless import with no new warnings, docs and changelog.

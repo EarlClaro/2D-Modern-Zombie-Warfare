@@ -110,7 +110,24 @@ static func summary(profile: PlayerProfile, db: ContentDb) -> String:
 	return "%d cards (%d to %d)" % [profile.deck.size(), db.deck_rules.deck_min, db.deck_rules.deck_max]
 
 
-## What a battle on a player-deck mission is given: {"deck": PackedStringArray, "doctrines": PackedStringArray}. A deck that
+## Equips an earned upgrade on its card (the other branch of that card is switched off). Returns "" or why not.
+static func equip_upgrade(profile: PlayerProfile, db: ContentDb, upgrade_id: String) -> String:
+	if profile.read_only:
+		return "This progress file comes from a newer game and cannot be changed."
+	if not profile.equip(db, upgrade_id):
+		return "You have not earned that upgrade yet."
+	return ""
+
+
+## Switches the equipped upgrade of a card off.
+static func unequip_upgrade(profile: PlayerProfile, card_id: String) -> String:
+	if profile.read_only:
+		return "This progress file comes from a newer game and cannot be changed."
+	profile.unequip(card_id)
+	return ""
+
+
+## What a battle on a player-deck mission is given: {"deck", "doctrines", "upgrades"} (packed id lists). A deck that
 ## is not legal (or uses cards that are not owned) is replaced by the starter deck rather than failing the mission.
 static func loadout(profile: PlayerProfile, db: ContentDb) -> Dictionary:
 	var deck := profile.deck
@@ -122,4 +139,9 @@ static func loadout(profile: PlayerProfile, db: ContentDb) -> Dictionary:
 		var c := db.card(cid)
 		if c != null and c.card_kind == CardDefinition.CardKind.DOCTRINE and profile.owns(cid):
 			doctrines.append(cid)
-	return {"deck": deck, "doctrines": doctrines}
+	var upgrades := PackedStringArray()
+	for uid in profile.equipped_ids():
+		var up := db.upgrade(uid)
+		if up != null and profile.unlocked_upgrades.has(uid) and profile.owns(up.card_id):
+			upgrades.append(uid)
+	return {"deck": deck, "doctrines": doctrines, "upgrades": upgrades}

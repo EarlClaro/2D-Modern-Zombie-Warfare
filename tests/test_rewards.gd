@@ -90,7 +90,7 @@ func test_every_pool_card_exists_and_none_is_a_starter_card() -> void:
 	for mid in camp.reward_pools:
 		assert_true(db.mission(mid) != null, "%s is a mission" % mid)
 		for cid in camp.pool_of(mid):
-			assert_true(db.card(cid) != null, "%s exists" % cid)
+			assert_true(db.card(cid) != null or db.upgrade(cid) != null, "%s exists" % cid)
 			assert_true(not starter.has(cid), "%s is a starter card, there is nothing to win" % cid)
 		assert_true(camp.pool_of(mid).size() >= 3, "%s offers a real choice" % mid)
 
@@ -201,9 +201,9 @@ func test_claiming_adds_the_card_and_saves_the_file() -> void:
 	assert_true(not GameSession.claim_reward(db, "m1_hold_the_crossing", "tank"), "a card that was not offered")
 	assert_true(not FileAccess.file_exists(PATH), "nothing was saved by the refusal")
 	assert_true(GameSession.claim_reward(db, "m1_hold_the_crossing", pick))
-	assert_true(p.owns(pick))
+	assert_true(p.holdings().has(pick))
 	var back := ProfileStore.load_from(db, PATH)
-	assert_true(back.profile.owns(pick), "it was written to disk")
+	assert_true(back.profile.holdings().has(pick), "it was written to disk")
 	assert_true(not GameSession.claim_reward(db, "m1_hold_the_crossing", pick), "only once")
 	_release_temp_profile()
 

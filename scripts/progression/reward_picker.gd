@@ -7,6 +7,16 @@ extends RefCounted
 const OFFER_SIZE: int = 3
 
 
+## The pool entries that can be offered to this player: a card always, an upgrade only for a card they own.
+static func usable_pool(db: ContentDb, profile: PlayerProfile, pool: PackedStringArray) -> PackedStringArray:
+	var out := PackedStringArray()
+	for id in pool:
+		var up := db.upgrade(id)
+		if up == null or profile.owns(up.card_id):
+			out.append(id)
+	return out
+
+
 static func offer(pool: PackedStringArray, owned: PackedStringArray, reward_seed: int, mission_id: String, count: int = OFFER_SIZE) -> PackedStringArray:
 	var candidates: Array[String] = []
 	for cid in pool:

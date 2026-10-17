@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="UpgradeDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/progression/upgrade_patch.gd" id="1_vci14"]
+[ext_resource type="Script" path="res://scripts/progression/upgrade_definition.gd" id="2_1rw6g"]
+
+[sub_resource type="Resource" id="Resource_e4ywp"]
+script = ExtResource("1_vci14")
+target = 2
+target_id = "artillery_strike"
+property = "shell_damage"
+op = 1
+value = 1.6
+
+[sub_resource type="Resource" id="Resource_n0b3g"]
+script = ExtResource("1_vci14")
+target = 2
+target_id = "artillery_strike"
+property = "blast_radius"
+value = 0.4
+
+[sub_resource type="Resource" id="Resource_vv74t"]
+script = ExtResource("1_vci14")
+target = 2
+target_id = "artillery_strike"
+property = "warning_s"
+value = -0.4
+
+[resource]
+script = ExtResource("2_1rw6g")
+display_name = "Heavy Shells"
+description = "Shells hit 60 % harder with a bigger blast and land 0.4 s sooner."
+card_id = "artillery_strike"
+patches = Array[ExtResource("1_vci14")]([SubResource("Resource_e4ywp"), SubResource("Resource_n0b3g"), SubResource("Resource_vv74t")])
+id = "artillery_heavy_shells"

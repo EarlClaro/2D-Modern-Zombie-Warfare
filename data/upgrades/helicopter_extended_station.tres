@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="UpgradeDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/progression/upgrade_patch.gd" id="1_1qlyy"]
+[ext_resource type="Script" path="res://scripts/progression/upgrade_definition.gd" id="2_v48qf"]
+
+[sub_resource type="Resource" id="Resource_pcn2p"]
+script = ExtResource("1_1qlyy")
+target = 3
+target_id = "helicopter_support"
+property = "station_time_s"
+value = 6.0
+
+[sub_resource type="Resource" id="Resource_4xskc"]
+script = ExtResource("1_1qlyy")
+target = 1
+target_id = "helicopter"
+property = "max_health"
+op = 1
+value = 1.2
+
+[resource]
+script = ExtResource("2_v48qf")
+display_name = "Extended Station"
+description = "The gunship stays on station 6 seconds longer and has 20 % more health."
+card_id = "helicopter_support"
+patches = Array[ExtResource("1_1qlyy")]([SubResource("Resource_pcn2p"), SubResource("Resource_4xskc")])
+id = "helicopter_extended_station"

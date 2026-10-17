@@ -91,6 +91,8 @@ Rewards (M5.3): `RewardPicker` is pure (pool, owned cards, seed, mission id give
 
 Deck editor (M5.4): `DeckBuilder` (pure) holds every editing rule over a `PlayerProfile` and the shipped `DeckRules` and builds the `loadout` a battle receives; `DeckScreen` only presents it and saves through `GameSession`. A mission with `deck_source = PLAYER` gets that loadout through `BattleController.deck_override` and `extra_doctrines`, set by the battle scene only when the menu started it; combat and card code never see the profile.
 
+Upgrades (M5.5): `UpgradeDefinition` holds `UpgradePatch`es (number changes on a weapon, unit, operation or card, validated when the content loads). `UpgradeApplier.patched_db` copies the database tables and duplicates only the definitions a patch changes; the battle scene gives that copy to a menu-started player-deck battle. The profile stores `unlocked_upgrades` and `equipped`; the shared definitions, the tools and fixed-deck missions never see an upgrade.
+
 ## Key design choices
 - **Pure logic classes** (`RefCounted`, no Node dependency) for IsoProjection, DamageService, DeckState, CommandPoints, objective evaluation → trivially headless-testable.
 - **Definitions vs runtime**: `CardDefinition` (Resource, immutable) vs `CardRuntime`/`DeckState` entries (id + mutable lockout).

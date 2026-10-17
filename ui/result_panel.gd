@@ -78,7 +78,11 @@ func show_offer(db: ContentDb, mission_id: String, offer: PackedStringArray) -> 
 	_chooser.setup(db, mission_id, offer)
 	_chooser.claimed.connect(func(card_id: String) -> void:
 		var card := db.card(card_id)
-		add_note("Added %s to your collection." % (card.display_name if card != null else card_id))
+		var up := db.upgrade(card_id)
+		if up != null:
+			add_note("Unlocked the upgrade %s." % up.display_name)
+		else:
+			add_note("Added %s to your collection." % (card.display_name if card != null else card_id))
 		_clear_chooser())
 
 

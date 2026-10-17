@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="UpgradeDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/progression/upgrade_patch.gd" id="1_i86o5"]
+[ext_resource type="Script" path="res://scripts/progression/upgrade_definition.gd" id="2_rhlu6"]
+
+[sub_resource type="Resource" id="Resource_qr4vr"]
+script = ExtResource("1_i86o5")
+target_id = "gatling"
+property = "blast_radius"
+value = 0.9
+
+[sub_resource type="Resource" id="Resource_i6o5v"]
+script = ExtResource("1_i86o5")
+target_id = "gatling"
+property = "damage"
+op = 1
+value = 0.8
+
+[resource]
+script = ExtResource("2_rhlu6")
+display_name = "Crowd Spray"
+description = "Rounds burst on hit and hurt everything close to the target, for 20 % less damage per round."
+card_id = "gatling_gun"
+patches = Array[ExtResource("1_i86o5")]([SubResource("Resource_qr4vr"), SubResource("Resource_i6o5v")])
+id = "gatling_crowd_spray"
