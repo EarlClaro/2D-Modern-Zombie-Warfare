@@ -41,6 +41,8 @@ const MIN_PROJECTILE_FLIGHT_S: float = 0.1
 const CONVOY_SETTLE_DIST: float = 3.5  # tiles from the core where a convoy squad takes up position
 const LURE_RECHECK_TICKS: int = 6  # an enemy re-checks that the walk to a lure is clear this often (staggered by uid)
 const LURE_STAND: float = 0.8  # tiles from a lure at which an enemy stops (plus a little by uid so they do not stack)
+const HUNT_SEARCH_RADIUS: float = 60.0  # tiles: a hunting aircraft looks for prey this far (the whole map)
+const DRONE_RING: float = 0.9  # tiles: combat drones leave the core on a ring this wide
 const SORTIE_MARGIN: float = 5.0  # tiles beyond the map edge where aircraft appear and disappear
 
 
@@ -348,6 +350,7 @@ func step(delta: float) -> void:
 	_mine_phase()
 	_unit_phase(delta)
 	_spawner_phase(delta)
+	_expire_phase(delta)
 	_sortie_phase(delta)
 	_projectile_phase(delta)
 	# 4. apply all damage, then remove the dead
@@ -452,7 +455,7 @@ func _unit_phase(delta: float) -> void:
 		if u.weapon == null:  # a structure: nothing to move or fire
 			continue
 		var target: BattleEnemy = null
-		if u.def.is_air():  # sortie aircraft follow their flight plan, not the unit brain
+		if u.def.flies_a_plan():  # sortie aircraft follow their flight plan, not the unit brain
 			u.advance_move(delta)
 			if not u.is_moving():  # units must stand still to fire
 				target = _nearest_enemy(u.ground_pos, u.weapon.range_tiles)
@@ -484,6 +487,9 @@ func _think_and_move(u: BattleUnit, delta: float) -> BattleEnemy:
 			UnitBrain.Behavior.SUPPORT:
 				var friend := _nearest_friend(u)
 				decision = UnitBrain.support(u.ground_pos, friend != null, friend.ground_pos if friend != null else Vector2.ZERO)
+			UnitBrain.Behavior.HUNT:
+				var prey := _nearest_enemy(u.ground_pos, HUNT_SEARCH_RADIUS)
+				decision = UnitBrain.hunt(u.ground_pos, u.anchor, weapon_range, target != null, prey != null, prey.ground_pos if prey != null else Vector2.ZERO)
 	if decision != null:
 		_carry_out(u, decision)
 	var before := u.ground_pos
@@ -523,7 +529,7 @@ func _carry_out(u: BattleUnit, d: UnitBrain.Decision) -> void:
 		return
 	if u.is_moving() and u.move_target().distance_squared_to(d.dest) < 0.0625:
 		return  # already walking to (about) there
-	if not _walk_is_clear(u.ground_pos, d.dest):
+	if not u.def.is_air() and not _walk_is_clear(u.ground_pos, d.dest):  # aircraft fly over anything
 		if u.is_moving():
 			u.stop()
 		return
@@ -634,10 +640,11 @@ func _sortie_phase(delta: float) -> void:
 			s.unit.order_move(s.exit)
 		elif after == SortieFlight.Phase.DONE:
 			sorties.remove_at(i)
-			_retire_aircraft(s.unit)
+			_retire_unit(s.unit)
 
 
-func _retire_aircraft(u: BattleAircraft) -> void:
+## Takes a unit out of the battle without a death (a sortie aircraft that has left, a drone whose time is up).
+func _retire_unit(u: BattleUnit) -> void:
 	units.erase(u)
 	for item in [u.shadow, u]:
 		if item != null and is_instance_valid(item):
@@ -823,6 +830,8 @@ func play_card(hand_index: int, cell: Vector2i) -> CardPlayService.Result:
 		_launch_sortie(card, centre)
 	elif card.card_kind == CardDefinition.CardKind.REINFORCEMENT:
 		_launch_convoy(card)
+	elif card.card_kind == CardDefinition.CardKind.SUPPORT_TECH:
+		_launch_drones(card)
 	elif card.uses_state_effect():
 		_run_state_effect(db.effect(card.effect_id))
 	elif card.uses_field_entity():
@@ -866,6 +875,23 @@ func _launch_convoy(card: CardDefinition) -> void:
 	for off in PlacementRules.formation_offsets(card.unit_count):
 		var u := _spawn_unit_at(card.unit_id, plan.entry + off)
 		u.anchor = plan.settle + off
+
+
+## Combat drones leave the core on a small ring and hunt by themselves until their lifetime is up.
+func _launch_drones(card: CardDefinition) -> void:
+	for off in PlacementRules.formation_offsets(card.unit_count):
+		_spawn_unit_at(card.unit_id, core.ground_pos + off / PlacementRules.RING_RADIUS * DRONE_RING)
+
+
+## Units with a lifetime leave the battle when it is up (no death, no loss).
+func _expire_phase(delta: float) -> void:
+	for i in range(units.size() - 1, -1, -1):
+		var u := units[i]
+		if u.def.lifetime_s <= 0.0:
+			continue
+		u.age += delta
+		if u.age + 1e-6 >= u.def.lifetime_s:
+			_retire_unit(u)
 
 
 ## Mines go off when an enemy comes within their trigger radius; each makes one blast and is used up.

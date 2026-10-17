@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CardDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/cards/card_definition.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = "combat_drones"
+display_name = "Combat Drones"
+description = "High tech: three armed drones launch from the base, hunt the nearest zombies on their own for 20 s, then leave. Zombies cannot hit them. Plays at once."
+card_kind = 10
+cost = 3
+lockout_s = 25.0
+max_copies = 3
+unit_id = "combat_drone"
+unit_count = 3
+effect_id = ""

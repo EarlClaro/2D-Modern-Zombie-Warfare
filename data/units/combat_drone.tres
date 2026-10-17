@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="UnitDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/unit_definition.gd" id="1_unit"]
+
+[resource]
+script = ExtResource("1_unit")
+id = "combat_drone"
+display_name = "Combat Drone"
+max_health = 20.0
+armor = 0.0
+move_speed = 5.0
+footprint_radius = 0.25
+height_class = 1
+weapon_id = "drone_gun"
+behavior = 4
+retreats = false
+seeks_cover = false
+lifetime_s = 20.0
+placeholder_color = Color(0.32, 0.36, 0.42, 1)

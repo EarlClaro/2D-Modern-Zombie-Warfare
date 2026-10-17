@@ -1,5 +1,8 @@
 # Changelog
 
+## 3.7 Combat drones (2026-10-17)
+- Combat Drones (`CardKind.SUPPORT_TECH`, instant): three armed drones hunt the nearest enemy anywhere for 20 s, then leave; zombies cannot hurt them. New `UnitBrain.Behavior.HUNT` and `UnitBrain.hunt`, `UnitDefinition.lifetime_s` (any unit can be timed; leaving is not a loss) and `flies_a_plan()`, `BattleController._launch_drones/_expire_phase/_retire_unit`, aircraft ignore the walk check, a drawn placeholder drone. `ContentDb` checks the unit of a tech card. Dev mission `x6_high_tech`. The spec now has a table of how the rest of the high-tech roster fits the framework. 22 new tests.
+
 ## 3.6 Entity cards (2026-10-17)
 - Minefield (trap), Noise Lure (intel), Convoy (reinforcement, instant) and Barracks (a structure that makes units), via `FieldEntityDefinition` (`data/entities/`), new `CardKind`s `TRAP`, `INTEL`, `REINFORCEMENT`, spawner fields on `UnitDefinition`, and the pure `MineField`, `LureField`, `SpawnerState`, `ReinforcementPlan`. `PlacementRules.check_field` (new reasons `NOT_WALKABLE`, `NO_ROUTE`), `BattleEnemy.advance_toward`, `FieldEntityView`, mine/lure/convoy previews and hand-bar colours. Dev mission `x5_field_works`. 56 new tests.
 

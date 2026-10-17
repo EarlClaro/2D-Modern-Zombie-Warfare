@@ -36,6 +36,8 @@ const HIGH_AIR_ALTITUDE: float = 6.0
 @export var retreats: bool = true
 @export_range(0.0, 1.0) var retreat_below: float = 0.35
 @export var focus_fire: bool = true
+## Seconds the unit lasts before it leaves the battle by itself (combat drones); 0 = until destroyed. Leaving is not a loss.
+@export var lifetime_s: float = 0.0
 ## A building (structure only) makes `spawns_unit_id` every `spawn_interval_s` while fewer than `spawn_cap` of its units
 ## are alive (Barracks, ADR-013); all three are set together or not at all.
 @export var spawns_unit_id: String = ""
@@ -80,6 +82,10 @@ func validate() -> PackedStringArray:
 			errs.append(_err("only a structure can make units"))
 		if spawn_interval_s <= 0.0 or spawn_cap < 1:
 			errs.append(_err("spawn_interval_s must be > 0 and spawn_cap >= 1"))
+	if lifetime_s < 0.0:
+		errs.append(_err("lifetime_s must be >= 0 (0 = until destroyed)"))
+	if behavior == UnitBrain.Behavior.HUNT and (not is_air() or is_fixed() or weapon_id.is_empty()):
+		errs.append(_err("HUNT is for armed, mobile aircraft"))
 	if retreat_below < 0.0 or retreat_below >= 1.0:
 		errs.append(_err("retreat_below must be within 0..1 (exclusive of 1)"))
 	if leash <= 0.0 or advance_limit <= 0.0 or follow_range <= 0.0:
@@ -102,6 +108,11 @@ func flight_altitude() -> float:
 		HeightClass.HIGH_AIR:
 			return HIGH_AIR_ALTITUDE
 	return 0.0
+
+
+## True for aircraft that fly a scripted sortie (helicopter): they are not run by the unit brain.
+func flies_a_plan() -> bool:
+	return is_air() and behavior != UnitBrain.Behavior.HUNT
 
 
 func is_spawner() -> bool:

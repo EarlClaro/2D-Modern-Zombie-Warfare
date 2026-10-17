@@ -253,6 +253,8 @@ func _validate_card_units() -> void:
 		var u: UnitDefinition = units.get(c.unit_id)
 		if u == null:
 			errors.append("card '%s': unknown unit_id '%s'" % [id, c.unit_id])
+		elif c.card_kind == CardDefinition.CardKind.SUPPORT_TECH and (u.behavior != UnitBrain.Behavior.HUNT or u.lifetime_s <= 0.0):
+			errors.append("card '%s': support-tech unit '%s' must be an aircraft that hunts and leaves after a lifetime" % [id, c.unit_id])
 		elif c.card_kind == CardDefinition.CardKind.REINFORCEMENT and (u.height_class != UnitDefinition.HeightClass.GROUND or u.is_fixed() or u.structure):
 			errors.append("card '%s': reinforcement unit '%s' must be a mobile ground unit" % [id, c.unit_id])
 		elif c.card_kind == CardDefinition.CardKind.DEPLOYMENT and u.height_class != UnitDefinition.HeightClass.GROUND:

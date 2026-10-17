@@ -4,8 +4,8 @@ extends ContentDefinition
 ## `card_kind` + `unit_id` / `effect_id`), never in the definition.
 
 ## ORDER, SUPPLY, DECK and REINFORCEMENT play at once with no target; DOCTRINE cards are never drawn, a mission starts
-## with them. TRAP and INTEL are aimed at an exact cell. A building is a DEPLOYMENT whose unit makes other units.
-enum CardKind { DEPLOYMENT, OPERATION, SORTIE, ORDER, SUPPLY, DECK, DOCTRINE, TRAP, INTEL, REINFORCEMENT }
+## with them. SUPPORT_TECH (combat drones) plays at once too: autonomous aircraft that leave by themselves. TRAP and INTEL are aimed at an exact cell. A building is a DEPLOYMENT whose unit makes other units.
+enum CardKind { DEPLOYMENT, OPERATION, SORTIE, ORDER, SUPPLY, DECK, DOCTRINE, TRAP, INTEL, REINFORCEMENT, SUPPORT_TECH }
 
 const MAX_COPIES_LIMIT: int = 3  # hard ceiling from the deck rules; Legendary cards set max_copies = 1
 
@@ -17,7 +17,7 @@ const MAX_COPIES_LIMIT: int = 3  # hard ceiling from the deck rules; Legendary c
 ## After any copy is played, other copies of this id cannot be played for this long (0 = none).
 @export var lockout_s: float = 0.0
 @export var max_copies: int = MAX_COPIES_LIMIT
-## DEPLOYMENT / SORTIE / REINFORCEMENT: the unit that is spawned, and how many.
+## DEPLOYMENT / SORTIE / REINFORCEMENT / SUPPORT_TECH: the unit that is spawned, and how many.
 @export var unit_id: String = ""
 @export var unit_count: int = 1
 ## SORTIE: how long the aircraft holds station over the target before leaving.
@@ -35,7 +35,7 @@ func kind() -> String:
 
 ## Instant cards take no target cell: clicking the card plays it.
 func is_instant() -> bool:
-	return card_kind == CardKind.ORDER or card_kind == CardKind.SUPPLY or card_kind == CardKind.DECK or card_kind == CardKind.REINFORCEMENT
+	return card_kind == CardKind.ORDER or card_kind == CardKind.SUPPLY or card_kind == CardKind.DECK or card_kind == CardKind.REINFORCEMENT or card_kind == CardKind.SUPPORT_TECH
 
 
 ## True for kinds whose effect_id names a StateEffectDefinition.
@@ -59,9 +59,9 @@ func validate() -> PackedStringArray:
 	if max_copies < 1 or max_copies > MAX_COPIES_LIMIT:
 		errs.append(_err("max_copies must be 1..%d" % MAX_COPIES_LIMIT))
 	match card_kind:
-		CardKind.DEPLOYMENT, CardKind.SORTIE, CardKind.REINFORCEMENT:
+		CardKind.DEPLOYMENT, CardKind.SORTIE, CardKind.REINFORCEMENT, CardKind.SUPPORT_TECH:
 			if unit_id.is_empty():
-				errs.append(_err("unit_id is required for deployment/sortie/reinforcement cards"))
+				errs.append(_err("unit_id is required for deployment/sortie/reinforcement/support-tech cards"))
 			if unit_count < 1:
 				errs.append(_err("unit_count must be >= 1"))
 			if card_kind == CardKind.SORTIE and station_time_s <= 0.0:

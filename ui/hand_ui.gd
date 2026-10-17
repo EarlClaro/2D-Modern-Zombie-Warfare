@@ -24,6 +24,7 @@ const KIND_COLOR: Dictionary = {
 	CardDefinition.CardKind.TRAP: Color(0.72, 0.38, 0.30),
 	CardDefinition.CardKind.INTEL: Color(0.42, 0.62, 0.78),
 	CardDefinition.CardKind.REINFORCEMENT: Color(0.40, 0.66, 0.46),
+	CardDefinition.CardKind.SUPPORT_TECH: Color(0.55, 0.45, 0.85),
 }
 const KIND_LABEL: Dictionary = {
 	CardDefinition.CardKind.DEPLOYMENT: "DEPLOY",
@@ -36,6 +37,7 @@ const KIND_LABEL: Dictionary = {
 	CardDefinition.CardKind.TRAP: "TRAP",
 	CardDefinition.CardKind.INTEL: "LURE",
 	CardDefinition.CardKind.REINFORCEMENT: "CONVOY",
+	CardDefinition.CardKind.SUPPORT_TECH: "TECH",
 }
 
 var _battle: BattleController
