@@ -84,6 +84,15 @@ func preview(battle: BattleController, cell: Vector2i) -> Preview:
 				p.line_dir = op.line_dir()
 				p.line_half_len = op.line_length * 0.5
 			p.blast_radius = op.blast_radius
+	if res.card != null and res.card.uses_field_entity():
+		var ent: FieldEntityDefinition = battle.db.entity(res.card.effect_id)
+		if ent != null and ent.entity_kind == FieldEntityDefinition.EntityKind.MINES:
+			var centre_m := IsoProjection.cell_center(cell)
+			p.ground_points = MineField.patch_positions(centre_m, ent.mine_count, ent.spread_radius)
+			p.area_radius = ent.spread_radius + ent.mine_blast_radius
+			p.scatter_radius = ent.spread_radius
+		elif ent != null:
+			p.area_radius = ent.lure_radius
 	if res.card != null and res.card.card_kind == CardDefinition.CardKind.SORTIE:
 		var air: UnitDefinition = battle.db.unit(res.card.unit_id)
 		var gun: WeaponDefinition = battle.db.weapon(air.weapon_id) if air != null else null

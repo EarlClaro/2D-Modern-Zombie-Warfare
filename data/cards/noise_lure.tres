@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CardDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/cards/card_definition.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = "noise_lure"
+display_name = "Noise Lure"
+description = "Intel: a decoy on the aimed cell. Zombies with nothing to attack walk to it for 10 s."
+card_kind = 8
+cost = 2
+lockout_s = 20.0
+max_copies = 2
+unit_id = ""
+unit_count = 1
+effect_id = "noise_lure"

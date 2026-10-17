@@ -4,7 +4,7 @@ extends RefCounted
 ## buildable, inside the mission's deploy radius around the core, and not already occupied by the core
 ## or a player unit.
 
-enum Reason { OK, OUT_OF_BOUNDS, NOT_BUILDABLE, TOO_FAR_FROM_CORE, OCCUPIED }
+enum Reason { OK, OUT_OF_BOUNDS, NOT_BUILDABLE, TOO_FAR_FROM_CORE, OCCUPIED, NOT_WALKABLE, NO_ROUTE }
 
 ## Units of a multi-unit card stand on a ring this far (tiles) from the cell centre; < 0.5 keeps them in the cell.
 const RING_RADIUS: float = 0.28
@@ -27,6 +27,18 @@ static func check_ground_target(map: MapDefinition, cell: Vector2i) -> Reason:
 	return Reason.OK if map.in_bounds(cell) else Reason.OUT_OF_BOUNDS
 
 
+## Mines and lures go on any ground a zombie can walk on (roads included), anywhere on the map, but not on the core
+## or on a cell already taken (`blocked`: core walls and scenery).
+static func check_field(map: MapDefinition, cell: Vector2i, core_cell: Vector2i, blocked: Array[Vector2i]) -> Reason:
+	if not map.in_bounds(cell):
+		return Reason.OUT_OF_BOUNDS
+	if not map.is_walkable(cell):
+		return Reason.NOT_WALKABLE
+	if cell == core_cell or blocked.has(cell):
+		return Reason.OCCUPIED
+	return Reason.OK
+
+
 static func describe(reason: Reason) -> String:
 	match reason:
 		Reason.OK:
@@ -39,6 +51,10 @@ static func describe(reason: Reason) -> String:
 			return "Too far from the base"
 		Reason.OCCUPIED:
 			return "Cell is occupied"
+		Reason.NOT_WALKABLE:
+			return "Not open ground"
+		Reason.NO_ROUTE:
+			return "No clear route for the convoy"
 	return "Invalid"
 
 

@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="UnitDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/unit_definition.gd" id="1_unit"]
+
+[resource]
+script = ExtResource("1_unit")
+id = "barracks"
+display_name = "Barracks"
+max_health = 300.0
+move_speed = 0.0
+footprint_radius = 0.7
+height_class = 0
+structure = true
+spawns_unit_id = "rifle_soldier"
+spawn_interval_s = 12.0
+spawn_cap = 3
+placeholder_color = Color(0.36, 0.42, 0.3, 1)

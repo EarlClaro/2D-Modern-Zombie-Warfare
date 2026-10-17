@@ -19,6 +19,9 @@ var shadow: IsoShadow
 var _recoil: Vector2 = Vector2.ZERO  # draw-only offset; never moves the sort anchor
 ## Where the unit was placed: a GUARD returns here, and its leash is measured from here.
 var anchor: Vector2 = Vector2.ZERO
+## The building that made this unit (0 = none) and, for a building, its production timer (Barracks).
+var maker_uid: int = 0
+var spawner: SpawnerState
 var _move_target: Vector2 = Vector2.ZERO
 var _moving: bool = false
 var _anim_t: float = 0.0  # walk-cycle clock; only advances while moving

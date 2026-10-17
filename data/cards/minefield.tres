@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CardDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/cards/card_definition.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = "minefield"
+display_name = "Minefield"
+description = "Trap: eight mines on open ground around the aimed cell. Each blasts the first zombie to step near it."
+card_kind = 7
+cost = 2
+lockout_s = 20.0
+max_copies = 2
+unit_id = ""
+unit_count = 1
+effect_id = "minefield"

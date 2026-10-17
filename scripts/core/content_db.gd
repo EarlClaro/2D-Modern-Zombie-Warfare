@@ -14,12 +14,13 @@ var decks: Dictionary = {}  # id -> DeckDefinition
 var operations: Dictionary = {}  # id -> OperationDefinition (battle effects of Operation cards)
 var effects: Dictionary = {}  # id -> StateEffectDefinition (battle effects of Order / Supply / Deck / Doctrine cards)
 var cutaways: Dictionary = {}  # id -> CutawayDefinition (full-screen clips of big supports)
+var entities: Dictionary = {}  # id -> FieldEntityDefinition (mines and lures of Trap / Intel cards)
 var scenery_defs: Dictionary = {}  # id -> SceneryDefinition (decorations placed by maps)
 var deck_rules: DeckRules  # data/config/deck_rules.tres; null if missing/invalid (reported in errors)
 var errors: PackedStringArray = PackedStringArray()
 
 
-## Loads data/{weapons,units,enemies,maps,missions,cards,decks,operations,effects} and data/config/deck_rules.tres under `root`, then verifies cross-references.
+## Loads data/{weapons,units,enemies,maps,missions,cards,decks,operations,effects,entities} and data/config/deck_rules.tres under `root`, then verifies cross-references.
 static func load_from(root: String = "res://data") -> ContentDb:
 	var db := ContentDb.new()
 	db._load_dir(root + "/weapons", "weapon")
@@ -31,6 +32,7 @@ static func load_from(root: String = "res://data") -> ContentDb:
 	db._load_dir(root + "/decks", "deck")
 	db._load_dir(root + "/operations", "operation")
 	db._load_dir(root + "/effects", "effect")
+	db._load_dir(root + "/entities", "entity")
 	db._load_dir(root + "/cutaways", "cutaway")
 	db._load_dir(root + "/scenery", "scenery", false)
 	db._load_deck_rules(root + "/config/deck_rules.tres")
@@ -76,6 +78,10 @@ func operation(id: String) -> OperationDefinition:
 
 func effect(id: String) -> StateEffectDefinition:
 	return effects.get(id)
+
+
+func entity(id: String) -> FieldEntityDefinition:
+	return entities.get(id)
 func cutaway(id: String) -> CutawayDefinition:
 	return cutaways.get(id)
 
@@ -98,6 +104,10 @@ func add_operation(def: OperationDefinition) -> bool:
 
 func add_effect(def: StateEffectDefinition) -> bool:
 	return _register(effects, def)
+
+
+func add_entity(def: FieldEntityDefinition) -> bool:
+	return _register(entities, def)
 
 
 func add_card(def: CardDefinition) -> bool:
@@ -136,6 +146,12 @@ func validate_references() -> void:
 			errors.append("unit '%s': unknown weapon_id '%s'" % [id, u.weapon_id])
 		if not u.secondary_weapon_id.is_empty() and not weapons.has(u.secondary_weapon_id):
 			errors.append("unit '%s': unknown secondary_weapon_id '%s'" % [id, u.secondary_weapon_id])
+		if u.is_spawner():
+			var made: UnitDefinition = units.get(u.spawns_unit_id)
+			if made == null:
+				errors.append("unit '%s': unknown spawns_unit_id '%s'" % [id, u.spawns_unit_id])
+			elif made.is_air() or made.is_fixed() or made.structure:
+				errors.append("unit '%s': spawns_unit_id '%s' must be a mobile ground unit" % [id, u.spawns_unit_id])
 	for id in missions:
 		var m: MissionDefinition = missions[id]
 		for su in m.start_units:
@@ -231,13 +247,29 @@ func _validate_card_units() -> void:
 		if c.uses_state_effect():
 			_validate_state_card(c)
 			continue
+		if c.uses_field_entity():
+			_validate_field_card(c)
+			continue
 		var u: UnitDefinition = units.get(c.unit_id)
 		if u == null:
 			errors.append("card '%s': unknown unit_id '%s'" % [id, c.unit_id])
+		elif c.card_kind == CardDefinition.CardKind.REINFORCEMENT and (u.height_class != UnitDefinition.HeightClass.GROUND or u.is_fixed() or u.structure):
+			errors.append("card '%s': reinforcement unit '%s' must be a mobile ground unit" % [id, c.unit_id])
 		elif c.card_kind == CardDefinition.CardKind.DEPLOYMENT and u.height_class != UnitDefinition.HeightClass.GROUND:
 			errors.append("card '%s': deployment unit '%s' must be a ground unit" % [id, c.unit_id])
 		elif c.card_kind == CardDefinition.CardKind.SORTIE and u.height_class == UnitDefinition.HeightClass.GROUND:
 			errors.append("card '%s': sortie unit '%s' must be an aircraft" % [id, c.unit_id])
+
+
+## A trap card must name a mine patch and an intel card a lure.
+func _validate_field_card(c: CardDefinition) -> void:
+	var e: FieldEntityDefinition = entities.get(c.effect_id)
+	if e == null:
+		errors.append("card '%s': unknown effect_id '%s'" % [c.id, c.effect_id])
+		return
+	var want := FieldEntityDefinition.EntityKind.MINES if c.card_kind == CardDefinition.CardKind.TRAP else FieldEntityDefinition.EntityKind.LURE
+	if e.entity_kind != want:
+		errors.append("card '%s': %s card needs a %s entity ('%s' is not)" % [c.id, "a trap" if want == FieldEntityDefinition.EntityKind.MINES else "an intel", "mine" if want == FieldEntityDefinition.EntityKind.MINES else "lure", e.id])
 
 
 ## An order, supply, deck or doctrine card must name an effect that does what the card's kind promises.
@@ -351,6 +383,11 @@ func _load_dir(path: String, kind: String, required: bool = true) -> void:
 					add_operation(res)
 				else:
 					errors.append("%s is not an OperationDefinition" % full)
+			"entity":
+				if res is FieldEntityDefinition:
+					add_entity(res)
+				else:
+					errors.append("%s is not a FieldEntityDefinition" % full)
 			"effect":
 				if res is StateEffectDefinition:
 					add_effect(res)

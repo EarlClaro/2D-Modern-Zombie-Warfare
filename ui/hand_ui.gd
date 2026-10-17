@@ -21,6 +21,9 @@ const KIND_COLOR: Dictionary = {
 	CardDefinition.CardKind.SUPPLY: Color(0.35, 0.72, 0.72),
 	CardDefinition.CardKind.DECK: Color(0.66, 0.5, 0.82),
 	CardDefinition.CardKind.DOCTRINE: Color(0.55, 0.55, 0.6),
+	CardDefinition.CardKind.TRAP: Color(0.72, 0.38, 0.30),
+	CardDefinition.CardKind.INTEL: Color(0.42, 0.62, 0.78),
+	CardDefinition.CardKind.REINFORCEMENT: Color(0.40, 0.66, 0.46),
 }
 const KIND_LABEL: Dictionary = {
 	CardDefinition.CardKind.DEPLOYMENT: "DEPLOY",
@@ -30,6 +33,9 @@ const KIND_LABEL: Dictionary = {
 	CardDefinition.CardKind.SUPPLY: "SUPPLY",
 	CardDefinition.CardKind.DECK: "DECK",
 	CardDefinition.CardKind.DOCTRINE: "DOCTRINE",
+	CardDefinition.CardKind.TRAP: "TRAP",
+	CardDefinition.CardKind.INTEL: "LURE",
+	CardDefinition.CardKind.REINFORCEMENT: "CONVOY",
 }
 
 var _battle: BattleController

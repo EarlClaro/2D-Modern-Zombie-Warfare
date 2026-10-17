@@ -36,6 +36,11 @@ const HIGH_AIR_ALTITUDE: float = 6.0
 @export var retreats: bool = true
 @export_range(0.0, 1.0) var retreat_below: float = 0.35
 @export var focus_fire: bool = true
+## A building (structure only) makes `spawns_unit_id` every `spawn_interval_s` while fewer than `spawn_cap` of its units
+## are alive (Barracks, ADR-013); all three are set together or not at all.
+@export var spawns_unit_id: String = ""
+@export var spawn_interval_s: float = 0.0
+@export var spawn_cap: int = 0
 ## Optional second weapon (aircraft only for now), fired independently of the first.
 @export var secondary_weapon_id: String = ""
 @export var placeholder_color: Color = Color.WHITE
@@ -68,6 +73,13 @@ func validate() -> PackedStringArray:
 			errs.append(_err("a structure must not have a weapon"))
 		if is_air():
 			errs.append(_err("a structure must be a ground entity"))
+	if spawns_unit_id.is_empty() != (spawn_interval_s <= 0.0 and spawn_cap <= 0):
+		errs.append(_err("spawns_unit_id, spawn_interval_s and spawn_cap must be set together"))
+	elif not spawns_unit_id.is_empty():
+		if not structure:
+			errs.append(_err("only a structure can make units"))
+		if spawn_interval_s <= 0.0 or spawn_cap < 1:
+			errs.append(_err("spawn_interval_s must be > 0 and spawn_cap >= 1"))
 	if retreat_below < 0.0 or retreat_below >= 1.0:
 		errs.append(_err("retreat_below must be within 0..1 (exclusive of 1)"))
 	if leash <= 0.0 or advance_limit <= 0.0 or follow_range <= 0.0:
@@ -90,6 +102,10 @@ func flight_altitude() -> float:
 		HeightClass.HIGH_AIR:
 			return HIGH_AIR_ALTITUDE
 	return 0.0
+
+
+func is_spawner() -> bool:
+	return not spawns_unit_id.is_empty()
 
 
 func has_death_blast() -> bool:
