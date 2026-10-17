@@ -724,6 +724,8 @@ func _fire(u: BattleUnit, weapon: WeaponDefinition, target: BattleEnemy) -> void
 	var damage := weapon.damage * modifiers.damage_mult(weapon.id)  # doctrines
 	if weapon.delivery == WeaponDefinition.Delivery.PROJECTILE:
 		var to := target.ground_pos
+		if weapon.scatter_tiles > 0.0:  # uniform over the disc, from the shell RNG so the battle stays reproducible
+			to += Vector2.from_angle(_ops_rng.randf() * TAU) * (sqrt(_ops_rng.randf()) * weapon.scatter_tiles)
 		var from := u.ground_pos
 		if u is BattleAircraft:
 			from = (u as BattleAircraft).next_pylon_ground()  # missiles hang under the wings, not the fuselage

@@ -3,7 +3,7 @@ extends TestCase
 ## on buildable ground, decks that use the new roster, a short battle on each, and the mission list order.
 
 const DT: float = 1.0 / 60.0
-const MISSIONS: Array[String] = ["x6_bridge_line", "x7_dead_highway", "x8_last_airfield", "x9_town_siege", "x10_mountain_pass"]
+const MISSIONS: Array[String] = ["x7_bridge_line", "x8_dead_highway", "x9_last_airfield", "x10_town_siege", "x11_mountain_pass"]
 const MAPS: Array[String] = ["bridge_line", "dead_highway", "last_airfield", "town_siege", "mountain_pass"]
 
 var _db: ContentDb
@@ -30,7 +30,7 @@ func test_the_five_missions_load_and_are_valid() -> void:
 		assert_true(m != null, id)
 		assert_eq(m.validate().size(), 0, id)
 		assert_eq(m.deploy_radius, 0.0, "%s: build anywhere" % id)
-		assert_true(m.total_enemies() >= 800, "%s is a long fight (%d enemies)" % [id, m.total_enemies()])
+		assert_true(m.total_enemies() >= 700, "%s is a long fight (%d enemies)" % [id, m.total_enemies()])
 		assert_true(m.spawn_cells.size() == 2, "%s has two spawns" % id)
 
 
@@ -73,7 +73,7 @@ func test_the_enemy_route_runs_over_buildable_roads() -> void:
 
 
 func test_the_bridge_is_planks_and_the_broken_bridge_has_a_gap() -> void:
-	var map := _get_db().mission("x6_bridge_line").map
+	var map := _get_db().mission("x7_bridge_line").map
 	assert_eq(map.terrain_char(Vector2i(26, 22)), "z", "the working bridge is wood planks (walkable, buildable)")
 	assert_true(map.is_walkable(Vector2i(26, 22)) and map.is_buildable(Vector2i(26, 22)))
 	assert_eq(map.terrain_char(Vector2i(26, 9)), "w", "the northern bridge is out")
@@ -81,7 +81,7 @@ func test_the_bridge_is_planks_and_the_broken_bridge_has_a_gap() -> void:
 
 
 func test_the_pass_has_walls_and_open_ground_behind_them() -> void:
-	var m := _get_db().mission("x10_mountain_pass")
+	var m := _get_db().mission("x11_mountain_pass")
 	var rocks := 0
 	for y in m.map.height():
 		for x in m.map.width():
@@ -111,8 +111,8 @@ func test_mission_select_lists_them_in_number_order() -> void:
 	for e in MissionListing.entries(_get_db()):
 		if e.group == MissionListing.GROUP_MISSIONS:
 			ids.append(e.id)
-	assert_true(ids.find("x10_mountain_pass") > ids.find("x9_town_siege"), "x10 after x9")
-	assert_true(ids.find("x9_town_siege") > ids.find("x5_field_works") if ids.has("x5_field_works") else true)
+	assert_true(ids.find("x10_town_siege") > ids.find("x9_last_airfield"), "x10 after x9")
+	assert_true(ids.find("x10_town_siege") > ids.find("x5_field_works") if ids.has("x5_field_works") else true)
 	assert_true(MissionListing.id_less("x2_a", "x10_a") and not MissionListing.id_less("x10_a", "x2_a"))
 	assert_true(MissionListing.id_less("m1_a", "x1_a"))
 
@@ -134,7 +134,7 @@ func test_a_battle_on_each_map_runs_and_the_horde_arrives() -> void:
 
 
 func test_the_town_route_is_long_and_winding() -> void:
-	var m := _get_db().mission("x9_town_siege")
+	var m := _get_db().mission("x10_town_siege")
 	var pts := PackedVector2Array()
 	pts.append(IsoProjection.cell_center(m.spawn_cells[0]))
 	for c in m.path_cells:

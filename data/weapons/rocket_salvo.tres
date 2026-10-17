@@ -18,3 +18,4 @@ projectile_speed = 16.0
 projectile_arc = 6.0
 projectile_accel = 0.5
 sfx_id = "missile"
+scatter_tiles = 2.6

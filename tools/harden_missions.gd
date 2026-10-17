@@ -11,6 +11,8 @@ const PLAN := {
 	"x1_fortified_crossing": [1.5, [[30.0, "behemoth", 1, 1.0], [60.0, "sprinter", 30, 0.1], [80.0, "spewer", 6, 1.0]]],
 	"x2_outskirts": [1.4, [[5.0, "behemoth", 3, 4.0], [60.0, "sprinter", 80, 0.06], [70.0, "spewer", 14, 0.8]]],
 	"x3_storm_night": [1.4, [[5.0, "behemoth", 3, 4.0], [60.0, "sprinter", 80, 0.06], [70.0, "spewer", 14, 0.8]]],
+	"x5_field_works": [0.975, [[30.0, "behemoth", 1, 2.0], [55.0, "sprinter", 33, 0.12], [75.0, "spewer", 7, 1.1]]],
+	"x6_high_tech": [0.975, [[30.0, "behemoth", 1, 2.0], [55.0, "sprinter", 33, 0.12], [75.0, "spewer", 7, 1.1]]],
 	"x4_field_orders": [1.0, [[30.0, "behemoth", 1, 1.0], [60.0, "sprinter", 30, 0.1], [80.0, "spewer", 6, 1.0]]],
 }
 
