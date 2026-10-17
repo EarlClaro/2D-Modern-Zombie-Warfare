@@ -1,5 +1,10 @@
 # Changelog
 
+## Merge of the field command package with 3.6 and 3.7 (2026-10-17)
+- `UnitBrain.Behavior` is now HOLD, GUARD, ADVANCE, SUPPORT, KITE, ARTILLERY, HUNT (HUNT moved from 4 to 6; the combat drone data follows). `PlacementRules.Reason` keeps `NOT_WALKABLE` and `NO_ROUTE` before `TOO_CLOSE_TO_SPAWN`.
+- The 3.6 and 3.7 missions `x5_field_works` and `x6_high_tech` lost their 10-tile deploy circle (everything is buildable anywhere now). Note: the new F4 mission `x6_bridge_line` shares the number 6 with `x6_high_tech`; mission select orders them by id.
+- Entity-card tests pin the shipped rifleman to GUARD (it kites since F2), and the Barracks test checks that the far side of the map is buildable.
+
 ## F5 The harder game (2026-10-17; branch m3-field-command)
 - **Three new enemies:** Sprinter (faster than every soldier), Behemoth (1,400 HP, armour 8, very slow, heavy hitter) and Spewer (acid range 7, out-reaches a rifleman safety zone); sprite sets and definitions, tests (`tests/test_hard_enemies.gd`).
 - **Harder missions, no selector:** the older missions m2, m3, x1, x2, x3 and x4 have scaled waves plus the new enemies (`tools/harden_missions.gd`); the five new missions carry them too. Numbers were set with the card bots (see docs/BALANCE.md, "F5"): doing nothing loses everywhere, the saving bot wins about half to three quarters of the time. Bodies are capped by the frame budget (about 2,000 alive costs 6 to 7 ms a step), so the extra pressure is quality, not quantity.
@@ -25,6 +30,12 @@
 
 ## F1 Build anywhere (2026-10-17; branch m3-field-command; spec docs/specs/field-command.md, ADR-016)
 - Deployment cards can now be placed on roads, asphalt, lanes, cobble, runways, rubble, mud, ice and craters (everything a unit can stand on except the shallows; rock and deep water still block). The base circle is gone: `deploy_radius` 0 means the whole map and is now the default and the value in every shipped mission (a positive value still limits). A new per-mission `spawn_guard_radius` (default 6 tiles) keeps a no-build circle around enemy spawns, refused with the new reason `TOO_CLOSE_TO_SPAWN` ("Too close to the enemy spawn") and drawn as red rings in the card preview. `PlacementRules.check_deploy` gains optional spawn arguments. 6 new tests and 9 updated; 717 pass. The spec also records the rest of the package (smart army and mobile vehicles, roster realism and long-range artillery, five new missions, a harder game tuned last) as increments F2 to F5.
+
+## 3.7 Combat drones (2026-10-17)
+- Combat Drones (`CardKind.SUPPORT_TECH`, instant): three armed drones hunt the nearest enemy anywhere for 20 s, then leave; zombies cannot hurt them. New `UnitBrain.Behavior.HUNT` and `UnitBrain.hunt`, `UnitDefinition.lifetime_s` (any unit can be timed; leaving is not a loss) and `flies_a_plan()`, `BattleController._launch_drones/_expire_phase/_retire_unit`, aircraft ignore the walk check, a drawn placeholder drone. `ContentDb` checks the unit of a tech card. Dev mission `x6_high_tech`. The spec now has a table of how the rest of the high-tech roster fits the framework. 22 new tests.
+
+## 3.6 Entity cards (2026-10-17)
+- Minefield (trap), Noise Lure (intel), Convoy (reinforcement, instant) and Barracks (a structure that makes units), via `FieldEntityDefinition` (`data/entities/`), new `CardKind`s `TRAP`, `INTEL`, `REINFORCEMENT`, spawner fields on `UnitDefinition`, and the pure `MineField`, `LureField`, `SpawnerState`, `ReinforcementPlan`. `PlacementRules.check_field` (new reasons `NOT_WALKABLE`, `NO_ROUTE`), `BattleEnemy.advance_toward`, `FieldEntityView`, mine/lure/convoy previews and hand-bar colours. Dev mission `x5_field_works`. 56 new tests.
 
 ## Game shell (2026-10-17; branch m3-menu; spec docs/specs/menus.md, ADR-015)
 - The game now opens on a start menu: Play (mission select), Settings, Quit. Mission select lists every mission in `data/missions/` (Missions first, Test missions after), shows its facts from data (duration, core health, enemies, deck, time and weather) and pre-selects the last mission played. Settings: master volume, fullscreen, strike clips on/off, FPS counter, reset to defaults; applied at once, saved in `user://settings.cfg` (a missing, corrupt or hand-edited file falls back to defaults). In a battle Esc (with no card selected) opens a pause menu that really pauses the game (Resume, Restart, Settings, Main menu, Quit); the result panel gains a Main menu button. `-- --mission=<id>` still skips the menu.

@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="DeckDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/cards/deck_definition.gd" id="1_deck"]
+
+[resource]
+script = ExtResource("1_deck")
+id = "high_tech"
+display_name = "High Tech"
+card_ids = PackedStringArray("rifle_squad", "gatling_gun", "tank", "artillery_strike", "combat_drones", "rifle_squad", "gatling_gun", "tank", "artillery_strike", "combat_drones", "rifle_squad", "gatling_gun", "tank", "artillery_strike", "combat_drones")

@@ -41,7 +41,7 @@ Categories: Infantry, Armor, Artillery/Ordnance, Aviation, Naval, Drones, Comman
 | Draw | On battle start draw 4. Then 1 card per 4 s while hand < cap |
 | Reshuffle | When draw pile empty, shuffle discard into draw pile (no penalty in MVP) |
 | Command Points (CP) | start 5, cap 10, +1 per 3.0 s base (tuned in M2.6, ADR-011) |
-| Card types | **Deployment** (unit/structure persists until destroyed or timed out), **Operation** (one-shot effect, e.g. strike), **Sortie** (aircraft: enters, acts, exits), **Order / Supply / Deck trick** (instant, no target: timed armour or damage change, Command Points and reload, draw cards), **Doctrine** (a permanent bonus a mission starts with) |
+| Card types | **Deployment** (unit/structure persists until destroyed or timed out), **Operation** (one-shot effect, e.g. strike), **Sortie** (aircraft: enters, acts, exits), **Order / Supply / Deck trick** (instant, no target: timed armour or damage change, Command Points and reload, draw cards), **Doctrine** (a permanent bonus a mission starts with), **Trap / Lure** (mines and decoys on an exact cell), **Reinforcement** (a squad that walks in from a map edge), **Building** (a structure that makes units), **High tech** (autonomous aircraft such as combat drones that hunt and leave after a time) |
 | After play | card goes to discard pile; no per-card cooldown in MVP except via draw cycle. Strong ops carry a per-card *lockout* (cooldown before it can be played again once redrawn) |
 | Upgrades | Persistent per card id, apply to all copies, branches change behavior not just stats |
 | Deck editing | Between missions, within min/max, subject to mission restrictions (e.g. "no Naval") |

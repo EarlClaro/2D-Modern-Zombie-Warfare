@@ -19,6 +19,11 @@ var shadow: IsoShadow
 var _recoil: Vector2 = Vector2.ZERO  # draw-only offset; never moves the sort anchor
 ## Where the unit was placed: a GUARD returns here, and its leash is measured from here.
 var anchor: Vector2 = Vector2.ZERO
+## The building that made this unit (0 = none) and, for a building, its production timer (Barracks).
+var maker_uid: int = 0
+## Seconds this unit has been in the battle (only used for units with a lifetime).
+var age: float = 0.0
+var spawner: SpawnerState
 var _move_target: Vector2 = Vector2.ZERO
 var _moving: bool = false
 var _anim_t: float = 0.0  # walk-cycle clock; only advances while moving
@@ -168,6 +173,18 @@ func _update_sprite_frame(delta: float) -> void:
 		queue_redraw()
 
 
+## Placeholder for a small hunting aircraft: a body, four rotor rings and a red light, at the node (which sits at the
+## lifted screen position for aircraft).
+func _draw_drone() -> void:
+	var c := def.placeholder_color
+	for off in [Vector2(-8, -4), Vector2(8, -4), Vector2(-8, 3), Vector2(8, 3)]:
+		draw_line(Vector2.ZERO, off, c.darkened(0.45), 2.0)
+		draw_arc(off, 4.5, 0.0, TAU, 12, Color(0.82, 0.88, 0.95, 0.75), 1.5)
+	draw_rect(Rect2(-5.0, -3.0, 10.0, 6.0), c)
+	draw_rect(Rect2(-5.0, -3.0, 10.0, 6.0), c.darkened(0.55), false, 1.0)
+	draw_circle(Vector2(0.0, -1.0), 1.7, Color(1.0, 0.3, 0.25))
+
+
 func _draw() -> void:
 	if def == null:
 		return
@@ -176,6 +193,9 @@ func _draw() -> void:
 		def.sprite.draw_frame(self, _frame, facing, _recoil + lift)
 		if not dying:
 			BattleDraw.health_bar(self, -def.sprite.top_px() - 6.0 + lift.y, health.fraction() if health != null else 1.0)
+		return
+	if def.is_air() and def.behavior == UnitBrain.Behavior.HUNT:
+		_draw_drone()
 		return
 	var dir := IsoProjection.ground_dir_of_facing(facing)
 	var perp := Vector2(-dir.y, dir.x)

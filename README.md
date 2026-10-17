@@ -11,6 +11,8 @@ A 2D, high-view isometric, high-tech military combined-arms **deckbuilder**. Com
 ```
 godot --path .            # runs the battle (main scene)
 godot --path . -- --mission=s1_stress_horde --seed=3   # 100-zombie stress scenario (FPS shown top-right)
+godot --path . -- --mission=x6_high_tech   # Combat Drones: plays on the click, three drones hunt on their own for 20 s
+godot --path . -- --mission=x5_field_works   # entity cards: Minefield and Noise Lure are aimed at a cell, Convoy plays on the click, Barracks is placed and makes soldiers
 godot --path . -- --mission=x4_field_orders   # state cards (Fortify, Supply Drop, Quick Draw play on the click; Hollow Points doctrine is in force); `--doctrine=hollow_points` adds a doctrine to any mission
 godot --path . -- --mission=m2_card_defense   # card mission: 1-5 / click a card to select, LMB places it, RMB or Esc cancels
 godot --path . scenes/dev/iso_spike.tscn   # isometric spike scene

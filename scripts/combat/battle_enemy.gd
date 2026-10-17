@@ -14,6 +14,8 @@ var health: Health
 var attack_state: WeaponState
 var facing: int = IsoProjection.Facing.W
 var shadow: IsoShadow
+## Noise lure (ADR-013): whether the straight walk to the lure that pulls this enemy was clear when last checked.
+var lure_clear: bool = false
 var _waypoints: Array[Vector2] = []
 var _wp_index: int = 0
 var _anim_t: float = 0.0  # walk-cycle clock; only advances while the enemy actually moves
@@ -63,6 +65,19 @@ func advance_path(delta: float) -> void:
 		_wp_index += 1
 	else:
 		ground_pos += to / dist * step
+
+
+## Walks straight toward `point` at `def.move_speed` without touching the path progress; returns the distance left.
+func advance_toward(point: Vector2, delta: float) -> float:
+	var to := point - ground_pos
+	var dist := to.length()
+	var step := def.move_speed * delta
+	face_toward(point)
+	if step >= dist:
+		ground_pos = point
+		return 0.0
+	ground_pos += to / dist * step
+	return dist - step
 
 
 ## True for a short moment after the attack cooldown restarts (the swing that just landed).

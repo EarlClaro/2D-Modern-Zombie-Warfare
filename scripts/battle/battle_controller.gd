@@ -38,6 +38,11 @@ const LANE_JITTER: float = 0.9
 const CORE_ID: int = 0  # target id of the core; unit ids start at 1
 const DEATH_COLLAPSE_S: float = 0.3
 const MIN_PROJECTILE_FLIGHT_S: float = 0.1
+const CONVOY_SETTLE_DIST: float = 3.5  # tiles from the core where a convoy squad takes up position
+const LURE_RECHECK_TICKS: int = 6  # an enemy re-checks that the walk to a lure is clear this often (staggered by uid)
+const LURE_STAND: float = 0.8  # tiles from a lure at which an enemy stops (plus a little by uid so they do not stack)
+const HUNT_SEARCH_RADIUS: float = 60.0  # tiles: a hunting aircraft looks for prey this far (the whole map)
+const DRONE_RING: float = 0.9  # tiles: combat drones leave the core on a ring this wide
 const SORTIE_MARGIN: float = 5.0  # tiles beyond the map edge where aircraft appear and disappear
 const CORE_SPOT_RANGE: float = 14.0  # how far the core's own watch reaches when it calls in artillery
 const ARTILLERY_LOOKAHEAD_S: float = 0.25  # a gun looks for a target only when it will be ready within this time
@@ -116,6 +121,9 @@ var targeting: CardTargeting = CardTargeting.new()
 ## Arcing shells in flight (artillery) and the telegraphs of strikes that are still landing.
 var projectiles: ProjectileSystem = ProjectileSystem.new()
 var strikes: Array[Strike] = []
+## Mines lying on the field and noise lures in play (Trap / Intel cards).
+var mines: MineField = MineField.new()
+var lures: LureField = LureField.new()
 ## Aircraft currently flying a sortie (they are also in `units`).
 var sorties: Array[Sortie] = []
 ## Preview of the selected card over the cell under the mouse; null when nothing is selected. Updated every frame.
@@ -148,6 +156,7 @@ var _enemy_index_valid: bool = false  # false once `enemies` changed after the i
 var _target_pos: PackedVector2Array = PackedVector2Array()  # what enemies can hit this tick (ground units), reused
 var _target_id: PackedInt32Array = PackedInt32Array()
 var _target_obj: Array[BattleUnit] = []
+var _tick: int = 0  # simulation ticks since the battle started (staggers per-enemy work)
 var _front_pos: Vector2 = Vector2.ZERO  # the enemy closest to the core after this tick's movement (for ADVANCE units)
 var _has_front: bool = false
 var _blocked_cells: Dictionary = {}  # scenery cells (cell -> true): units do not walk through them
@@ -257,6 +266,9 @@ func setup(p_db: ContentDb, p_mission: MissionDefinition, p_seed: int) -> void:
 	projectiles.clear()
 	strikes.clear()
 	sorties.clear()
+	mines.clear()
+	lures.clear()
+	_tick = 0
 	elapsed = 0.0
 	frozen = false
 	stats = {"spawned": 0, "kills": 0, "shots": 0, "units_lost": 0}
@@ -340,7 +352,9 @@ func step(delta: float) -> void:
 		return
 	# 1. clock + card economy + spawns
 	elapsed += delta
+	_tick += 1
 	modifiers.tick(delta)
+	lures.tick(delta)
 	if deck != null:
 		deck.tick(delta)
 		points.tick(delta)
@@ -348,7 +362,10 @@ func step(delta: float) -> void:
 	_pending.clear()
 	# 2. enemies, 3. player units (both only *queue* damage)
 	_enemy_phase(delta)
+	_mine_phase()
 	_unit_phase(delta)
+	_spawner_phase(delta)
+	_expire_phase(delta)
 	_sortie_phase(delta)
 	_projectile_phase(delta)
 	# 4. apply all damage, then remove the dead
@@ -390,6 +407,7 @@ func _enemy_phase(delta: float) -> void:
 			hi = hi.max(up)
 	var unit_targets := _target_pos.size()
 	var armor_bonus := modifiers.armor_bonus()
+	var has_lures := not lures.is_empty()
 	var core_alive := core.is_alive()
 	var core_pos := core.ground_pos
 	var core_radius := core.radius
@@ -433,7 +451,9 @@ func _enemy_phase(delta: float) -> void:
 				enemy_attacked.emit(e, target)
 		else:
 			e.attack_state.tick(delta, false)
-			e.advance_path(delta)
+			if not (has_lures and _steer_to_lure(e, delta)):
+				e.lure_clear = false
+				e.advance_path(delta)
 		_enemy_index.add(e, e.ground_pos)
 		var core_d2 := e.ground_pos.distance_squared_to(core_pos)
 		if core_d2 < front_d2:
@@ -450,7 +470,7 @@ func _unit_phase(delta: float) -> void:
 		if u.weapon == null:  # a structure: nothing to move or fire
 			continue
 		var target: BattleEnemy = null
-		if u.def.is_air():  # sortie aircraft follow their flight plan, not the unit brain
+		if u.def.flies_a_plan():  # sortie aircraft follow their flight plan, not the unit brain
 			u.advance_move(delta)
 			if not u.is_moving() or u.weapon.can_fire_moving:  # units must stand still to fire, unless the weapon says otherwise
 				target = _nearest_enemy(u.ground_pos, u.weapon.range_tiles)
@@ -484,6 +504,9 @@ func _think_and_move(u: BattleUnit, delta: float) -> BattleEnemy:
 				decision = UnitBrain.support(u.ground_pos, friend != null, friend.ground_pos if friend != null else Vector2.ZERO)
 			UnitBrain.Behavior.KITE, UnitBrain.Behavior.ARTILLERY:
 				decision = UnitBrain.kite(_kite_facts_for(u, target != null))
+			UnitBrain.Behavior.HUNT:
+				var prey := _nearest_enemy(u.ground_pos, HUNT_SEARCH_RADIUS)
+				decision = UnitBrain.hunt(u.ground_pos, u.anchor, weapon_range, target != null, prey != null, prey.ground_pos if prey != null else Vector2.ZERO)
 	if decision != null:
 		_carry_out(u, decision)
 	var before := u.ground_pos
@@ -595,7 +618,7 @@ func _carry_out(u: BattleUnit, d: UnitBrain.Decision) -> void:
 		return
 	if u.is_moving() and u.move_target().distance_squared_to(d.dest) < 0.0625:
 		return  # already walking to (about) there
-	if not _walk_is_clear(u.ground_pos, d.dest):
+	if not u.def.is_air() and not _walk_is_clear(u.ground_pos, d.dest):  # aircraft fly over anything
 		if u.is_moving():
 			u.stop()
 		return
@@ -706,10 +729,11 @@ func _sortie_phase(delta: float) -> void:
 			s.unit.order_move(s.exit)
 		elif after == SortieFlight.Phase.DONE:
 			sorties.remove_at(i)
-			_retire_aircraft(s.unit)
+			_retire_unit(s.unit)
 
 
-func _retire_aircraft(u: BattleAircraft) -> void:
+## Takes a unit out of the battle without a death (a sortie aircraft that has left, a drone whose time is up).
+func _retire_unit(u: BattleUnit) -> void:
 	units.erase(u)
 	for item in [u.shadow, u]:
 		if item != null and is_instance_valid(item):
@@ -877,6 +901,11 @@ func check_card(hand_index: int, cell: Vector2i) -> CardPlayService.Result:
 				placement = PlacementRules.check_deploy(mission.map, cell, mission.core_cell, mission.deploy_radius, occupied_cells(), mission.spawn_cells, mission.spawn_guard_radius)
 			CardDefinition.CardKind.OPERATION, CardDefinition.CardKind.SORTIE:
 				placement = PlacementRules.check_ground_target(mission.map, cell)
+			CardDefinition.CardKind.TRAP, CardDefinition.CardKind.INTEL:
+				placement = PlacementRules.check_field(mission.map, cell, mission.core_cell, _field_blocked())
+			CardDefinition.CardKind.REINFORCEMENT:
+				if _plan_convoy() == null:
+					placement = PlacementRules.Reason.NO_ROUTE
 	var res := CardPlayService.check(deck, points, cards_by_id(), hand_index, placement == PlacementRules.Reason.OK)
 	res.placement = placement
 	return res
@@ -896,8 +925,14 @@ func play_card(hand_index: int, cell: Vector2i) -> CardPlayService.Result:
 		_start_strike(db.operation(card.effect_id), centre)
 	elif card.card_kind == CardDefinition.CardKind.SORTIE:
 		_launch_sortie(card, centre)
-	elif card.is_instant():
+	elif card.card_kind == CardDefinition.CardKind.REINFORCEMENT:
+		_launch_convoy(card)
+	elif card.card_kind == CardDefinition.CardKind.SUPPORT_TECH:
+		_launch_drones(card)
+	elif card.uses_state_effect():
 		_run_state_effect(db.effect(card.effect_id))
+	elif card.uses_field_entity():
+		_place_field_entity(db.entity(card.effect_id), centre)
 	else:
 		for off in PlacementRules.formation_offsets(card.unit_count):
 			_spawn_unit_at(card.unit_id, centre + off)
@@ -906,6 +941,112 @@ func play_card(hand_index: int, cell: Vector2i) -> CardPlayService.Result:
 	if not clip.is_empty():
 		cutaway_requested.emit(clip)
 	return res
+
+
+## Lays a mine patch or sets up a noise lure on the aimed cell.
+func _place_field_entity(entity: FieldEntityDefinition, centre: Vector2) -> void:
+	if entity.entity_kind == FieldEntityDefinition.EntityKind.MINES:
+		mines.add_patch(centre, entity)
+	else:
+		lures.add(centre, entity.lure_radius, entity.lure_duration_s)
+
+
+## Cells nothing can be placed on: the core's walls and scenery (not units: a mine can lie under a soldier).
+func _field_blocked() -> Array[Vector2i]:
+	var out: Array[Vector2i] = []
+	out.append_array(_core_cells())
+	out.append_array(_scenery_cells)
+	return out
+
+
+## Where a convoy would come in and settle (null = no clear route, the card is refused).
+func _plan_convoy() -> ReinforcementPlan:
+	var toward := IsoProjection.cell_center(mission.spawn_cells[0]) if not mission.spawn_cells.is_empty() else core.ground_pos + Vector2.RIGHT
+	return ReinforcementPlan.plan(float(mission.map.width()), float(mission.map.height()), core.ground_pos, toward, CONVOY_SETTLE_DIST, _walk_is_clear)
+
+
+## The squad appears at the map edge and walks to its spot near the core by itself: its anchor is the spot, and a
+## Guard walks back to its anchor.
+func _launch_convoy(card: CardDefinition) -> void:
+	var plan := _plan_convoy()
+	for off in PlacementRules.formation_offsets(card.unit_count):
+		var u := _spawn_unit_at(card.unit_id, plan.entry + off)
+		u.anchor = plan.settle + off
+
+
+## Combat drones leave the core on a small ring and hunt by themselves until their lifetime is up.
+func _launch_drones(card: CardDefinition) -> void:
+	for off in PlacementRules.formation_offsets(card.unit_count):
+		_spawn_unit_at(card.unit_id, core.ground_pos + off / PlacementRules.RING_RADIUS * DRONE_RING)
+
+
+## Units with a lifetime leave the battle when it is up (no death, no loss).
+func _expire_phase(delta: float) -> void:
+	for i in range(units.size() - 1, -1, -1):
+		var u := units[i]
+		if u.def.lifetime_s <= 0.0:
+			continue
+		u.age += delta
+		if u.age + 1e-6 >= u.def.lifetime_s:
+			_retire_unit(u)
+
+
+## Mines go off when an enemy comes within their trigger radius; each makes one blast and is used up.
+func _mine_phase() -> void:
+	if mines.count() == 0:
+		return
+	var index := _index_ready()
+	for m in mines.detonate(func(pos: Vector2, radius: float) -> bool: return index.nearest(pos, radius) != null):
+		_queue_blast(m.pos, m.damage, m.blast_radius)
+
+
+## Every building makes its unit when its timer says so (and fewer than its cap are alive).
+func _spawner_phase(delta: float) -> void:
+	var makers: Array[BattleUnit] = []
+	var alive_of: Dictionary = {}  # maker uid -> units of it alive
+	for u in units:
+		if not u.is_alive():
+			continue
+		if u.spawner != null:
+			makers.append(u)
+		if u.maker_uid != 0:
+			alive_of[u.maker_uid] = int(alive_of.get(u.maker_uid, 0)) + 1
+	for m in makers:
+		if not m.spawner.tick(delta, int(alive_of.get(m.uid, 0))):
+			continue
+		var spot: Variant = _spawn_spot_near(m)
+		if spot != null:
+			_spawn_unit_at(m.def.spawns_unit_id, spot).maker_uid = m.uid
+
+
+## A free spot beside the building, on the side facing the core (null if it is boxed in).
+func _spawn_spot_near(maker: BattleUnit) -> Variant:
+	var dir := (core.ground_pos - maker.ground_pos).normalized()
+	if dir == Vector2.ZERO:
+		dir = Vector2.RIGHT
+	for angle in [0.0, 0.6, -0.6, 1.2, -1.2, 1.8, -1.8, 2.4, -2.4, 3.1416]:
+		var spot: Vector2 = maker.ground_pos + dir.rotated(angle) * (maker.def.footprint_radius + 0.8)
+		if _walk_is_clear(spot, spot):
+			return spot
+	return null
+
+
+## A noise lure pulls an enemy that has nothing to attack: it walks to the lure (when the straight walk is clear,
+## re-checked every few ticks) and stands near it. Returns whether the enemy was steered.
+func _steer_to_lure(e: BattleEnemy, delta: float) -> bool:
+	var pull: Variant = lures.pull_for(e.ground_pos)
+	if pull == null:
+		e.lure_clear = false
+		return false
+	if (_tick + e.uid) % LURE_RECHECK_TICKS == 0:
+		e.lure_clear = _walk_is_clear(e.ground_pos, pull)
+	if not e.lure_clear:
+		return false
+	if e.ground_pos.distance_to(pull) <= LURE_STAND + float(e.uid % 5) * 0.2:
+		e.face_toward(pull)
+		return true
+	e.advance_toward(pull, delta)
+	return true
 
 
 ## Carries out an order / supply / deck card's effect at once: starts its modifier, adds Command Points, refills
@@ -1050,6 +1191,10 @@ func _ensure_layers() -> void:
 	_preview_node = CardPreview.new()
 	_preview_node.name = "CardPreview"
 	_decals.add_child(_preview_node)
+	var field_view := FieldEntityView.new()
+	field_view.name = "FieldEntities"
+	field_view.bind(self)
+	_decals.add_child(field_view)
 	var shells := ProjectileView.new()
 	shells.name = "Shells"
 	shells.bind(self)
@@ -1199,6 +1344,8 @@ func _spawn_unit_at(unit_id: String, ground: Vector2) -> BattleUnit:
 	u.setup(_next_uid, def, db.weapon(def.weapon_id), IsoProjection.cell_of(ground))
 	u.ground_pos = ground
 	u.anchor = ground
+	if def.is_spawner():
+		u.spawner = SpawnerState.new(def.spawn_interval_s, def.spawn_cap)
 	if def.structure and not mission.spawn_cells.is_empty():
 		u.face_toward(IsoProjection.cell_center(mission.spawn_cells[0]))  # its long side lies across the approach
 	if u is BattleAircraft:

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CardDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/cards/card_definition.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = "convoy"
+display_name = "Convoy"
+description = "Reinforcements: four riflemen arrive from the nearest map edge and settle near the base. Plays at once."
+card_kind = 9
+cost = 4
+lockout_s = 30.0
+max_copies = 2
+unit_id = "rifle_soldier"
+unit_count = 4
+effect_id = ""

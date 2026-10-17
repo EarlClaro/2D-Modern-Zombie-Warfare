@@ -15,9 +15,11 @@ extends RefCounted
 ##            its weapon range, keeps out of every enemy's danger zone (backing away along the route when something gets
 ##            close, one short step at a time so it can fire in between), and falls back toward the core when the crowd
 ##            is bigger than it can handle. Against enemies it cannot outrun it holds its ground instead.
+##   HUNT     (aircraft only, e.g. combat drones) flies at the nearest enemy anywhere until it has something in range;
+##            goes back to where it was launched when nothing is left.
 ## All behaviours stop as soon as something is in weapon range (units must stand still to fire).
 
-enum Behavior { HOLD, GUARD, ADVANCE, SUPPORT, KITE, ARTILLERY }
+enum Behavior { HOLD, GUARD, ADVANCE, SUPPORT, KITE, ARTILLERY, HUNT }
 enum Action { STAY, MOVE }
 
 ## A unit takes up its firing spot at this fraction of its weapon range from the enemy, so a small step by the enemy does
@@ -235,6 +237,15 @@ static func retreat(pos: Vector2, core: Vector2, danger: bool) -> Decision:
 	if out.length() <= RETREAT_STAND + ARRIVE_EPS:
 		return Decision.stay()
 	return _go_or_stay(pos, core + out.normalized() * RETREAT_STAND)
+
+
+## Hunt: `prey` is the enemy to go after (the nearest one, wherever it is) if `has_prey`; `anchor` is where to wait.
+static func hunt(pos: Vector2, anchor: Vector2, weapon_range: float, in_range: bool, has_prey: bool, prey: Vector2) -> Decision:
+	if in_range:
+		return Decision.stay()
+	if has_prey:
+		return _go_or_stay(pos, _firing_spot(pos, prey, weapon_range))
+	return _go_or_stay(pos, anchor)
 
 
 ## Advance: `front` is the enemy closest to the core, if `has_front`.
