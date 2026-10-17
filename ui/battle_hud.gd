@@ -62,6 +62,9 @@ func _process(_delta: float) -> void:
 	var t := ceili(_battle.time_left())
 	_time_label.text = "HOLD:  %d:%02d" % [t / 60, t % 60]
 	_info_label.text = "Enemies %d    Kills %d    Units %d" % [_battle.enemy_count(), _battle.stats["kills"], _battle.units.size()]
+	var level := _battle.difficulty()
+	if level != null and level.id != ContentDb.NORMAL_DIFFICULTY:
+		_info_label.text += "    Difficulty: %s" % level.display_name
 
 
 func _make_label(parent: Control, font_size: int) -> Label:

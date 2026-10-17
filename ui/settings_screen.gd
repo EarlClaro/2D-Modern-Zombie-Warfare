@@ -106,8 +106,10 @@ func _on_fps(on: bool) -> void:
 
 func _on_reset() -> void:
 	var keep := _s.last_mission
+	var keep_level := _s.difficulty
 	_s.reset()
 	_s.last_mission = keep
+	_s.difficulty = keep_level
 	_s.apply()
 	_refresh()
 

@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="DifficultyDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/missions/difficulty_definition.gd" id="1_diff"]
+
+[resource]
+script = ExtResource("1_diff")
+id = "easy"
+display_name = "Easy"
+enemy_count_mult = 0.6
+order = 0

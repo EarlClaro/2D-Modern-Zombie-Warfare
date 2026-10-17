@@ -39,13 +39,14 @@ static func entries(db: ContentDb) -> Array[Entry]:
 
 
 ## The lines of the details panel, all taken from data.
-static func facts(db: ContentDb, mission: MissionDefinition) -> PackedStringArray:
+static func facts(db: ContentDb, mission: MissionDefinition, difficulty_id: String = "") -> PackedStringArray:
 	var lines := PackedStringArray()
 	if mission == null:
 		return lines
 	lines.append("Hold the core for %s." % format_time(mission.duration_s))
 	lines.append("Core health: %d" % int(mission.core_health))
-	lines.append("Enemies: %d (%s)" % [mission.total_enemies(), ", ".join(enemy_names(db, mission))])
+	var level := db.difficulty(difficulty_id) if not difficulty_id.is_empty() else null
+	lines.append("Enemies: %d (%s)" % [mission.total_enemies_at(level), ", ".join(enemy_names(db, mission))])
 	var deck := db.deck(mission.deck_id) if not mission.deck_id.is_empty() else null
 	if deck != null:
 		lines.append("Deck: %s (%d cards)" % [deck.display_name, deck.card_ids.size()])

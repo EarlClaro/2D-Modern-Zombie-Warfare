@@ -11,11 +11,15 @@ var _list: ItemList
 var _title: Label
 var _facts: Label
 var _start: Button
+var _level: String = ContentDb.NORMAL_DIFFICULTY  # the difficulty chosen here (a DifficultyDefinition id)
+var _level_buttons: Dictionary = {}  # difficulty id -> its toggle button
 var _ids: Array[String] = []  # item index -> mission id ("" for a group heading)
 
 
 func bind(db: ContentDb) -> void:
 	_db = db
+	var saved := GameSession.settings().difficulty
+	_level = saved if db != null and db.difficulty(saved) != null else ContentDb.NORMAL_DIFFICULTY
 
 
 func _ready() -> void:
@@ -50,16 +54,31 @@ func _ready() -> void:
 	_facts = UiKit.label("", 24)
 	_facts.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	side.add_child(_facts)
+	if _db != null and not _db.difficulties.is_empty():
+		side.add_child(UiKit.label("Difficulty (Left / Right)", 22, UiKit.DIM))
+		var levels := HBoxContainer.new()
+		levels.add_theme_constant_override("separation", 12)
+		side.add_child(levels)
+		for id in _db.difficulty_ids():
+			var btn := UiKit.button(_db.difficulty(id).display_name, 24, Vector2(170, 52))
+			btn.name = "Difficulty_%s" % id
+			btn.toggle_mode = true
+			btn.pressed.connect(set_level.bind(id))
+			levels.add_child(btn)
+			_level_buttons[id] = btn
+		_show_level()
 	var buttons := HBoxContainer.new()
 	buttons.add_theme_constant_override("separation", 16)
 	box.add_child(buttons)
 	_start = UiKit.button("Start", 28, Vector2(260, 60))
+	_start.name = "Start"
 	_start.pressed.connect(_start_selected)
 	buttons.add_child(_start)
 	var b := UiKit.button("Back", 28, Vector2(260, 60))
+	b.name = "Back"
 	b.pressed.connect(func() -> void: back.emit())
 	buttons.add_child(b)
-	box.add_child(UiKit.label("Up / Down: choose    Enter: start    Esc: back", 18, UiKit.DIM))
+	box.add_child(UiKit.label("Up / Down: choose    Left / Right: difficulty    Enter: start    Esc: back", 18, UiKit.DIM))
 	_fill()
 
 
@@ -94,6 +113,37 @@ func _fill() -> void:
 	_list.grab_focus()
 
 
+## The difficulty chosen here.
+func level() -> String:
+	return _level
+
+
+## Chooses a difficulty (remembered in the settings for the next battle). Unknown ids are ignored.
+func set_level(id: String) -> void:
+	if _db == null or _db.difficulty(id) == null:
+		return
+	_level = id
+	GameSession.settings().difficulty = id
+	_show_level()
+	if _list != null and not _list.get_selected_items().is_empty():
+		_on_selected(_list.get_selected_items()[0])
+
+
+## The next (+1) or previous (-1) difficulty, stopping at the ends.
+func cycle_level(step: int) -> void:
+	if _db == null:
+		return
+	var ids := _db.difficulty_ids()
+	var at := ids.find(_level)
+	if at >= 0 and not ids.is_empty():
+		set_level(ids[clampi(at + step, 0, ids.size() - 1)])
+
+
+func _show_level() -> void:
+	for id: String in _level_buttons:
+		(_level_buttons[id] as Button).set_pressed_no_signal(id == _level)
+
+
 func selected_id() -> String:
 	var sel := _list.get_selected_items()
 	if sel.is_empty():
@@ -110,7 +160,7 @@ func _on_selected(index: int) -> void:
 		_start.disabled = true
 		return
 	_title.text = m.display_name
-	_facts.text = "\n".join(MissionListing.facts(_db, m))
+	_facts.text = "\n".join(MissionListing.facts(_db, m, _level))
 	_start.disabled = false
 
 
@@ -121,6 +171,10 @@ func _start_selected() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if visible and (event.is_action_pressed("ui_left") or event.is_action_pressed("ui_right")):
+		get_viewport().set_input_as_handled()
+		cycle_level(-1 if event.is_action_pressed("ui_left") else 1)
+		return
 	if visible and event.is_action_pressed("ui_cancel"):
 		get_viewport().set_input_as_handled()
 		back.emit()

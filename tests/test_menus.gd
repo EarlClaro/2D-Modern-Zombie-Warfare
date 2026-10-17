@@ -251,7 +251,7 @@ func test_mission_select_lists_every_mission_with_headings_and_selects_one() -> 
 	assert_eq(MissionListing.group_of(sel.selected_id()), MissionListing.GROUP_MISSIONS, "a real mission, not a test one")
 	var ids: Array[String] = []
 	sel.start_requested.connect(func(id: String) -> void: ids.append(id))
-	sel.find_children("*", "Button", true, false)[0].pressed.emit()
+	sel.find_child("Start", true, false).pressed.emit()
 	assert_eq(ids.size(), 1)
 	assert_eq(ids[0], sel.selected_id())
 	sel.free()

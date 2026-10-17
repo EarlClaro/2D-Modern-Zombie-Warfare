@@ -17,6 +17,8 @@ extends ContentDefinition
 @export var deck_id: String = ""
 ## Deployment cards may only be placed within this many tiles of the core.
 @export var deploy_radius: float = 10.0
+## Optional: the difficulty this mission uses when none is chosen (empty = normal).
+@export var difficulty_id: String = ""
 ## Optional: ids of DOCTRINE cards in force for the whole mission (until the pre-mission picker exists, M5).
 @export var doctrines: PackedStringArray = PackedStringArray()
 ## Optional: scenery id of the command-bunker art drawn for the core (empty = the plain box), and how far
@@ -39,6 +41,15 @@ func total_enemies() -> int:
 	for w in waves:
 		if w != null:
 			n += maxi(w.count, 0)
+	return n
+
+
+## Enemies the mission sends at a difficulty (the base total when `diff` is null).
+func total_enemies_at(diff: DifficultyDefinition) -> int:
+	var n := 0
+	for w in waves:
+		if w != null:
+			n += diff.scaled_count(maxi(w.count, 0)) if diff != null else maxi(w.count, 0)
 	return n
 
 

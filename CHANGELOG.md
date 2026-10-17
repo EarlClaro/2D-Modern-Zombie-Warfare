@@ -1,5 +1,8 @@
 # Changelog
 
+## 3.9 Selectable difficulty (2026-10-17)
+- Easy / normal / hard (`DifficultyDefinition`, `data/difficulties/`) scale how many enemies each wave sends (0.6 / 1.0 / 1.5, rounded, at least 1 per entry; a denser wave keeps its first and last enemy times). Chosen with `--difficulty=`, in mission select (buttons or Left / Right, remembered in `GameSettings.difficulty`) or by a mission's `difficulty_id`; named on the HUD unless normal. Normal changes nothing: whole-battle digests of 6 missions x 2 seeds are identical to before. `ContentDb` requires a `normal` of exactly 1.0. `GameSession.prepare_battle`, `MissionDefinition.total_enemies_at`, `MissionListing.facts` takes a level. 29 new tests.
+
 ## 3.7 Combat drones (2026-10-17)
 - Combat Drones (`CardKind.SUPPORT_TECH`, instant): three armed drones hunt the nearest enemy anywhere for 20 s, then leave; zombies cannot hurt them. New `UnitBrain.Behavior.HUNT` and `UnitBrain.hunt`, `UnitDefinition.lifetime_s` (any unit can be timed; leaving is not a loss) and `flies_a_plan()`, `BattleController._launch_drones/_expire_phase/_retire_unit`, aircraft ignore the walk check, a drawn placeholder drone. `ContentDb` checks the unit of a tech card. Dev mission `x6_high_tech`. The spec now has a table of how the rest of the high-tech roster fits the framework. 22 new tests.
 

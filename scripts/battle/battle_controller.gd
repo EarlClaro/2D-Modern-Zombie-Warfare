@@ -112,6 +112,9 @@ var deck: DeckState
 var points: CommandPoints
 ## Orders and doctrines in force (armour and damage changes of the player's side).
 var modifiers: BattleModifiers = BattleModifiers.new()
+## The difficulty chosen for this battle (a DifficultyDefinition id; set before `setup`). Empty = the mission's own
+## default, and normal when it has none. It only scales how many enemies each wave sends.
+var difficulty_id: String = ""
 ## Doctrine card ids added on top of the mission's (the `--doctrine=` option); set before `setup`.
 var extra_doctrines: PackedStringArray = PackedStringArray()
 ## Which hand slot is selected for placement (state only; the HUD and the world preview read it).
@@ -143,6 +146,9 @@ var _ops_rng: RandomNumberGenerator = RandomNumberGenerator.new()  # shell scatt
 var _seed: int = 0  # seed of the current battle; restart replays it
 var _next_uid: int = 1
 var _wave_spawned: Array[int] = []
+var _wave_count: Array[int] = []  # enemies each wave entry sends at this difficulty
+var _wave_gap: Array[float] = []  # seconds between its enemies at this difficulty
+var _difficulty: DifficultyDefinition
 var _waypoints: Array[Vector2] = []
 var _pending: Array[Hit] = []
 var _enemy_index: EnemyIndex = EnemyIndex.new()  # filled by the enemy phase; queried by unit targeting and blasts
@@ -185,17 +191,23 @@ static func parse_user_args(args: PackedStringArray) -> Dictionary:
 				ids.append(part.strip_edges())
 			if not ids.is_empty():
 				out["doctrine"] = ids
+		elif a.begins_with("--difficulty="):
+			var level := a.trim_prefix("--difficulty=").strip_edges()
+			if not level.is_empty():
+				out["difficulty"] = level
 		elif a == "--cutaways=off" or a == "--cutaways=on":
 			out["cutaways"] = a.ends_with("on")
 	return out
 
 
-## Takes the options `parse_user_args` returned: which mission, which seed, which extra doctrines.
+## Takes the options `parse_user_args` returned: which mission, which seed, which difficulty, which extra doctrines.
 func apply_launch_options(cli: Dictionary) -> void:
 	if cli.has("mission"):
 		mission_id = cli["mission"]
 	if cli.has("seed"):
 		rng_seed = cli["seed"]
+	if cli.has("difficulty"):
+		difficulty_id = cli["difficulty"]
 	if cli.has("doctrine"):
 		extra_doctrines = cli["doctrine"]
 
@@ -207,6 +219,7 @@ func _ready() -> void:
 	var pending := GameSession.take_pending()
 	if not String(pending["mission"]).is_empty():
 		mission_id = pending["mission"]  # picked in the menu; a command-line mission below still wins
+		difficulty_id = pending["difficulty"]  # likewise a command-line difficulty
 	apply_launch_options(cli)
 	var loaded := ContentDb.load_from()
 	if not loaded.is_valid():
@@ -215,6 +228,9 @@ func _ready() -> void:
 	var m := loaded.mission(mission_id)
 	if m == null:
 		_show_fatal("Unknown mission id '%s'" % mission_id)
+		return
+	if not difficulty_id.is_empty() and loaded.difficulty(difficulty_id) == null:
+		_show_fatal("Unknown difficulty '%s' (%s)" % [difficulty_id, ", ".join(loaded.difficulty_ids())])
 		return
 	setup(loaded, m, rng_seed)
 	var hud := BattleHud.new()
@@ -269,8 +285,14 @@ func setup(p_db: ContentDb, p_mission: MissionDefinition, p_seed: int) -> void:
 	_next_uid = 1
 	_pending.clear()
 	_wave_spawned.clear()
+	_difficulty = _resolve_difficulty()
+	_wave_count.clear()
+	_wave_gap.clear()
 	for i in mission.waves.size():
 		_wave_spawned.append(0)
+		var w := mission.waves[i]
+		_wave_count.append(_difficulty.scaled_count(w.count) if _difficulty != null else w.count)
+		_wave_gap.append(_difficulty.scaled_interval(w.count, w.interval_s) if _difficulty != null else w.interval_s)
 	_waypoints.clear()
 	for c in mission.path_cells:
 		_waypoints.append(IsoProjection.cell_center(c))
@@ -286,6 +308,19 @@ func setup(p_db: ContentDb, p_mission: MissionDefinition, p_seed: int) -> void:
 	if _camera != null and is_inside_tree():
 		_camera.position = IsoProjection.ground_to_screen(Vector2(mission.map.width(), mission.map.height()) * 0.5)
 	battle_started.emit()
+
+
+## The level in force: the one chosen for this battle, else the mission's own, else normal (null only in a database
+## without difficulties, where counts stay as the mission has them).
+func _resolve_difficulty() -> DifficultyDefinition:
+	var want := difficulty_id if not difficulty_id.is_empty() else mission.difficulty_id
+	var d: DifficultyDefinition = db.difficulty(want) if not want.is_empty() else null
+	return d if d != null else db.difficulty(ContentDb.NORMAL_DIFFICULTY)
+
+
+## The difficulty this battle runs at (null in a database without difficulties).
+func difficulty() -> DifficultyDefinition:
+	return _difficulty
 
 
 func restart() -> void:
@@ -364,9 +399,9 @@ func _spawn_due_enemies() -> void:
 		var w := mission.waves[i]
 		if elapsed < w.start_s:
 			continue
-		var due := w.count
-		if w.interval_s > 0.0:
-			due = mini(w.count, int(floor((elapsed - w.start_s) / w.interval_s)) + 1)
+		var due := _wave_count[i]
+		if _wave_gap[i] > 0.0:
+			due = mini(_wave_count[i], int(floor((elapsed - w.start_s) / _wave_gap[i])) + 1)
 		while _wave_spawned[i] < due:
 			_spawn_enemy(w)
 			_wave_spawned[i] += 1
