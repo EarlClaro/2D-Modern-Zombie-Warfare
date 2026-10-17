@@ -127,15 +127,15 @@ func test_rpg_team_deploys_two_gunners_whose_rocket_blasts_a_group() -> void:
 	_release()
 
 
-func test_howitzer_is_fixed_and_shells_a_group_beyond_rifle_range() -> void:
+func test_howitzer_shells_a_group_far_beyond_rifle_range() -> void:
 	var b := _battle()
 	b.deck.hand = ["howitzer_battery"] as Array[String]
 	b.points.cp = 10.0
 	assert_true(b.play_card(0, GOOD).ok)
 	assert_eq(b.units.size(), 1)
-	assert_true(b.units[0].def.is_fixed())
+	assert_eq(b.units[0].def.effective_behavior(), UnitBrain.Behavior.ARTILLERY)
 	var gun := b.db.weapon("howitzer")
-	assert_true(gun.range_tiles > b.db.weapon("rifle").range_tiles * 1.5, "outranges rifles by a lot")
+	assert_true(gun.range_tiles > b.db.weapon("rifle").range_tiles * 4.0, "outranges rifles by a lot")
 	var at := IsoProjection.cell_center(GOOD) + Vector2(12.0, 0.0)
 	var e := _inject(b, 0, at)
 	var launched: Array = []
@@ -143,8 +143,9 @@ func test_howitzer_is_fixed_and_shells_a_group_beyond_rifle_range() -> void:
 	var blasts: Array = []
 	b.blast_landed.connect(func(center: Vector2, r: float): blasts.append(r))
 	_run_for(b, 4.0)
-	assert_eq(launched, ["howitzer"])
-	assert_eq(blasts.size(), 1)
+	assert_true(launched.size() >= 1 and launched.size() <= gun.burst_size, "a burst of at most %d shells" % gun.burst_size)
+	assert_eq(launched[0], "howitzer")
+	assert_true(blasts.size() >= 1)
 	assert_near(blasts[0], gun.blast_radius)
 	assert_true(not is_instance_valid(e) or e.health.hp < e.health.max_hp, "the shell hurt the target (a killed enemy is freed)")
 	_release()

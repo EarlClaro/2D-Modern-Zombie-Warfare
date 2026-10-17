@@ -39,6 +39,8 @@ const CORE_ID: int = 0  # target id of the core; unit ids start at 1
 const DEATH_COLLAPSE_S: float = 0.3
 const MIN_PROJECTILE_FLIGHT_S: float = 0.1
 const SORTIE_MARGIN: float = 5.0  # tiles beyond the map edge where aircraft appear and disappear
+const CORE_SPOT_RANGE: float = 14.0  # how far the core's own watch reaches when it calls in artillery
+const ARTILLERY_LOOKAHEAD_S: float = 0.25  # a gun looks for a target only when it will be ready within this time
 
 
 ## A called-in strike's telegraph (the danger circle on the ground) while its shells are still coming.
@@ -450,7 +452,7 @@ func _unit_phase(delta: float) -> void:
 		var target: BattleEnemy = null
 		if u.def.is_air():  # sortie aircraft follow their flight plan, not the unit brain
 			u.advance_move(delta)
-			if not u.is_moving():  # units must stand still to fire
+			if not u.is_moving() or u.weapon.can_fire_moving:  # units must stand still to fire, unless the weapon says otherwise
 				target = _nearest_enemy(u.ground_pos, u.weapon.range_tiles)
 		else:
 			target = _think_and_move(u, delta)
@@ -480,14 +482,14 @@ func _think_and_move(u: BattleUnit, delta: float) -> BattleEnemy:
 			UnitBrain.Behavior.SUPPORT:
 				var friend := _nearest_friend(u)
 				decision = UnitBrain.support(u.ground_pos, friend != null, friend.ground_pos if friend != null else Vector2.ZERO)
-			UnitBrain.Behavior.KITE:
+			UnitBrain.Behavior.KITE, UnitBrain.Behavior.ARTILLERY:
 				decision = UnitBrain.kite(_kite_facts_for(u, target != null))
 	if decision != null:
 		_carry_out(u, decision)
 	var before := u.ground_pos
 	u.advance_move(delta)
 	if u.is_moving():
-		return null
+		return target if u.weapon.can_fire_moving else null  # a gun that fires on the move keeps shooting while it walks
 	if u.ground_pos != before:  # it arrived this tick: the target may have changed
 		target = _pick_target(u)
 	return target
@@ -508,9 +510,10 @@ func _kite_facts_for(u: BattleUnit, in_range: bool) -> UnitBrain.KiteFacts:
 	f.post_s = maxf(route.length() - u.def.scout_post, 0.0) if route != null else 0.0
 	f.post_side = float(u.uid % 5 - 2) * 0.9
 	f.in_range = in_range
+	f.stationary = u.def.effective_behavior() == UnitBrain.Behavior.ARTILLERY
 	f.scan = _kite_scan
 	f.clear = Callable(self, "_walk_is_clear")
-	_index_ready().scan_kite(u.ground_pos, u.def.vision, u.def.move_speed, UnitBrain.KITE_MARGIN * u.def.danger_margin, UnitBrain.KITE_REACT_S, u.weapon.range_tiles + UnitBrain.KITE_CROWD_EXTRA, _spawn_points, _kite_scan)
+	_index_ready().scan_kite(u.ground_pos, u.def.vision, u.def.move_speed, UnitBrain.KITE_MARGIN * u.def.danger_margin, UnitBrain.KITE_REACT_S, minf(u.weapon.range_tiles, UnitBrain.KITE_CROWD_MAX) + UnitBrain.KITE_CROWD_EXTRA, _spawn_points, _kite_scan)
 	f.nearest_friend = Vector2(INF, INF)
 	var best := UnitBrain.FRIEND_SPACE * UnitBrain.FRIEND_SPACE
 	for o in units:
@@ -537,9 +540,38 @@ func _route_for(p: Vector2) -> Route:
 
 ## Focus fire (when the unit has the habit): the most dangerous enemy in range, else the nearest.
 func _pick_target(u: BattleUnit) -> BattleEnemy:
+	if u.weapon.needs_spotter or u.weapon.min_range_tiles > 0.0:
+		return _artillery_target(u)
 	if u.def.focus_fire:
 		return _index_ready().best_in_range(u.ground_pos, u.weapon.range_tiles, u.weapon.anti_armor)
 	return _nearest_enemy(u.ground_pos, u.weapon.range_tiles)
+
+
+## Artillery (F3): the enemy to shell, or null. Between the gun's minimum and maximum range; with `needs_spotter` only an
+## enemy that some friendly unit (not the gun itself) or the core can see; otherwise what the gun sees for itself. It looks
+## only when the gun is about to be ready (a reloading gun has nothing to decide).
+func _artillery_target(u: BattleUnit) -> BattleEnemy:
+	var w := u.weapon
+	if u.weapon_state.cooldown_remaining() > ARTILLERY_LOOKAHEAD_S:
+		return null
+	var index := _index_ready()
+	if not w.needs_spotter:
+		return index.best_spotted(u.ground_pos, w.min_range_tiles, w.range_tiles, u.ground_pos, minf(u.def.vision, w.range_tiles))
+	var best: BattleEnemy = null
+	var best_score := -1
+	var best_d2 := INF
+	var spotters: Array = []  # [position, sight range]
+	for o in units:
+		if o != u and o.is_alive() and o.weapon != null:
+			spotters.append([o.ground_pos, o.def.vision])
+	spotters.append([core.ground_pos, CORE_SPOT_RANGE])
+	for s in spotters:
+		var e := index.best_spotted(u.ground_pos, w.min_range_tiles, w.range_tiles, s[0], s[1])
+		if e != null and (best == null or index.pick_score > best_score or (index.pick_score == best_score and index.pick_d2 < best_d2)):
+			best = e
+			best_score = index.pick_score
+			best_d2 = index.pick_d2
+	return best
 
 
 ## True for a mobile unit with the retreat habit whose health fraction is below its threshold.

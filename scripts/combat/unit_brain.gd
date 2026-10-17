@@ -9,13 +9,15 @@ extends RefCounted
 ##   ADVANCE  walks toward the enemy closest to the core until it has something in range; never farther than
 ##            `advance_limit` from the core.
 ##   SUPPORT  follows the nearest friendly fighting unit.
+##   ARTILLERY stays where it was put (it does not scout) but keeps out of enemies' reach like KITE: backs away when
+##            something gets close, falls back when overwhelmed.
 ##   KITE     a skirmisher: scouts up the enemy route toward the spawn, fights the enemies nearest the spawn from the edge of
 ##            its weapon range, keeps out of every enemy's danger zone (backing away along the route when something gets
 ##            close, one short step at a time so it can fire in between), and falls back toward the core when the crowd
 ##            is bigger than it can handle. Against enemies it cannot outrun it holds its ground instead.
 ## All behaviours stop as soon as something is in weapon range (units must stand still to fire).
 
-enum Behavior { HOLD, GUARD, ADVANCE, SUPPORT, KITE }
+enum Behavior { HOLD, GUARD, ADVANCE, SUPPORT, KITE, ARTILLERY }
 enum Action { STAY, MOVE }
 
 ## A unit takes up its firing spot at this fraction of its weapon range from the enemy, so a small step by the enemy does
@@ -43,6 +45,8 @@ const KITE_REACT_S: float = 0.7
 const KITE_STEP_MIN: float = 1.0
 const KITE_STEP_MAX: float = 3.0
 const KITE_CROWD_EXTRA: float = 3.0
+## ...but a long-range weapon does not make the crowd radius long: the range is capped here before the extra is added.
+const KITE_CROWD_MAX: float = 10.0
 ## Two friends closer than this nudge each other apart so nobody stands in another's way.
 const FRIEND_SPACE: float = 0.7
 ## A retreating unit leans this much on "away from the enemies" versus "back along the route".
@@ -77,6 +81,7 @@ class KiteFacts:
 	var post_s: float = 0.0  # distance from the core along the route where it waits when nothing is in sight
 	var post_side: float = 0.0  # sideways offset of its waiting spot (so a group does not stack up)
 	var in_range: bool = false  # something is already in weapon range
+	var stationary: bool = false  # artillery: never walks toward the enemy or out to a scouting post
 	var scan: KiteScan = null
 	var nearest_friend: Vector2 = Vector2(INF, INF)  # a friendly unit's position, if one is close
 	## Optional: `clear(a, b) -> bool`, true if the walk from a to b is open ground. Without it every walk counts as open.
@@ -102,6 +107,8 @@ static func kite(f: KiteFacts) -> Decision:
 		return Decision.move(step) if step != null else Decision.stay()
 	# 3. Safe and something to shoot: stand and fire.
 	if f.in_range:
+		return _unstack(f)
+	if f.stationary:
 		return _unstack(f)
 	# 4. Enemies in sight: go for the one nearest the spawn, stopping at the edge of weapon range and outside its zone.
 	if scan.has_upstream:

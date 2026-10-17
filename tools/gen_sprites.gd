@@ -122,7 +122,8 @@ const SPH := 2  # ellipsoid: half = radii
 
 var _light := LIGHT.normalized()
 var _track_phase: float = 0.0
-var _kit: String = "rifle"  # soldier weapon: "rifle" or "rpg"
+var _kit: String = "rifle"  # soldier weapon: "rifle", "rpg", "sniper" or "mortar"
+var _variant: String = ""  # tank rig variants: "ifv"
 var _z_stride: float = 1.0  # zombie variants: stride multiplier
 var _z_lean: float = 0.0  # zombie variants: extra forward lean (rad)
 var _spec_k: Dictionary = {}  # unit -> uniform scale, filled from the specs
@@ -162,6 +163,10 @@ func _initialize() -> void:
 		{"dir": "spitter", "frame": Vector2i(88, 72), "origin": Vector2(44, 44), "frames": 10, "columns": 3, "ss": 3},
 		{"dir": "rpg_soldier", "frame": Vector2i(124, 76), "origin": Vector2(62, 46), "frames": 10, "columns": 3, "ss": 3},
 		{"dir": "howitzer", "frame": Vector2i(128, 104), "origin": Vector2(64, 62), "frames": 6, "columns": 3, "ss": 1},
+		{"dir": "marksman", "frame": Vector2i(124, 76), "origin": Vector2(62, 46), "frames": 10, "columns": 3, "ss": 3},
+		{"dir": "mortar_team", "frame": Vector2i(100, 76), "origin": Vector2(46, 46), "frames": 10, "columns": 3, "ss": 3},
+		{"dir": "ifv", "frame": Vector2i(80, 56), "origin": Vector2(40, 38), "frames": 9, "columns": 3, "ss": 1},
+		{"dir": "rocket_launcher", "frame": Vector2i(128, 104), "origin": Vector2(64, 62), "frames": 6, "columns": 3, "ss": 1},
 		{"dir": "sandbag_wall", "frame": Vector2i(80, 64), "origin": Vector2(40, 42), "frames": 4, "columns": 2, "ss": 2},
 		{"dir": "concrete_barrier", "frame": Vector2i(80, 64), "origin": Vector2(40, 42), "frames": 4, "columns": 2, "ss": 2},
 		{"dir": "crate_stack", "frame": Vector2i(64, 56), "origin": Vector2(32, 40), "frames": 4, "columns": 2, "ss": 2},
@@ -362,6 +367,7 @@ func _model(unit: String, frame: int) -> Array[Prim]:
 	var m: Array[Prim] = []
 	_track_phase = 0.0
 	_kit = "rifle"
+	_variant = ""
 	_z_stride = 1.0
 	_z_lean = 0.0
 	_z_kind = ""
@@ -394,6 +400,19 @@ func _model(unit: String, frame: int) -> Array[Prim]:
 			_scale(m, 1.3)
 		"howitzer":
 			_howitzer(m, frame)
+		"marksman":  # long rifle with a scope, desert-brown kit
+			_kit = "sniper"
+			_soldier(m, frame)
+			_remap(m, {"uni": "pack", "helm": "pack", "vest": "vestt"})
+		"mortar_team":
+			_kit = "mortar"
+			_soldier(m, frame)
+			_remap(m, {"vest": "vestt"})
+		"ifv":
+			_variant = "ifv"
+			_tank(m, frame)
+		"rocket_launcher":
+			_rocket_launcher(m, frame)
 		"sandbag_wall":
 			_sandbags(m, frame)
 		"concrete_barrier":
@@ -592,6 +611,19 @@ func _tank(m: Array[Prim], frame: int) -> void:
 	turret.append(Prim.new(BOX, Vector3(0.36, 0, 0.35), Vector3(0.38, 0.035, 0.035), "gun"))
 	turret.append(Prim.new(BOX, Vector3(0.76, 0, 0.35), Vector3(0.05, 0.05, 0.05), "gun"))
 	turret.append(Prim.new(CYL, Vector3(-0.10, 0.08, 0.43), Vector3(0.06, 0, 0.025), "gun"))
+	if _variant == "ifv":  # infantry fighting vehicle: boxier, taller hull, small turret with an autocannon and a missile pod
+		hull.clear()
+		turret.clear()
+		hull.append(Prim.new(BOX, Vector3(0, 0.33, 0.09), Vector3(0.42, 0.08, 0.09), "track", 0.0, 0.11))
+		hull.append(Prim.new(BOX, Vector3(0, -0.33, 0.09), Vector3(0.42, 0.08, 0.09), "track", 0.0, 0.11))
+		hull.append(Prim.new(BOX, Vector3(-0.02, 0, 0.22), Vector3(0.42, 0.25, 0.1), "hull"))
+		hull.append(Prim.new(BOX, Vector3(0.36, 0, 0.2), Vector3(0.1, 0.25, 0.07), "hull"))  # sloped nose
+		hull.append(Prim.new(BOX, Vector3(-0.45, 0, 0.22), Vector3(0.02, 0.19, 0.09), "steel"))  # rear ramp
+		turret.append(Prim.new(BOX, Vector3(0.02, 0, 0.38), Vector3(0.17, 0.14, 0.06), "hull"))
+		turret.append(Prim.new(BOX, Vector3(0.3, 0, 0.39), Vector3(0.2, 0.022, 0.022), "gun"))  # autocannon
+		turret.append(Prim.new(BOX, Vector3(0.51, 0, 0.39), Vector3(0.035, 0.035, 0.035), "gun"))
+		turret.append(Prim.new(BOX, Vector3(-0.03, 0.15, 0.43), Vector3(0.08, 0.035, 0.04), "gun"))  # missile pod
+		turret.append(Prim.new(CYL, Vector3(-0.1, -0.06, 0.45), Vector3(0.05, 0, 0.02), "gun"))  # hatch
 	var pivot := Vector3(-0.02, 0, 0.34)
 	var fx: Array[Prim] = []
 	match d:
@@ -866,7 +898,37 @@ func _rifle(list: Array[Prim], b: Vector3, u: Vector3) -> Dictionary:
 
 
 func _gun(list: Array[Prim], b: Vector3, u: Vector3) -> Dictionary:
-	return _launcher(list, b, u) if _kit == "rpg" else _rifle(list, b, u)
+	match _kit:
+		"rpg":
+			return _launcher(list, b, u)
+		"sniper":
+			return _sniper(list, b, u)
+		"mortar":
+			return _mortar(list, b, u)
+	return _rifle(list, b, u)
+
+
+## Long scoped rifle with a bipod (~0.9 long).
+func _sniper(list: Array[Prim], b: Vector3, u: Vector3) -> Dictionary:
+	var up := Vector3(0, 0, 1)
+	_bone(list, b, b + u * 0.16, 0.02, 0.045, "stock")
+	_bone(list, b + u * 0.16, b + u * 0.38, 0.022, 0.034, "gun")
+	_bone(list, b + u * 0.38, b + u * 0.82, 0.014, 0.014, "gun")
+	_bone(list, b + u * 0.82, b + u * 0.88, 0.02, 0.02, "gun")  # muzzle brake
+	_bone(list, b + u * 0.22 + up * 0.05, b + u * 0.44 + up * 0.05, 0.024, 0.024, "gun")  # scope
+	_bone(list, b + u * 0.5, b + u * 0.46 - up * 0.13, 0.01, 0.01, "gun")  # bipod
+	return {"grip": b + u * 0.2 - up * 0.05, "fore": b + u * 0.45 - up * 0.03}
+
+
+## Mortar tube with a base plate and a bipod (~0.55 long, thick).
+func _mortar(list: Array[Prim], b: Vector3, u: Vector3) -> Dictionary:
+	var up := Vector3(0, 0, 1)
+	list.append(Prim.new(BOX, b - u * 0.05, Vector3(0.06, 0.09, 0.016), "steel"))  # base plate
+	_bone(list, b, b + u * 0.5, 0.046, 0.046, "tube")
+	_bone(list, b + u * 0.5, b + u * 0.56, 0.056, 0.056, "gun")  # muzzle ring
+	_bone(list, b + u * 0.34, b + u * 0.3 - up * 0.2 + Vector3(0, 0.08, 0), 0.012, 0.012, "gun")  # bipod
+	_bone(list, b + u * 0.34, b + u * 0.3 - up * 0.2 - Vector3(0, 0.08, 0), 0.012, 0.012, "gun")
+	return {"grip": b + u * 0.2 - up * 0.03, "fore": b + u * 0.4 - up * 0.02}
 
 
 ## Shoulder-fired rocket launcher: flared rear, tube, sight, pistol grip, bulbous warhead (~0.9 long).
@@ -1086,6 +1148,65 @@ func _howitzer(m: Array[Prim], frame: int) -> void:
 	m.append_array(carriage)
 	m.append_array(wheels)
 	m.append_array(barrel)
+	m.append_array(fx)
+
+
+## Truck-mounted rocket launcher: a six-tube rack raised over the cab-forward chassis. Frames 0 idle, 1 firing, 2-5 destruction.
+func _rocket_launcher(m: Array[Prim], frame: int) -> void:
+	var d := frame - 1 if frame >= 2 else 0
+	var fire := frame == 1
+	var body: Array[Prim] = []
+	var wheels: Array[Prim] = []
+	var rack: Array[Prim] = []
+	body.append(Prim.new(BOX, Vector3(-0.05, 0, 0.2), Vector3(0.55, 0.2, 0.06), "hull"))  # chassis
+	body.append(Prim.new(BOX, Vector3(0.42, 0, 0.34), Vector3(0.13, 0.2, 0.13), "hull"))  # cab
+	body.append(Prim.new(BOX, Vector3(0.555, 0, 0.38), Vector3(0.012, 0.16, 0.07), "glass"))
+	body.append(Prim.new(BOX, Vector3(-0.58, 0, 0.14), Vector3(0.03, 0.18, 0.03), "steel"))  # stabiliser bar
+	for ax in [0.38, -0.05, -0.42]:
+		for side in [1, -1]:
+			wheels.append(Prim.new(SPH, Vector3(ax, 0.22 * side, 0.13), Vector3(0.13, 0.05, 0.13), "track"))
+			wheels.append(Prim.new(SPH, Vector3(ax, 0.235 * side, 0.13), Vector3(0.06, 0.04, 0.06), "steel"))
+	var elev := 0.6
+	var dirv := Vector3(cos(elev), 0, sin(elev))
+	var base := Vector3(-0.26, 0, 0.3)
+	rack.append(Prim.new(BOX, base, Vector3(0.2, 0.2, 0.04), "steel"))  # cradle
+	var fx: Array[Prim] = []
+	for row in 2:
+		for col in 3:
+			var p0 := base + Vector3(0, (col - 1) * 0.115, 0.07 + row * 0.11)
+			_bone(rack, p0, p0 + dirv * 0.75, 0.042, 0.042, "tube")
+			_bone(rack, p0 + dirv * 0.72, p0 + dirv * 0.77, 0.05, 0.05, "gun")  # muzzle collar
+			if fire and row == 1:
+				_blob(fx, p0 + dirv * 0.85, 0.07, "flash")
+				_blob(fx, p0 + dirv * 0.97, 0.045, "fire")
+				_blob(fx, p0 + dirv * 0.8 + Vector3(-0.1, 0, 0.02), 0.05, "smoke")
+	var breech := base
+	match d:
+		1:
+			_blob(fx, Vector3(0.0, 0, 0.4), 0.32, "flash")
+		2:
+			_scorch(body)
+			_scorch(wheels)
+			_xform_about(rack, breech, Basis(Vector3(1, 0, 0), 0.5) * _ry(0.5), Vector3(0, 0.02, 0.2))
+			_scorch(rack)
+			_blob(fx, Vector3(0.0, 0, 0.4), 0.18, "fire")
+		3:
+			_scorch(body)
+			_scorch(wheels)
+			_xform_about(rack, breech, Basis(Vector3(1, 0, 0), 1.1) * _ry(0.9), Vector3(0.1, 0.24, -0.08))
+			_scorch(rack)
+			_blob(fx, Vector3(0.0, 0, 0.32), 0.12, "fire")
+			_blob(fx, Vector3(0.0, 0, 0.5), 0.09, "smoke")
+		4:
+			_scorch(body)
+			_scorch(wheels)
+			_xform_about(rack, breech, Basis(Vector3(1, 0, 0), 1.5) * _ry(1.3), Vector3(0.18, 0.3, -0.22))
+			_scorch(rack)
+			_blob(fx, Vector3(0.0, 0, 0.28), 0.07, "fire")
+			_blob(fx, Vector3(0.0, 0, 0.44), 0.08, "smoke")
+	m.append_array(body)
+	m.append_array(wheels)
+	m.append_array(rack)
 	m.append_array(fx)
 
 

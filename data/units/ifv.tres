@@ -1,0 +1,48 @@
+[gd_resource type="Resource" script_class="UnitDefinition" load_steps=11 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/unit_definition.gd" id="1_unit"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_sheet"]
+[ext_resource type="Texture2D" path="res://assets/sprites/ifv/e.png" id="3_e"]
+[ext_resource type="Texture2D" path="res://assets/sprites/ifv/se.png" id="4_se"]
+[ext_resource type="Texture2D" path="res://assets/sprites/ifv/s.png" id="5_s"]
+[ext_resource type="Texture2D" path="res://assets/sprites/ifv/sw.png" id="6_sw"]
+[ext_resource type="Texture2D" path="res://assets/sprites/ifv/w.png" id="7_w"]
+[ext_resource type="Texture2D" path="res://assets/sprites/ifv/nw.png" id="8_nw"]
+[ext_resource type="Texture2D" path="res://assets/sprites/ifv/n.png" id="9_n"]
+[ext_resource type="Texture2D" path="res://assets/sprites/ifv/ne.png" id="10_ne"]
+
+[sub_resource type="Resource" id="Resource_sheet"]
+script = ExtResource("2_sheet")
+textures = {"E": ExtResource("3_e"), "SE": ExtResource("4_se"), "S": ExtResource("5_s"), "SW": ExtResource("6_sw"), "W": ExtResource("7_w"), "NW": ExtResource("8_nw"), "N": ExtResource("9_n"), "NE": ExtResource("10_ne")}
+frame_size = Vector2i(80, 56)
+columns = 3
+origin = Vector2(40, 38)
+chest_px = 11.0
+height_px = 18.0
+walk_fps = 6.0
+stride_tiles = 0.22
+death_first = 5
+death_count = 4
+death_fps = 8.0
+death_hold_s = 6.0
+death_fade_s = 1.0
+explosion_px = 32.0
+
+[resource]
+script = ExtResource("1_unit")
+id = "ifv"
+display_name = "IFV"
+max_health = 220.0
+armor = 2.0
+move_speed = 4.5
+footprint_radius = 0.6
+height_class = 0
+weapon_id = "ifv_cannon"
+behavior = 4
+advance_limit = 12.0
+vision = 20.0
+scout_post = 10.0
+courage = 30
+danger_margin = 0.6
+placeholder_color = Color(0.45, 0.5, 0.25, 1)
+sprite = SubResource("Resource_sheet")
