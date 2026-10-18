@@ -28,6 +28,7 @@ display_name = "Stress: 100 Shamblers"
 map = ExtResource("1_2dyah")
 core_cell = Vector2i(3, 20)
 core_health = 100000.0
+core_scenery_id = "hq_bunker"
 duration_s = 60.0
 spawn_cells = Array[Vector2i]([Vector2i(20, 3)])
 path_cells = Array[Vector2i]([Vector2i(3, 20)])

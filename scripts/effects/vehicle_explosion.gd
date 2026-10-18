@@ -51,15 +51,30 @@ func _draw() -> void:
 	if f < 1.0:
 		var grow := 0.45 + 0.75 * sqrt(f)
 		var fade := 1.0 - f
+		if FxSheet.draw_centered(self, "explosion", FxSheet.frame_at(f, 0, 4), Vector2(0, -radius_px * 0.1 * f), radius_px * grow * 2.5, Color(1, 1, 1, clampf(fade * 1.6, 0.0, 1.0))):
+			for dir in _spark_dirs:
+				var from := dir * radius_px * (0.3 + 0.9 * f)
+				draw_line(from, from + dir * radius_px * 0.35, Color(1.0, 0.85, 0.35, fade), 2.0)
+			_draw_smoke_column(t)
+			return
 		draw_circle(Vector2.ZERO, radius_px * grow, Color(0.85, 0.25, 0.05, 0.75 * fade))
 		draw_circle(Vector2(0, -radius_px * 0.1 * f), radius_px * grow * 0.72, Color(1.0, 0.55, 0.1, 0.9 * fade))
 		draw_circle(Vector2(0, -radius_px * 0.15 * f), radius_px * grow * 0.4, Color(1.0, 0.92, 0.55, fade))
 		for dir in _spark_dirs:
 			var from := dir * radius_px * (0.3 + 0.9 * f)
 			draw_line(from, from + dir * radius_px * 0.35, Color(1.0, 0.85, 0.35, fade), 2.0)
-	# Smoke column: dark puffs rising and thinning out.
+	_draw_smoke_column(t)
+
+
+## Smoke column: dark puffs rising and thinning out.
+func _draw_smoke_column(t: float) -> void:
 	var s := clampf((t - 0.12) / SMOKE_S, 0.0, 1.0)
 	if s > 0.0 and s < 1.0:
+		if FxSheet.texture("smoke") != null:
+			for i in _puff_offsets.size():
+				var rise := Vector2(0, -radius_px * (0.5 + 1.4 * s) - 5.0 * i * s)
+				FxSheet.draw_centered(self, "smoke", FxSheet.frame_at(s, 0, 5), _puff_offsets[i] * (0.6 + s) + rise, radius_px * (0.9 + 1.0 * s), Color(1, 1, 1, 0.8 * (1.0 - s)))
+			return
 		for i in _puff_offsets.size():
 			var rise := Vector2(0, -radius_px * (0.5 + 1.4 * s) - 5.0 * i * s)
 			var o := _puff_offsets[i] * (0.6 + s) + rise

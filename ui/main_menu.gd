@@ -19,8 +19,12 @@ func _ready() -> void:
 	GameSession.settings().apply()
 	_db = ContentDb.load_from()
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	add_child(UiKit.background())
+	add_child(UiKit.title_background())
 	_build_home()
+	var music := MusicService.new()
+	music.name = "Music"
+	add_child(music)
+	music.play("menu")
 	if not _db.is_valid():
 		_show_content_errors()
 	else:
@@ -59,7 +63,7 @@ func _build_home() -> void:
 	for c in box.get_children():
 		if c is Button:
 			(c as Button).size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	var ver := UiKit.label("%s   |   placeholder title and art" % ProjectSettings.get_setting("application/config/name", "Last Defense"), 16, UiKit.DIM)
+	var ver := UiKit.label("%s   |   placeholder title" % ProjectSettings.get_setting("application/config/name", "Last Defense"), 16, UiKit.DIM)
 	ver.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(ver)
 	if not play.disabled:

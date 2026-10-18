@@ -2,6 +2,9 @@
 
 Status: **v0.2 approved 2026-10-15 (D1–D7 as recommended).** Increments 2.1-2.6 built; awaiting the user's go / tune / no-go. D3 applied: starter deck is 15. Builds on [combat-vertical-slice.md](combat-vertical-slice.md) (M1) and refines [deck-and-economy.md](deck-and-economy.md) (rules stay as written there except where D3 says otherwise).
 
+## Card faces (2026-10-18)
+The hand shows five portrait cards (132 x 188 on the 1920 x 1080 base, hand top at 834): a rounded frame in the card kind colour, a header band with the kind name, the cost in a round badge over the top-left corner, a framed picture (96 x 72), the hotkey inside the picture frame, and the name on a banner (one or two lines). Greyed when it costs too much, dark with the lock-out time while locked out, a yellow frame when selected. The picture comes from `assets/cards/<card id>.png`, made by `tools/gen_card_pictures.gd` (the unit sprite scaled by a whole number for a deployment card, a small scene for a strike, pixel art drawn in the generator for orders, doctrines, mines, lures and supply drops; all 31 cards, docs/specs/art-polish.md). Presentation only; the rules are untouched. Manual check: how it reads at 1920 x 1080, and that the taller hand does not hide too much of the field.
+
 ## Purpose
 Prove pillar 2: **playing cards creates meaningful tactical choices.** The player no longer starts with pre-placed defenders; they build the defence in real time from a drawn hand, spending Command Points (CP), with every placement previewed on the ground plane.
 

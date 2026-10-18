@@ -11,6 +11,8 @@ var allow_progress_reset: bool = true
 var _s: GameSettings
 var _volume: HSlider
 var _volume_label: Label
+var _music: HSlider
+var _music_label: Label
 var _fullscreen: CheckButton
 var _cutaways: CheckButton
 var _fps: CheckButton
@@ -46,6 +48,21 @@ func _ready() -> void:
 	_volume_label = UiKit.label("", 26, UiKit.DIM)
 	_volume_label.custom_minimum_size = Vector2(70, 0)
 	row.add_child(_volume_label)
+	var music_row := HBoxContainer.new()
+	music_row.add_theme_constant_override("separation", 16)
+	box.add_child(music_row)
+	music_row.add_child(UiKit.label("Music volume", 26))
+	_music = HSlider.new()
+	_music.min_value = 0.0
+	_music.max_value = 100.0
+	_music.step = 5.0
+	_music.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_music.custom_minimum_size = Vector2(240, 36)
+	_music.value_changed.connect(_on_music)
+	music_row.add_child(_music)
+	_music_label = UiKit.label("", 26, UiKit.DIM)
+	_music_label.custom_minimum_size = Vector2(70, 0)
+	music_row.add_child(_music_label)
 	_fullscreen = _toggle(box, "Fullscreen", _on_fullscreen)
 	_cutaways = _toggle(box, "Strike cutaway clips (freeze the game briefly)", _on_cutaways)
 	_fps = _toggle(box, "Show FPS counter", _on_fps)
@@ -85,6 +102,8 @@ func _refresh() -> void:
 	_syncing = true
 	_volume.value = roundf(_s.master_volume * 100.0)
 	_volume_label.text = "%d%%" % int(_volume.value)
+	_music.value = roundf(_s.music_volume * 100.0)
+	_music_label.text = "%d%%" % int(_music.value)
 	_fullscreen.button_pressed = _s.fullscreen
 	_cutaways.button_pressed = _s.cutaways
 	_fps.button_pressed = _s.show_fps
@@ -97,6 +116,14 @@ func _on_volume(v: float) -> void:
 	if _syncing:
 		return
 	_s.master_volume = v / 100.0
+	_s.apply()
+
+
+func _on_music(v: float) -> void:
+	_music_label.text = "%d%%" % int(v)
+	if _syncing:
+		return
+	_s.music_volume = v / 100.0
 	_s.apply()
 
 

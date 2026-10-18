@@ -31,4 +31,6 @@ func _draw() -> void:
 	var alpha := 0.5 * (1.0 - t)
 	for i in _offsets.size():
 		var o := _offsets[i] * (0.5 + t) + Vector2(0, -10.0 * t)
+		if FxSheet.draw_centered(self, "smoke", FxSheet.frame_at(t, 0, 5), o, radius * 2.2, Color(0.95, 0.88, 0.74, alpha * 1.6)):
+			continue
 		draw_circle(o, radius, Color(0.58, 0.52, 0.42, alpha))

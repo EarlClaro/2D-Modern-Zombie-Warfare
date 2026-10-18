@@ -17,6 +17,7 @@ display_name = "Showcase (dev)"
 map = ExtResource("1_m6jdb")
 core_cell = Vector2i(1, 1)
 core_health = 1000.0
+core_scenery_id = "hq_bunker"
 duration_s = 3600.0
 spawn_cells = Array[Vector2i]([Vector2i(1, 8)])
 path_cells = Array[Vector2i]([Vector2i(1, 1)])

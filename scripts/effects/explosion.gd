@@ -85,6 +85,8 @@ func _draw_fireball(rpx: float, t: float) -> void:
 	var size := fireball_size(t) * rpx * 0.85
 	var rise := Vector2(0, -rpx * 0.28 * t - rpx * 0.12)
 	var fade := 1.0 - t * t
+	if FxSheet.draw_centered(self, "explosion", FxSheet.frame_at(t, 0, 4), rise, size * 2.4, Color(1, 1, 1, clampf(fade * 1.4, 0.0, 1.0))):
+		return
 	# Lumpy body: a few offset lobes per colour layer, bigger layers first.
 	var layers := [
 		[1.0, Color(0.45, 0.1, 0.05, 0.75 * fade)],
@@ -103,6 +105,11 @@ func _draw_fireball(rpx: float, t: float) -> void:
 
 func _draw_smoke(rpx: float) -> void:
 	var t := phase(_age - 0.18, LIFE_S - 0.18)
+	if FxSheet.texture("smoke") != null:
+		for i in _smoke_angle.size():
+			var at := Vector2(cos(_smoke_angle[i]) * rpx * 0.3, sin(_smoke_angle[i]) * rpx * 0.15) + Vector2(0, -rpx * (0.25 + 0.55 * t))
+			FxSheet.draw_centered(self, "smoke", FxSheet.frame_at(t, 0, 5), at, rpx * (0.7 + 0.7 * t), Color(1, 1, 1, 0.85 * (1.0 - t)))
+		return
 	for i in _smoke_angle.size():
 		var base := Vector2(cos(_smoke_angle[i]) * rpx * 0.3, sin(_smoke_angle[i]) * rpx * 0.15)
 		var pos := base + Vector2(0, -rpx * (0.25 + 0.55 * t))

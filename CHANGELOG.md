@@ -17,6 +17,53 @@
 - Nothing visible changes yet: no shipped mission declares objectives (the two-front mission is 3.14) and the HUD and result panel are still 3.13. The 966 earlier tests pass unchanged.
 - 66 new tests (1032 in all); mutation check 79 of 80 killed after closing 7 gaps (the survivor swaps > for >= on met-order numbers that are always distinct, so it is equivalent).
 
+## P.1 Pixel card pictures for all 31 cards (2026-10-18; docs/specs/art-polish.md)
+- Every card now has a picture file. Unit pictures are scaled up by whole numbers (so the pixels match the 2 px UI grid); strike cards are small scenes (target ring, mushroom cloud, water, laser beam); the 8 cards that had a code-drawn emblem are now pixel art: Barracks and Combat Drones (their sprites), Minefield, Noise Lure, Supply Drop, Fortify, Quick Draw, Hollow Points.
+- `tools/pixel_canvas.gd` (new dev helper: hard-edged shapes, banded shading, dither, outline) and a rewritten `tools/gen_card_pictures.gd`. The emblem drawing code in `ui/card_art.gd` is gone.
+- **Tests:** card art tests rewritten (every card has a 96 x 72 picture with hard pixel edges). Not seen in a real play session.
+
+## G.5 Pixel cursor and health bars (2026-10-18; docs/specs/art-gaps.md)
+- The mouse arrow is a pixel arrow (`assets/ui/cursor.png`); health bars are pixel bars with an outline, a trough, a colour that follows the health and quarter notches.
+- **Tests:** 3 new (1114 in all).
+
+## G.4 Music (2026-10-18; docs/specs/art-gaps.md)
+- Music written in code: a menu loop, a battle loop, a victory sting and a defeat sting (`scripts/core/music_factory.gd`), played by `MusicService` on a "Music" bus. The menu plays its loop; a battle plays its loop and ends with a sting.
+- New setting: Music volume (default 50 %), in Settings.
+- **Tests:** 9 new (1111 in all, 0 failed). The music itself has not been listened to by the agent.
+
+## G.3 Title picture and mission map thumbnails (2026-10-18; docs/specs/art-gaps.md)
+- The main menu has a painted pixel night-skyline picture behind it (`assets/ui/title.png`, `tools/gen_title_art.gd`); the footer no longer says "and art".
+- Mission select shows a small isometric map picture for the chosen mission, with the core (blue) and spawns (red) marked.
+- **Tests:** 4 new (1102 in all, 0 failed).
+
+## G.2 Pixel combat effects (2026-10-18; docs/specs/art-gaps.md)
+- Explosions, vehicle explosions, death dust and muzzle flashes draw pixel-art frames (`assets/fx/*.png`, made by `tools/gen_fx_sheets.gd`) instead of smooth circles; the blast ring and scorch mark still follow the damage radius.
+- **Tests:** 4 new (1098 in all, 0 failed).
+
+## G.1 Sprites for the code-drawn placeholders (2026-10-18; docs/specs/art-gaps.md)
+- **Core:** the 12 missions that drew a blue cube as the core now show the command bunker (`core_scenery_id = "hq_bunker"`). Art only.
+- **Barracks and Combat Drone** have sprite sheets (new pack `tools/sprite_packs/pack_gameplay.gd`); the **mine** and the **noise-lure beacon** are sprites in `FieldEntityView`.
+- **Tests:** 5 new (1094 in all, 0 failed).
+
+## U.3 Pixel battle HUD and cards (2026-10-18)
+- The hand draws with the pixel font and a hard 2 px drop shadow; cards, the cost badge and the selection ring have stepped pixel corners instead of rounded ones; the long kind label "DOCTRINE" became "DOCT.". The HUD labels, result panel and reward chooser use the theme font and pixel panels.
+- `docs/specs/pixel-ui.md` corrected (font scale mapping, how the font is stored).
+
+## U.2 Pixel UI kit and the project theme (2026-10-18)
+- `tools/gen_ui_kit.gd` draws the panel, button (normal, hover, pressed, disabled, focus), checkbox and slider-grabber pieces pixel by pixel (stepped corners, outline, bevel; 2 screen px per art pixel) and builds `assets/ui/theme.tres`, which `project.godot` uses as the project theme (pixel font as the default; buttons, panels, item lists, checkboxes, sliders, progress and scroll bars).
+- Every menu, the pause menu and the result panels now look pixel-art without code changes; `UiKit` lost its flat boxes. Mission and deck lists use size 18 so names fit.
+- **Tests:** 5 new (1089 in all, 0 failed).
+
+## U.1 Pixel font (2026-10-18; pixel-art UI, docs/specs/pixel-ui.md)
+- An original 5 x 7 pixel font (`tools/gen_pixel_font.gd` holds the glyphs, writes `assets/fonts/pixel_font.tres` and `.png`): ASCII plus the em dash, proportional widths, shown at whole-number multiples of size 8. `PixelFont.font()` loads it. Not used by any screen yet.
+- **Tests:** 6 new (1084 in all, 0 failed).
+
+## Cards as cards: portrait faces with pictures (2026-10-18)
+- The hand shows tall portrait cards (132 x 188) instead of wide slots: rounded frame in the kind colour, cost badge, framed picture, name banner. The hand sits 64 px higher.
+- Pictures come from art the game already has (`tools/gen_card_pictures.gd` writes `assets/cards/*.png`: unit sprites and cutaway images, 23 cards); the other 8 cards draw an emblem in code (`ui/card_art.gd`).
+- `tools/card_shots.gd` (windowed) writes screenshots of any hands of five cards.
+- **Tests:** 3 new.
+
 ## 5.6 First player-deck mission and the upgrade numbers (2026-10-18; Milestone 5 hand-over)
 - **New mission `x12_open_orders`** ("Open Orders", Dead Highway map, 1337 enemies): the first mission that runs on your own deck, upgrades and doctrine. It sits after `x6_high_tech` in the campaign and has its own first-win reward pool.
 - **Balance** (details in BALANCE.md "5.6"): three example players (`SampleDecks`: weak, balanced, strong) win 0/8, 2/8 and 4/8 on Normal; the weak one wins 8/8 on Easy, the strong one 1/8 on Hard. Upgrade numbers re-tuned in three bench rounds (Crowd Spray and Rocket Pods were far too strong, Extended Station and Saturation too weak); the area and duration branches (A) still beat the armour branches (B) on the missions tried, noted as open.
