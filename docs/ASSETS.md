@@ -55,6 +55,8 @@ Folders: `assets/{sprites,tiles,animations,audio,fonts}` (created when first ass
 
 | Gameplay sprites (`assets/sprites/{unit_barracks,combat_drone,field_mine,field_beacon}/`) | Rendered by `tools/gen_sprites.gd` from the models in `tools/sprite_packs/pack_gameplay.gd` (box, cylinder and ellipsoid parts, like every other sprite set) | Original; project-owned | Barracks 4 facings x 4 frames, drone 8 facings x 2 frames, mine and beacon one facing |
 
+| Effect strips (`assets/fx/{explosion,smoke,flash}.png`) | `tools/gen_fx_sheets.gd`: painted pixel by pixel from a lumpy radius and a hard colour ramp, deterministic | Original; project-owned | Square frames side by side |
+
 Facings: every sprite now has all 8 (the 5-mirrored ADR-008 fallback in `SpriteSheet` remains for sheets that lack some) (`SpriteSheet.art_direction`/`faces_left`). Mirroring flips the light direction (top-left becomes top-right) on the three left-hand facings; accepted for placeholders. A direction without a texture falls back to SE. Sheet layout lives in `SpriteSheet` (`scripts/iso/sprite_sheet.gd`) on each unit/enemy definition.
 
 Missing: real (non-placeholder) art. Sprites are ~24 px tall against 64 px tiles: judge the on-screen size manually.

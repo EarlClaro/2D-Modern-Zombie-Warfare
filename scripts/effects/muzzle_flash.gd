@@ -2,7 +2,7 @@ class_name MuzzleFlash
 extends Node2D
 ## Brief bright flare at a barrel, pointing along the shot (screen-space direction). Presentation only.
 
-const LIFETIME_S: float = 0.05
+const LIFETIME_S: float = 0.07
 
 var dir: Vector2 = Vector2.RIGHT
 var _age: float = 0.0
@@ -25,6 +25,12 @@ func _process(delta: float) -> void:
 
 func _draw() -> void:
 	var k := 1.0 - _age / LIFETIME_S
+	if FxSheet.texture("flash") != null:
+		draw_set_transform(Vector2.ZERO, dir.angle(), Vector2.ONE)
+		var size := 38.0  # the frame is 32 px; the shot starts 8 px in from its left edge and mid-height
+		FxSheet.draw(self, "flash", FxSheet.frame_at(_age / LIFETIME_S, 0, 3), Rect2(Vector2(-8.0 * size / 32.0, -16.0 * size / 32.0), Vector2(size, size)))
+		draw_set_transform(Vector2.ZERO)
+		return
 	var perp := Vector2(-dir.y, dir.x)
 	var cone := PackedVector2Array([dir * 17.0 * k, perp * 5.0 * k, -dir * 3.0, -perp * 5.0 * k])
 	draw_colored_polygon(cone, Color(1.0, 0.82, 0.35, 0.95 * k))

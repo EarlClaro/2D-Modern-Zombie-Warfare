@@ -1,5 +1,9 @@
 # Changelog
 
+## G.2 Pixel combat effects (2026-10-18; docs/specs/art-gaps.md)
+- Explosions, vehicle explosions, death dust and muzzle flashes draw pixel-art frames (`assets/fx/*.png`, made by `tools/gen_fx_sheets.gd`) instead of smooth circles; the blast ring and scorch mark still follow the damage radius.
+- **Tests:** 4 new (1098 in all, 0 failed).
+
 ## G.1 Sprites for the code-drawn placeholders (2026-10-18; docs/specs/art-gaps.md)
 - **Core:** the 12 missions that drew a blue cube as the core now show the command bunker (`core_scenery_id = "hq_bunker"`). Art only.
 - **Barracks and Combat Drone** have sprite sheets (new pack `tools/sprite_packs/pack_gameplay.gd`); the **mine** and the **noise-lure beacon** are sprites in `FieldEntityView`.
