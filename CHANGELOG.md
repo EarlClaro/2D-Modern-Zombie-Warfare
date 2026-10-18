@@ -1,5 +1,11 @@
 # Changelog
 
+## N.4 Supply Drop on the field and pixel missile smoke (2026-10-18; docs/specs/art-more.md)
+- Playing a supply card now drops a crate on a red and white parachute near the core: it floats down in about two seconds, lands in a puff of dust, the canopy settles beside it, and everything fades after a few seconds. The card's effect (CP, reloads) is unchanged and still instant.
+- The smoke behind missiles and rockets is made of pixel-art smoke puffs (the `smoke` strip) instead of smooth white circles and lines; the old line trail stays only as a fallback when the picture is missing.
+- New: `scripts/effects/supply_drop_fx.gd`, `tools/gen_supply_fx.gd` (writes `assets/fx/chute.png`, `chute_down.png`, `crate.png`).
+- **Tests:** 4 new (`tests/test_supply_drop_fx.gd`). Seen in a real window at a low frame rate; the smoke density at 60 fps and the drop timing are for you to judge.
+
 ## N.3 Card back and status icons (2026-10-18; docs/specs/art-more.md)
 - A card back (`assets/cards/_back.png`, 66 x 94 art pixels: at 2x it is exactly a hand slot): steel frame with notched corners, navy weave, a gold star in a ring. Face-down in the empty hand slots (fainter when the draw pile is empty) and shown in the deck screen while no card is picked.
 - The deck screen now shows the picture of the selected card at 2x above its details.

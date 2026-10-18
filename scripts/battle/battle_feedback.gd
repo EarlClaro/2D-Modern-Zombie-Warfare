@@ -12,6 +12,7 @@ const BLAST_SHAKE_S: float = 0.18
 const SPARK_BLAST := Color(1.0, 0.7, 0.3)
 const CORE_SHAKE_S: float = 0.15
 const ALERT_MIN_INTERVAL_S: float = 1.0
+const SUPPLY_LAND_OFFSET := Vector2(2.6, 1.0)  # where a supply crate lands, from the core (tiles)
 const CRATER_MIN_RADIUS: float = 1.7  # blasts at least this wide (tiles) leave a crater
 
 const HIT_FLASH: Color = Color(2.6, 2.6, 2.6)  # >1 brightens toward white
@@ -51,6 +52,13 @@ func bind(battle: BattleController) -> void:
 	battle.blast_landed.connect(_on_blast)
 	battle.projectile_launched.connect(_on_projectile_launched)
 	battle.enemy_attacked.connect(_on_enemy_attacked)
+	battle.card_played.connect(_on_card_played)
+
+
+## A supply card puts a crate on a parachute down near the core (the card's effect itself is not delayed).
+func _on_card_played(card: CardDefinition, _cell: Vector2i) -> void:
+	if card != null and card.card_kind == CardDefinition.CardKind.SUPPLY and _battle.core != null:
+		SupplyDropFx.spawn(_fx, _battle.core.ground_pos + SUPPLY_LAND_OFFSET)
 
 
 ## The thunder of a lightning strike, a moment after the flash (the further the strike, the longer the wait).

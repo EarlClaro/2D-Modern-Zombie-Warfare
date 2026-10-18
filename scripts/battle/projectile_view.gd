@@ -64,7 +64,9 @@ func _draw() -> void:
 		return
 	for p in _puffs:
 		var t: float = p[1] / PUFF_LIFE_S
-		draw_circle(p[0], 3.0 + 5.0 * t, Color(0.93, 0.93, 0.93, 0.42 * (1.0 - t)))
+		# a pixel-art smoke puff that grows and thins (the round fallback is only for a missing picture)
+		if not FxSheet.draw_centered(self, "smoke", FxSheet.frame_at(t, 0, 5), p[0], 9.0 + 15.0 * t, Color(2.2, 2.2, 2.2, 0.85 * (1.0 - t * 0.85))):
+			draw_circle(p[0], 3.0 + 5.0 * t, Color(0.93, 0.93, 0.93, 0.42 * (1.0 - t)))
 	var sys := _battle.projectiles
 	for i in sys.count():
 		if not sys.is_flying(i):
@@ -107,15 +109,14 @@ func _draw_shell(sys: ProjectileSystem, i: int, head: Vector2) -> void:
 func _draw_missile(sys: ProjectileSystem, i: int, head: Vector2) -> void:
 	var s := sys.progress_of(i)
 	var lit := s >= MISSILE_IGNITION
-	# Live smoke trail: samples back along the actual path, wider and fainter with distance.
-	if lit:
+	# The smoke trail is the lingering puffs (see _emit_missile_smoke); only a missing smoke picture falls back to a drawn line.
+	if lit and FxSheet.texture("smoke") == null:
 		var prev := head
 		for k in range(1, SMOKE_STEPS + 1):
 			var f := sys.fraction_back(i, SMOKE_BACK_S * float(k) / SMOKE_STEPS)
 			var pt := IsoProjection.ground_to_screen_z(sys.ground_pos_at(i, f), sys.altitude_at(i, f))
 			var t := float(k) / SMOKE_STEPS
-			draw_line(prev, pt, Color(0.97, 0.97, 0.97, 0.8 * (1.0 - t * 0.65)), 3.0 + 4.0 * t)  # continuous, widening and fading
-			draw_circle(pt, 1.5 + 2.0 * t, Color(0.97, 0.97, 0.97, 0.8 * (1.0 - t * 0.65)))  # rounds the joints
+			draw_line(prev, pt, Color(0.97, 0.97, 0.97, 0.8 * (1.0 - t * 0.65)), 3.0 + 4.0 * t)
 			prev = pt
 	# Orientation: along the screen-space direction of travel.
 	var behind := sys.fraction_back(i, 0.03)
