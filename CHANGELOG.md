@@ -1,5 +1,9 @@
 # Changelog
 
+## P.2 Game logo (2026-10-18; docs/specs/art-polish.md)
+- A pixel logo for the placeholder title (`assets/ui/logo.png`, 160 x 56, shown 4x on the main menu): chunky green block letters from the UI font's own glyphs with a lit edge, an extrusion, chipped corners, two sparkles and hazard tape. `tools/gen_logo.gd` makes it; the name is one constant (`LINES`), so a final title is one edit and one run. The menu falls back to the plain text title if the file is missing.
+- **Tests:** 1 new (the logo has letters in it, and the menu shows it at 4x).
+
 ## P.1 Pixel card pictures for all 31 cards (2026-10-18; docs/specs/art-polish.md)
 - Every card now has a picture file. Unit pictures are scaled up by whole numbers (so the pixels match the 2 px UI grid); strike cards are small scenes (target ring, mushroom cloud, water, laser beam); the 8 cards that had a code-drawn emblem are now pixel art: Barracks and Combat Drones (their sprites), Minefield, Noise Lure, Supply Drop, Fortify, Quick Draw, Hollow Points.
 - `tools/pixel_canvas.gd` (new dev helper: hard-edged shapes, banded shading, dither, outline) and a rewritten `tools/gen_card_pictures.gd`. The emblem drawing code in `ui/card_art.gd` is gone.

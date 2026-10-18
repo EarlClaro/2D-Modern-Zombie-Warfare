@@ -58,6 +58,7 @@ Folders: `assets/{sprites,tiles,animations,audio,fonts}` (created when first ass
 | Effect strips (`assets/fx/{explosion,smoke,flash}.png`) | `tools/gen_fx_sheets.gd`: painted pixel by pixel from a lumpy radius and a hard colour ramp, deterministic | Original; project-owned | Square frames side by side |
 
 | Title picture (`assets/ui/title.png`) | `tools/gen_title_art.gd`: painted in code (dithered sky gradient, noise-free skyline silhouettes, hand-placed lit windows) | Original; project-owned | 480 x 270, shown 4x |
+| Game logo (`assets/ui/logo.png`, 160x56) | `tools/gen_logo.gd` + `tools/pixel_canvas.gd`: block letters built from the project's own pixel font glyphs (`tools/gen_pixel_font.gd`), gradient, extrusion, sparkles, hazard tape, all drawn in code | Original; project-owned | The title text is a placeholder |
 | Mission map thumbnails | Drawn at run time by `ui/mission_thumbnail.gd` from the map data | Original; project-owned | No files |
 
 | Music (menu loop, battle loop, win and lose stings) | Written as notes in `scripts/core/music_factory.gd` and synthesised at run time (square, triangle and noise voices); no audio files | Original; project-owned | Not heard by the agent |

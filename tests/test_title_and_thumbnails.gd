@@ -1,5 +1,5 @@
 extends TestCase
-## The title picture and the map thumbnails (docs/specs/art-gaps.md, G.3).
+## The title picture, the logo and the map thumbnails (docs/specs/art-gaps.md, G.3; docs/specs/art-polish.md, P.2).
 
 var _db: ContentDb
 
@@ -44,3 +44,22 @@ func test_thumbnail_is_cached_per_mission() -> void:
 	var m: MissionDefinition = _get_db().mission("m1_hold_the_crossing")
 	assert_true(MissionThumbnail.texture(m) == MissionThumbnail.texture(m))
 	assert_true(MissionThumbnail.texture(null) == null)
+
+
+func test_logo_is_drawn_and_the_menu_shows_it_at_4x() -> void:
+	var tex := load("res://assets/ui/logo.png") as Texture2D
+	assert_true(tex != null)
+	assert_eq(tex.get_size(), Vector2(160, 56))
+	var img := tex.get_image()
+	var solid := 0
+	for y in img.get_height():
+		for x in img.get_width():
+			if img.get_pixel(x, y).a >= 0.9:
+				solid += 1
+	assert_true(solid > 2000, "the logo has letters in it (%d solid pixels)" % solid)
+	var menu := MainMenu.new()
+	var logo := menu._logo()
+	assert_true(logo is TextureRect)
+	assert_eq(logo.custom_minimum_size, tex.get_size() * float(MainMenu.LOGO_SCALE))
+	logo.free()
+	menu.free()

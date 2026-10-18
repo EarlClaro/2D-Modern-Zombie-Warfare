@@ -3,6 +3,9 @@ extends Control
 ## The start screen and the main scene of the game (docs/specs/menus.md): Play (mission select), Settings, Quit.
 ## `godot --path . -- --mission=<id>` still goes straight into that mission (scripted runs and the tools rely on it).
 
+const LOGO_PATH := "res://assets/ui/logo.png"
+const LOGO_SCALE := 4
+
 var _db: ContentDb
 var _home: Control
 var _select: MissionSelect
@@ -38,9 +41,7 @@ func _build_home() -> void:
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 18)
 	_home.add_child(box)
-	var title := UiKit.label("LAST DEFENSE", 96, UiKit.ACCENT)
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	box.add_child(title)
+	box.add_child(_logo())
 	var sub := UiKit.label("Hold the line.", 30, UiKit.DIM)
 	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(sub)
@@ -68,6 +69,23 @@ func _build_home() -> void:
 	box.add_child(ver)
 	if not play.disabled:
 		play.grab_focus()
+
+
+## The game logo (assets/ui/logo.png, made by tools/gen_logo.gd) at 4x, nearest. Plain text title when the file is missing.
+func _logo() -> Control:
+	var tex := load(LOGO_PATH) as Texture2D if ResourceLoader.exists(LOGO_PATH) else null
+	if tex == null:
+		var title := UiKit.label("LAST DEFENSE", 96, UiKit.ACCENT)
+		title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		return title
+	var rect := TextureRect.new()
+	rect.name = "Logo"
+	rect.texture = tex
+	rect.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	rect.custom_minimum_size = tex.get_size() * LOGO_SCALE
+	return rect
 
 
 func _open_select() -> void:
