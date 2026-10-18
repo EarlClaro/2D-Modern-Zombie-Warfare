@@ -1,5 +1,9 @@
 # Changelog
 
+## U.3 Pixel battle HUD and cards (2026-10-18)
+- The hand draws with the pixel font and a hard 2 px drop shadow; cards, the cost badge and the selection ring have stepped pixel corners instead of rounded ones; the long kind label "DOCTRINE" became "DOCT.". The HUD labels, result panel and reward chooser use the theme font and pixel panels.
+- `docs/specs/pixel-ui.md` corrected (font scale mapping, how the font is stored).
+
 ## U.2 Pixel UI kit and the project theme (2026-10-18)
 - `tools/gen_ui_kit.gd` draws the panel, button (normal, hover, pressed, disabled, focus), checkbox and slider-grabber pieces pixel by pixel (stepped corners, outline, bevel; 2 screen px per art pixel) and builds `assets/ui/theme.tres`, which `project.godot` uses as the project theme (pixel font as the default; buttons, panels, item lists, checkboxes, sliders, progress and scroll bars).
 - Every menu, the pause menu and the result panels now look pixel-art without code changes; `UiKit` lost its flat boxes. Mission and deck lists use size 18 so names fit.

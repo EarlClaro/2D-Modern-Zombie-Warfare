@@ -50,6 +50,9 @@ Folders: `assets/{sprites,tiles,animations,audio,fonts}` (created when first ass
 
 | Card pictures (`assets/cards/<card id>.png`, 96x72, 23 files) | `tools/gen_card_pictures.gd`: crops and scales existing art (unit sprites from `assets/sprites/`, cutaway images from `assets/cutaways/`); no new drawing. The other 8 cards draw emblems in code (`ui/card_art.gd`) | Original; project-owned | Derived from the art listed above |
 
+| UI pixel font (`assets/fonts/pixel_font.tres`, `.png`) | `tools/gen_pixel_font.gd`: original 5x7 glyph bitmaps written in the script, packed into a bitmap font. No third-party font | Original; project-owned | ASCII plus the em dash |
+| UI kit (`assets/ui/*.png`, `assets/ui/theme.tres`) | `tools/gen_ui_kit.gd`: panels, buttons, checkboxes and slider grabbers drawn pixel by pixel in code | Original; project-owned | One project theme |
+
 Facings: every sprite now has all 8 (the 5-mirrored ADR-008 fallback in `SpriteSheet` remains for sheets that lack some) (`SpriteSheet.art_direction`/`faces_left`). Mirroring flips the light direction (top-left becomes top-right) on the three left-hand facings; accepted for placeholders. A direction without a texture falls back to SE. Sheet layout lives in `SpriteSheet` (`scripts/iso/sprite_sheet.gd`) on each unit/enemy definition.
 
 Missing: real (non-placeholder) art. Sprites are ~24 px tall against 64 px tiles: judge the on-screen size manually.

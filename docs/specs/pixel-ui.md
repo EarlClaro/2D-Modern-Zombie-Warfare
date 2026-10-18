@@ -1,6 +1,6 @@
 # Spec: Pixel-art UI
 
-Status: **v0.1, decisions taken 2026-10-18.** Increments U.1 and U.2 are built; U.3 and U.4 are not.
+Status: **v0.1, decisions taken 2026-10-18.** Increments U.1 to U.3 are built; U.4 (the check by the user) is open.
 
 ## Purpose
 The menus and the battle HUD look like default flat Godot controls (smooth font, rounded flat boxes). Make the whole interface read as pixel art, and make it one shared look instead of five separate ones.
@@ -13,17 +13,17 @@ The menus and the battle HUD look like default flat Godot controls (smooth font,
 | Font | **A pixel font** for all text, scaled in whole pixels so it stays crisp. Built here from original glyph bitmaps (no third-party font). |
 
 ## Design
-- **Pixel unit.** The UI is drawn on the 1920 x 1080 base. The font is 5 x 7 px glyphs (descenders 2 more rows), shown at an integer scale: requested sizes 14 to 20 get 2x (14 px capitals), 21 to 27 get 3x, 28 to 34 get 4x, 35 and up 5x. Glyph widths are proportional (an `i` is narrower than an `m`), so names still fit the cards.
+- **Pixel unit.** The UI is drawn on the 1920 x 1080 base. The font is 5 x 7 px glyphs (descenders 2 more rows), shown at an integer scale: the font's native size is 8, so a requested size of 14 to 19 gives 2x (14 px capitals), 20 to 27 gives 3x, 28 to 35 gives 4x, and so on. Glyph widths are proportional (an `i` is narrower than an `m`), so names still fit the cards.
 - **Glyph set.** ASCII 32 to 126 plus the em dash. Anything else falls back to the engine font (only the em dash was in use today).
 - **Theme.** One `Theme` resource set as the project theme: pixel font as the default, nine-patch styleboxes for `Button` (normal, hover, pressed, disabled, focus), `PanelContainer` / `Panel`, `ItemList`, `CheckButton` / `CheckBox`, `OptionButton`, `ScrollBar`, `ProgressBar`, and the colours of `ui/ui_kit.gd`. `UiKit` keeps its API; its helpers read the theme instead of building flat boxes.
 - **Drawn UI.** `HandUi` and the HUD draw with `draw_*` calls: they use the same pixel font, square notched pixel frames instead of rounded boxes, and 1 px pixel borders.
 - **Nothing else changes:** layouts keep their positions; rules and data are untouched.
 
 ## Increments
-1. **U.1 Pixel font (done 2026-10-18).** `tools/gen_pixel_font.gd` holds the glyph bitmaps and writes `assets/fonts/pixel_font.png` (an atlas) and `assets/fonts/pixel_font.json` (glyph boxes and advances); `PixelFont` (`ui/pixel_font.gd`) builds the Godot `FontFile` from them. Tests; a preview sheet.
+1. **U.1 Pixel font (done 2026-10-18).** `tools/gen_pixel_font.gd` holds the glyph bitmaps, packs them into an atlas and saves the bitmap `FontFile` as `assets/fonts/pixel_font.tres` (plus `pixel_font.png` to look at); `PixelFont` (`ui/pixel_font.gd`) loads it. 6 tests.
 2. **U.2 UI kit art and the theme (done 2026-10-18, 5 tests).** `tools/gen_ui_kit.gd` writes the piece PNGs and `assets/ui/theme.tres` (textures embedded); `project.godot` `gui/theme/custom` uses it; `UiKit` no longer builds flat boxes. List fonts were set to size 18 (2x) so mission and deck names fit.
-3. **U.3 Battle HUD and cards.** Pixel frames, bars and fonts in `HandUi`, `BattleHud`, the result panel.
-4. **U.4 Check and polish.** Screenshots of every screen before and after, spacing fixes, docs.
+3. **U.3 Battle HUD and cards (done 2026-10-18).** `HandUi` uses the pixel font with a hard 2 px drop shadow (no smooth outline), cards and the cost badge have stepped pixel corners, the selected card has a yellow stepped ring, and the long "DOCTRINE" label is shortened to "DOCT.". `BattleHud`, the result panel and the reward chooser take the theme without code changes.
+4. **U.4 Check and polish.** Screenshots of every screen were looked at (menu, mission select, deck, settings, pause, result with rewards, the hand); what is left is the user's check on a real monitor.
 
 ## Acceptance
 Tests pass; every screen builds with the theme without errors; screenshots of every screen show the pixel font and pixel panels; no text is cut off at 1920 x 1080.
