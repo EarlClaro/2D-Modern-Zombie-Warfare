@@ -1,6 +1,6 @@
 # Spec: Pixel-art UI
 
-Status: **v0.1, decisions taken 2026-10-18.** Increment U.1 is built; U.2 to U.4 are not.
+Status: **v0.1, decisions taken 2026-10-18.** Increments U.1 and U.2 are built; U.3 and U.4 are not.
 
 ## Purpose
 The menus and the battle HUD look like default flat Godot controls (smooth font, rounded flat boxes). Make the whole interface read as pixel art, and make it one shared look instead of five separate ones.
@@ -21,7 +21,7 @@ The menus and the battle HUD look like default flat Godot controls (smooth font,
 
 ## Increments
 1. **U.1 Pixel font (done 2026-10-18).** `tools/gen_pixel_font.gd` holds the glyph bitmaps and writes `assets/fonts/pixel_font.png` (an atlas) and `assets/fonts/pixel_font.json` (glyph boxes and advances); `PixelFont` (`ui/pixel_font.gd`) builds the Godot `FontFile` from them. Tests; a preview sheet.
-2. **U.2 UI kit art and the theme.** `tools/gen_ui_kit.gd` writes the nine-patch PNGs; `ui/ui_theme.gd` builds the `Theme`; `project.godot` uses it; `UiKit` and the menu screens follow.
+2. **U.2 UI kit art and the theme (done 2026-10-18, 5 tests).** `tools/gen_ui_kit.gd` writes the piece PNGs and `assets/ui/theme.tres` (textures embedded); `project.godot` `gui/theme/custom` uses it; `UiKit` no longer builds flat boxes. List fonts were set to size 18 (2x) so mission and deck names fit.
 3. **U.3 Battle HUD and cards.** Pixel frames, bars and fonts in `HandUi`, `BattleHud`, the result panel.
 4. **U.4 Check and polish.** Screenshots of every screen before and after, spacing fixes, docs.
 

@@ -1,5 +1,10 @@
 # Changelog
 
+## U.2 Pixel UI kit and the project theme (2026-10-18)
+- `tools/gen_ui_kit.gd` draws the panel, button (normal, hover, pressed, disabled, focus), checkbox and slider-grabber pieces pixel by pixel (stepped corners, outline, bevel; 2 screen px per art pixel) and builds `assets/ui/theme.tres`, which `project.godot` uses as the project theme (pixel font as the default; buttons, panels, item lists, checkboxes, sliders, progress and scroll bars).
+- Every menu, the pause menu and the result panels now look pixel-art without code changes; `UiKit` lost its flat boxes. Mission and deck lists use size 18 so names fit.
+- **Tests:** 5 new (1089 in all, 0 failed).
+
 ## U.1 Pixel font (2026-10-18; pixel-art UI, docs/specs/pixel-ui.md)
 - An original 5 x 7 pixel font (`tools/gen_pixel_font.gd` holds the glyphs, writes `assets/fonts/pixel_font.tres` and `.png`): ASCII plus the em dash, proportional widths, shown at whole-number multiples of size 8. `PixelFont.font()` loads it. Not used by any screen yet.
 - **Tests:** 6 new (1084 in all, 0 failed).

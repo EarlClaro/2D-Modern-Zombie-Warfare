@@ -42,7 +42,7 @@ func _ready() -> void:
 	box.add_child(row)
 	_list = ItemList.new()
 	_list.custom_minimum_size = Vector2(620, 520)
-	_list.add_theme_font_size_override("font_size", 26)
+	_list.add_theme_font_size_override("font_size", 18)
 	_list.add_theme_color_override("font_color", UiKit.TEXT)
 	_list.add_theme_color_override("font_selected_color", Color.WHITE)
 	_list.add_theme_color_override("guide_color", Color(0, 0, 0, 0))

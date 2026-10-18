@@ -87,7 +87,7 @@ func _column(title: String, size: Vector2, list_name: String) -> VBoxContainer:
 	var list := ItemList.new()
 	list.name = list_name
 	list.custom_minimum_size = size
-	list.add_theme_font_size_override("font_size", 24)
+	list.add_theme_font_size_override("font_size", 18)
 	list.add_theme_color_override("font_color", UiKit.TEXT)
 	list.add_theme_color_override("font_selected_color", Color.WHITE)
 	list.add_theme_color_override("guide_color", Color(0, 0, 0, 0))
