@@ -62,6 +62,7 @@ Folders: `assets/{sprites,tiles,animations,audio,fonts}` (created when first ass
 | Ground marks (`assets/fx/marks/crater_0..2.png`, `blood_0..2.png`) | `tools/gen_ground_marks.gd` + `ui/pixel_canvas.gd`: lumpy-radius craters with a lit rim, pit and soot ring, and blood splats with drops, painted in code | Original; project-owned | None |
 | Card back (`assets/cards/_back.png`) and status icons (`assets/ui/icons/*.png`) | `tools/gen_icons.gd` + `ui/pixel_canvas.gd`: a framed navy card back with a gold star, and 12x12 icons, drawn in code | Original; project-owned | None |
 | Supply drop pictures (`assets/fx/chute.png`, `chute_down.png`, `crate.png`) | `tools/gen_supply_fx.gd` + `ui/pixel_canvas.gd`: canopy, crumpled canopy and crate drawn in code | Original; project-owned | None |
+| Result pictures (`assets/ui/result_victory.png`, `result_defeat.png`, 128x40) | `tools/gen_result_art.gd` + `ui/pixel_canvas.gd`: dawn and dusk scenes painted in code (gradient dither, skyline, bunker, silhouettes) | Original; project-owned | None |
 | Mission map thumbnails | Drawn at run time by `ui/mission_thumbnail.gd` from the map data | Original; project-owned | No files |
 
 | Music (menu loop, battle loop, win and lose stings) | Written as notes in `scripts/core/music_factory.gd` and synthesised at run time (square, triangle and noise voices); no audio files | Original; project-owned | Not heard by the agent |

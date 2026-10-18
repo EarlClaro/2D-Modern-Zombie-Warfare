@@ -1,5 +1,10 @@
 # Changelog
 
+## N.6 Victory and defeat pictures and the reward reveal (2026-10-18; docs/specs/art-more.md)
+- The result panel shows a pixel picture above the outcome: a victory at dawn (sun behind the command bunker, flag flying, soldiers with rifles raised) or a defeat at dusk (the bunker in ruins and burning, smoke, zombies on the skyline). `tools/gen_result_art.gd` makes `assets/ui/result_victory.png` and `result_defeat.png` (128 x 40, shown 4x).
+- The reward chooser offers its cards face-down (the new card back) and turns them over one after another (about a second in all); each row shows the card's picture next to its button. A card can be taken at any moment.
+- **Tests:** 3 new (`tests/test_result_art.gd` 2, `tests/test_rewards.gd` 1). Seen in a real window; the timing of the turn is for you to judge.
+
 ## N.4 Supply Drop on the field and pixel missile smoke (2026-10-18; docs/specs/art-more.md)
 - Playing a supply card now drops a crate on a red and white parachute near the core: it floats down in about two seconds, lands in a puff of dust, the canopy settles beside it, and everything fades after a few seconds. The card's effect (CP, reloads) is unchanged and still instant.
 - The smoke behind missiles and rockets is made of pixel-art smoke puffs (the `smoke` strip) instead of smooth white circles and lines; the old line trail stays only as a fallback when the picture is missing.

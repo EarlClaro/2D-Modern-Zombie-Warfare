@@ -1,6 +1,6 @@
 # More art: ground marks, weather, icons, in-world cards, core states, result screens, ambient life, store art
 
-Status: **v0.1, started 2026-10-18** (the user asked to start on the nine art suggestions made after docs/specs/art-polish.md). N.1 to N.4 are built; N.5 to N.8 are not. All of it is presentation only: no rule, number or enemy stat changes.
+Status: **v0.1, started 2026-10-18** (the user asked to start on the nine art suggestions made after docs/specs/art-polish.md). N.1 to N.4 and N.6 are built; N.5 turned out to exist already; N.7 and N.8 are not built. All of it is presentation only: no rule, number or enemy stat changes.
 
 ## What already exists (checked in the code before planning)
 
@@ -16,8 +16,8 @@ Status: **v0.1, started 2026-10-18** (the user asked to start on the nine art su
 2. **N.2 Weather: snow and lightning (built).** A `snow` weather value (soft slow flakes in two layers, a white-blue grade, snow-tinted dither) and lightning for storm rain (a rare full-screen flash, a forked bolt drawn in pixels, the thunder sound from `SfxFactory`). Night Storm gets the lightning; no mission gets snow until one asks for it.
 3. **N.3 Card back and status icons (built).** A card back (`assets/cards/_back.png`, 66 x 94 art px = a hand slot at 2x) face-down in empty hand slots and in the deck screen when nothing is picked (which now also shows the selected card's picture at 2x), and 12 x 12 px icons (`assets/ui/icons/<id>.png`) for Fortify, Hollow Points, Quick Draw, Supply Drop and Noise Lure, shown on the HUD in front of each order or doctrine in force. Made by `tools/gen_icons.gd`.
 4. **N.4 In-world cards (built).** The Supply Drop crate on a parachute floating down near the core (`SupplyDropFx`, pictures from `tools/gen_supply_fx.gd`; no rule change), and the missile smoke trail redrawn from the pixel `smoke` strip (there was already a smooth trail).
-5. **N.5 Core damage states.** `hq_bunker` in three looks (intact, damaged, ruined) chosen by the core's health share (above 66 %, above 33 %, below), swapped in the existing scenery view.
-6. **N.6 Result screens.** Victory and defeat illustrations (pixel scenes in the style of the title picture) behind the result panel, and a reward-reveal animation for the card chooser (cards flip from the new card back).
+5. **N.5 Core damage states (already existed, nothing to do).** `BattleCore.frame_for` already swaps four looks of the `hq_bunker` sprite (intact, damaged, burning, ruin) by the core's health share. It was missed when this pass was planned. A later pass could animate the smoke and fire the way the Barracks now does.
+6. **N.6 Result screens (built).** `tools/gen_result_art.gd` paints a victory (dawn, bunker with flag, soldiers) and a defeat (ruined burning bunker, smoke, zombies on the skyline), 128 x 40 art px each, shown at 4x above the outcome on the result panel; the reward chooser deals its cards face-down (the card back) and turns them over one by one with a quick squash tween (`RewardChooser.finish_reveal()` ends it at once), each row showing the card's picture.
 7. **N.7 Ambient life.** Crows that cross the sky now and then (day only), a sweeping searchlight at the core at night, slow cloud shadows over the ground in clear weather, and flickering light on fire pits (the glow already exists; this adds the flicker and a flame sprite).
 8. **N.8 Store and window art.** A window icon (`.ico` and project icon set from the logo), a Steam capsule set at the standard sizes (header 460 x 215, capsule 616 x 353, hero 3840 x 1240, library 600 x 900), and a loading screen shown while a mission loads. All from the logo and the title picture generators.
 

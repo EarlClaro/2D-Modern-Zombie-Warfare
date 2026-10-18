@@ -2,8 +2,13 @@ class_name ResultPanel
 extends CanvasLayer
 ## Shown when the mission ends: outcome, reason, a few stats, and a restart button.
 
+const ART_SIZE := Vector2(512, 160)
+const ART_VICTORY := "res://assets/ui/result_victory.png"
+const ART_DEFEAT := "res://assets/ui/result_defeat.png"
+
 var _battle: BattleController
 var _root: Control
+var _art: TextureRect
 var _title: Label
 var _reason: Label
 var _stats: Label
@@ -32,6 +37,13 @@ func _ready() -> void:
 	box.add_theme_constant_override("separation", 14)
 	box.custom_minimum_size = Vector2(520, 0)
 	panel.add_child(box)
+	_art = TextureRect.new()  # the victory or defeat picture (assets/ui/result_*.png, 128 x 40 art pixels, shown at 4x)
+	_art.name = "ResultArt"
+	_art.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	_art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_art.stretch_mode = TextureRect.STRETCH_SCALE
+	_art.custom_minimum_size = ART_SIZE
+	box.add_child(_art)
 	_title = Label.new()
 	_title.add_theme_font_size_override("font_size", 56)
 	_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -146,6 +158,9 @@ func _objective_label(text: String, font_size: int, color: Color) -> Label:
 
 func _on_ended(res: MissionRules.Result) -> void:
 	var won := res.status == MissionRules.Status.WON
+	var art_path := ART_VICTORY if won else ART_DEFEAT
+	_art.texture = load(art_path) as Texture2D if ResourceLoader.exists(art_path) else null
+	_art.visible = _art.texture != null
 	_title.text = "VICTORY" if won else "DEFEAT"
 	_title.add_theme_color_override("font_color", Color(0.5, 1.0, 0.55) if won else Color(1.0, 0.45, 0.4))
 	_reason.text = res.reason

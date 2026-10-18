@@ -283,6 +283,30 @@ func test_the_chooser_shows_each_card_and_claims_the_pressed_one() -> void:
 	_release_temp_profile()
 
 
+func test_the_offered_cards_start_face_down_and_turn_over_one_by_one() -> void:
+	var db := _get_db()
+	var p := _fresh()
+	_use_temp_profile(p)
+	var offer := PackedStringArray(["ifv", "rpg_team", "sandbags"])
+	p.open_reward("m1_hold_the_crossing", offer)
+	var ch := RewardChooser.new()
+	_in_tree(ch)
+	ch.setup(db, "m1_hold_the_crossing", offer)
+	var flips := ch.find_children("Flip_*", "TextureRect", true, false)
+	assert_eq(flips.size(), 3, "one picture slot per offered card")
+	for f in flips:
+		assert_true((f as TextureRect).texture == CardArt.back(), "face-down at first")
+	assert_true(not ch.revealed())
+	assert_true(ch.reveal_total_s() > 0.5 and ch.reveal_total_s() < 2.0, "the whole reveal takes about a second")
+	ch.finish_reveal()
+	assert_true(ch.revealed())
+	assert_true((ch.find_child("Flip_ifv", true, false) as TextureRect).texture == CardArt.texture("ifv"), "the picture of the card")
+	(ch.find_child("Reward_ifv", true, false) as Button).pressed.emit()
+	assert_true(p.owns("ifv"), "a card can be taken before or after it has turned over")
+	ch.free()
+	_release_temp_profile()
+
+
 func test_the_result_panel_shows_the_choice_and_then_says_what_was_added() -> void:
 	var db := _get_db()
 	var p := _fresh()
