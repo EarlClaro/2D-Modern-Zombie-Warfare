@@ -60,6 +60,7 @@ Folders: `assets/{sprites,tiles,animations,audio,fonts}` (created when first ass
 | Title picture (`assets/ui/title.png`) | `tools/gen_title_art.gd`: painted in code (dithered sky gradient, noise-free skyline silhouettes, hand-placed lit windows) | Original; project-owned | 480 x 270, shown 4x |
 | Game logo (`assets/ui/logo.png`, 160x56) | `tools/gen_logo.gd` + `ui/pixel_canvas.gd`: block letters built from the project's own pixel font glyphs (`tools/gen_pixel_font.gd`), gradient, extrusion, sparkles, hazard tape, all drawn in code | Original; project-owned | The title text is a placeholder |
 | Ground marks (`assets/fx/marks/crater_0..2.png`, `blood_0..2.png`) | `tools/gen_ground_marks.gd` + `ui/pixel_canvas.gd`: lumpy-radius craters with a lit rim, pit and soot ring, and blood splats with drops, painted in code | Original; project-owned | None |
+| Card back (`assets/cards/_back.png`) and status icons (`assets/ui/icons/*.png`) | `tools/gen_icons.gd` + `ui/pixel_canvas.gd`: a framed navy card back with a gold star, and 12x12 icons, drawn in code | Original; project-owned | None |
 | Mission map thumbnails | Drawn at run time by `ui/mission_thumbnail.gd` from the map data | Original; project-owned | No files |
 
 | Music (menu loop, battle loop, win and lose stings) | Written as notes in `scripts/core/music_factory.gd` and synthesised at run time (square, triangle and noise voices); no audio files | Original; project-owned | Not heard by the agent |

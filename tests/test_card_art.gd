@@ -23,11 +23,13 @@ func test_pictures_are_96_by_72_and_belong_to_cards() -> void:
 	for f in dir.get_files():
 		if not f.ends_with(".png"):
 			continue
+		if f.begins_with("_"):  # not a card's picture: the card back
+			continue
 		var id := f.get_basename()
 		assert_true(_get_db().cards.has(id), "%s is not a card" % f)
 		assert_eq(CardArt.texture(id).get_size(), CardArt.PICTURE, f)
 		n += 1
-	assert_eq(n, _get_db().cards.size())
+	assert_eq(n, _get_db().cards.size(), "one picture per card")
 
 
 func test_pictures_have_hard_pixels_and_something_drawn() -> void:

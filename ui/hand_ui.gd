@@ -174,8 +174,13 @@ func _draw_active_effects(o: Vector2) -> void:
 	var y := HAND_TOP - 62.0
 	for a in _battle.modifiers.active():
 		var label := a.effect.display_name if a.is_permanent() else "%s  %ds" % [a.effect.display_name, ceili(a.time_left)]
-		_text(label, Vector2(slot_rect(0).position.x, y) + o, 16, Color(1.0, 0.9, 0.45), HORIZONTAL_ALIGNMENT_LEFT)
-		y -= 24.0
+		var x := slot_rect(0).position.x
+		var icon := StatusIcons.texture(a.effect.id)
+		if icon != null:
+			_surface.draw_texture_rect(icon, Rect2(Vector2(x, y - 19.0) + o, icon.get_size() * 2.0), false)
+			x += icon.get_size().x * 2.0 + 8.0
+		_text(label, Vector2(x, y) + o, 16, Color(1.0, 0.9, 0.45), HORIZONTAL_ALIGNMENT_LEFT)
+		y -= 28.0
 
 
 func _draw_slot(i: int, o: Vector2) -> void:
@@ -183,8 +188,13 @@ func _draw_slot(i: int, o: Vector2) -> void:
 	rect.position += o
 	var cid := _battle.deck.card_at(i)
 	if cid.is_empty():
-		_surface.draw_rect(rect, Color(1, 1, 1, 0.07), false, 2.0)
-		_text("%d" % (i + 1), rect.get_center() + Vector2(0, 8), 28, Color(1, 1, 1, 0.12), HORIZONTAL_ALIGNMENT_CENTER)
+		var back := CardArt.back()
+		if back != null:  # a card is face down here, waiting to be drawn (fainter when the deck has none left)
+			var coming := not _battle.deck.draw_pile.is_empty()
+			_surface.draw_texture_rect(back, rect, false, Color(1, 1, 1, 0.3 if coming else 0.1))
+		else:
+			_surface.draw_rect(rect, Color(1, 1, 1, 0.07), false, 2.0)
+		_text("%d" % (i + 1), rect.get_center() + Vector2(0, 8), 28, Color(1, 1, 1, 0.22), HORIZONTAL_ALIGNMENT_CENTER)
 		return
 	var def: CardDefinition = _battle.cards_by_id().get(cid)
 	var selected := _battle.targeting.selected_slot == i

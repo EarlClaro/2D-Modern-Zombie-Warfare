@@ -10,6 +10,7 @@ var _db: ContentDb
 var _profile: PlayerProfile
 var _owned: ItemList
 var _deck: ItemList
+var _preview: TextureRect
 var _details: Label
 var _status: Label
 var _doctrine: Label
@@ -43,6 +44,17 @@ func _ready() -> void:
 	side.custom_minimum_size = Vector2(430, 0)
 	side.add_theme_constant_override("separation", 12)
 	row.add_child(side)
+	var stage := CenterContainer.new()  # the picture of the selected card (or a card back), shown at 2x
+	stage.name = "CardStage"
+	stage.custom_minimum_size = Vector2(0, CardArt.BACK_SIZE.y * 2.0)
+	side.add_child(stage)
+	_preview = TextureRect.new()
+	_preview.name = "CardPreview"
+	_preview.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	_preview.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_preview.stretch_mode = TextureRect.STRETCH_SCALE
+	stage.add_child(_preview)
+	_show_preview("")
 	_details = UiKit.label("", 22)
 	_details.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	side.add_child(_details)
@@ -178,9 +190,19 @@ func _show_selected_details() -> void:
 		_details.text = ""
 		_add.text = "Add"
 		_show_upgrades("")
+		_show_preview("")
 		return
 	_show_card(cid)
 	_show_upgrades(cid)
+
+
+## The picture of a card in the preview, or the card back when there is none (nothing selected).
+func _show_preview(card_id: String) -> void:
+	var tex: Texture2D = CardArt.texture(card_id) if not card_id.is_empty() else null
+	if tex == null:
+		tex = CardArt.back()
+	_preview.texture = tex
+	_preview.custom_minimum_size = tex.get_size() * 2.0 if tex != null else Vector2.ZERO
 
 
 ## The upgrades of a card: earned ones can be switched on (one at a time), the others are shown as not earned yet.
@@ -220,6 +242,7 @@ func _show_card(card_id: String) -> void:
 	var c := _db.card(card_id)
 	if c == null:
 		return
+	_show_preview(card_id)
 	var doctrine := c.card_kind == CardDefinition.CardKind.DOCTRINE
 	var lines := PackedStringArray([c.display_name, c.description])
 	lines.append("Cost %d CP.%s Up to %d in a deck." % [c.cost, (" Locks out for %d s." % int(c.lockout_s)) if c.lockout_s > 0.0 else "", c.max_copies] if not doctrine else "Chosen before a mission; it is not drawn.")

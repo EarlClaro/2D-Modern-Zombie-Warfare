@@ -1,5 +1,12 @@
 # Changelog
 
+## N.3 Card back and status icons (2026-10-18; docs/specs/art-more.md)
+- A card back (`assets/cards/_back.png`, 66 x 94 art pixels: at 2x it is exactly a hand slot): steel frame with notched corners, navy weave, a gold star in a ring. Face-down in the empty hand slots (fainter when the draw pile is empty) and shown in the deck screen while no card is picked.
+- The deck screen now shows the picture of the selected card at 2x above its details.
+- Small 12 x 12 icons (`assets/ui/icons/`): Fortify, Hollow Points, Quick Draw, Supply Drop and Noise Lure; the orders and doctrines in force on the HUD show their icon in front of the name.
+- New: `tools/gen_icons.gd`, `ui/status_icons.gd`; `CardArt.back()`.
+- **Tests:** 5 new (4 in `tests/test_card_back_icons.gd`, 1 in `tests/test_deck_editor.gd`), 1 changed. Seen in a real window; not played.
+
 ## N.2 Weather: lightning and snow (2026-10-18; docs/specs/art-more.md)
 - Rain now has lightning: every 9 to 20 seconds (first at 6 s, same schedule every run) the screen flashes (a hard flash, a dark gap, a second flicker, a fade), a forked pixel bolt shows for a moment, and a low thunder rumble follows after 0.35 to 2.25 s. Night Storm is the only mission with rain, so it is the only one that gets it.
 - New weather value `snow`: two layers of whole-pixel flakes that fall and sway (with the camera parallax) and a cold tint. No mission uses it yet; a mission sets `weather = "snow"` to get it.

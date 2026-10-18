@@ -272,6 +272,23 @@ func test_the_screen_lists_owned_cards_and_the_deck() -> void:
 	_release_temp()
 
 
+func test_the_screen_shows_a_card_back_until_a_card_is_picked_then_its_picture() -> void:
+	var p := _rich()
+	var s := _screen(p)
+	var preview: TextureRect = s.find_child("CardPreview", true, false)
+	var owned: ItemList = s.find_child("Owned", true, false)
+	owned.deselect_all()
+	s._show_selected_details()
+	assert_true(preview != null and preview.texture == CardArt.back(), "nothing picked: a card back")
+	owned.select(0)
+	owned.item_selected.emit(0)
+	var id: String = s._owned_ids[0]
+	assert_true(preview.texture == CardArt.texture(id), "the picture of %s" % id)
+	assert_eq(preview.custom_minimum_size, CardArt.texture(id).get_size() * 2.0, "shown at 2x")
+	s.free()
+	_release_temp()
+
+
 func test_adding_and_removing_in_the_screen_changes_the_deck_and_saves() -> void:
 	var db := _get_db()
 	var p := _rich()
