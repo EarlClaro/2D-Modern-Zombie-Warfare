@@ -1,8 +1,8 @@
 class_name PixelCanvas
 extends RefCounted
-## Dev-tool helper for the generated pixel art (docs/specs/art-polish.md): a small RGBA canvas with hard-edged shapes (no
-## anti-aliasing), banded shading, ordered-dither fills, an outline pass and integer blits. Used by tools/gen_card_pictures.gd and
-## tools/gen_logo.gd. Deterministic: no randomness, only hashes of the pixel position.
+## Helper for generated pixel art (docs/specs/art-polish.md): a small RGBA canvas with hard-edged shapes (no
+## anti-aliasing), banded shading, ordered-dither fills, an outline pass and integer blits. Used by the art generators in
+## tools/ (cards, logo) and by MissionThumbnail. Deterministic: no randomness, only hashes of the pixel position.
 
 const BAYER: Array = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5]
 const OUTLINE := Color("1a120f")

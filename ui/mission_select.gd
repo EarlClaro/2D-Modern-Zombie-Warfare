@@ -63,7 +63,7 @@ func _ready() -> void:
 	_thumb.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	_thumb.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_thumb.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	_thumb.custom_minimum_size = Vector2(0, 120)
+	_thumb.custom_minimum_size = Vector2(0, 260)
 	side.add_child(_thumb)
 	_facts = UiKit.label("", 24)
 	_facts.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -186,10 +186,10 @@ func _on_selected(index: int) -> void:
 		_start.disabled = true
 		return
 	_title.text = m.display_name
-	var tex := MissionThumbnail.texture(m)
+	var tex := MissionThumbnail.texture(m, _db)
 	_thumb.texture = tex
-	if tex != null:  # whole-pixel scale that fits the pane, at most 120 px tall
-		var k := maxi(1, mini(600 / tex.get_width(), 120 / tex.get_height()))
+	if tex != null:  # whole-pixel scale that fits the pane, at most 260 px tall
+		var k := maxi(1, mini(600 / tex.get_width(), 260 / tex.get_height()))
 		_thumb.custom_minimum_size = Vector2(0, tex.get_height() * k)
 	var lines := MissionListing.facts(_db, m, _level, _profile)
 	if _profile != null:

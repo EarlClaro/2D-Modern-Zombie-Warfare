@@ -25,7 +25,7 @@ func test_title_background_is_a_texture_rect() -> void:
 func test_every_mission_has_a_thumbnail_with_its_core_and_spawns_marked() -> void:
 	for id in _get_db().missions.keys():
 		var m: MissionDefinition = _get_db().missions[id]
-		var img := MissionThumbnail.render(m)
+		var img := MissionThumbnail.render(m, _get_db())
 		assert_eq(img.get_size(), MissionThumbnail.size_of(m.map), id)
 		var core_px := 0
 		var spawn_px := 0
@@ -63,3 +63,31 @@ func test_logo_is_drawn_and_the_menu_shows_it_at_4x() -> void:
 	assert_eq(logo.custom_minimum_size, tex.get_size() * float(MainMenu.LOGO_SCALE))
 	logo.free()
 	menu.free()
+
+
+func test_thumbnail_shows_the_scenery_and_each_map_looks_different() -> void:
+	var db := _get_db()
+	var m: MissionDefinition = db.mission("x2_outskirts")
+	var bare := MissionThumbnail.render(m)
+	var full := MissionThumbnail.render(m, db)
+	assert_eq(bare.get_size(), full.get_size())
+	var differing := 0
+	for y in full.get_height():
+		for x in full.get_width():
+			if bare.get_pixel(x, y) != full.get_pixel(x, y):
+				differing += 1
+	assert_true(differing > 300, "the buildings and trees change %d pixels" % differing)
+	var other := MissionThumbnail.render(db.mission("x7_bridge_line"), db)
+	assert_true(other.get_size() != full.get_size() or other.get_data() != full.get_data(), "two maps give two pictures")
+
+
+func test_thumbnail_has_a_clear_background_and_a_dark_outline() -> void:
+	var m: MissionDefinition = _get_db().mission("m1_hold_the_crossing")
+	var img := MissionThumbnail.render(m, _get_db())
+	assert_eq(img.get_pixel(0, 0).a, 0.0, "the corner is empty")
+	var solid := 0
+	for y in img.get_height():
+		for x in img.get_width():
+			if img.get_pixel(x, y).a > 0.9:
+				solid += 1
+	assert_true(solid > 1500, "the map fills the picture (%d solid pixels)" % solid)
