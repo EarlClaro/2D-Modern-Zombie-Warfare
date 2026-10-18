@@ -8,6 +8,46 @@
 - Nothing visible changes yet: no shipped mission declares objectives (the two-front mission is 3.14) and the HUD and result panel are still 3.13. The 966 earlier tests pass unchanged.
 - 66 new tests (1032 in all); mutation check 79 of 80 killed after closing 7 gaps (the survivor swaps > for >= on met-order numbers that are always distinct, so it is equivalent).
 
+## 5.6 First player-deck mission and the upgrade numbers (2026-10-18; Milestone 5 hand-over)
+- **New mission `x12_open_orders`** ("Open Orders", Dead Highway map, 1337 enemies): the first mission that runs on your own deck, upgrades and doctrine. It sits after `x6_high_tech` in the campaign and has its own first-win reward pool.
+- **Balance** (details in BALANCE.md "5.6"): three example players (`SampleDecks`: weak, balanced, strong) win 0/8, 2/8 and 4/8 on Normal; the weak one wins 8/8 on Easy, the strong one 1/8 on Hard. Upgrade numbers re-tuned in three bench rounds (Crowd Spray and Rocket Pods were far too strong, Extended Station and Saturation too weak); the area and duration branches (A) still beat the armour branches (B) on the missions tried, noted as open.
+- **Tools:** `tools/tune_cards.gd --sample=weak|balanced|strong` and `--upgrades=ids|none`; `tools/gen_player_mission.gd` writes the mission.
+- **Docs:** Milestone 5 is complete pending your manual check (list at the end of `docs/specs/progression.md`).
+- **Tests:** 5 new (1005 in all, 0 failed).
+
+## 5.5 Card upgrades (2026-10-17; Milestone 5)
+- **Ten upgrades**, two exclusive branches for each of the five starter cards (Rifle Squad, Gatling Gun, Tank, Artillery Strike, Helicopter): e.g. Gatling Crowd Spray or Armour-Piercing Belt, Tank High-Explosive Shells or Reactive Armour. Numbers are first guesses (table in `docs/specs/progression.md`, check in 5.6).
+- **Earned as rewards:** the pick-1-of-3 after a first win can offer an upgrade for a card you own. Taking one unlocks it and switches it on if that card has none.
+- **Deck screen:** select a card to see its upgrades; earned ones can be switched on and off (one branch per card), unearned ones show "(not earned)". Saved at once.
+- **Where they apply:** only on a player-deck mission started from the menu (`dev_player_deck` for now). Fixed-deck missions and command-line runs use the unchanged content, so every balance number stands.
+- **Under the hood:** `UpgradeDefinition` + `UpgradePatch` (data, checked on load), `UpgradeApplier` builds a per-battle copy of the content; the shared definitions are never changed.
+- **Tests:** 22 new (1000 in all, 0 failed).
+
+## 5.4 Deck editor and player-deck missions (2026-10-17; Milestone 5)
+- **Deck screen** (main menu "Deck"): your cards (cost, copies in the deck / allowed) on the left, the deck on the right. Add a copy with Add, Enter or a double-click, remove one the same way, "Starter deck" puts the starting deck back. A change that would break the deck rules (more than a card's copy limit, over 24 or under 12 cards, a card you do not own) is refused and the reason is shown. Everything is saved at once. Owned doctrine cards (Hollow Points) are chosen here for the next player-deck mission.
+- **Player-deck missions:** a mission can now be flagged `deck_source = PLAYER`; started from the menu it draws your deck and starts with your doctrine. From the command line it keeps its own `deck_id`, so the bots and tools are unaffected. No campaign mission uses it yet (5.6); `dev_player_deck` (test missions) is a copy of m2 on your deck for trying the editor.
+- **Mission select** says "Deck: yours (N cards)" for such a mission.
+- **Tests:** 21 new (978 in all, 0 failed).
+
+## 5.3 Rewards: pick one of three cards (2026-10-17; Milestone 5)
+- **Rewards:** the first win of a campaign mission offers three cards from that mission's pool that you do not own yet (`RewardPicker`, seeded by the profile and the mission, so the same offer every time). The offer is saved with the win; choosing a card adds it to your collection and saves. Replays offer nothing.
+- **Pools** are data in `data/campaigns/main.tres` (`reward_pools`), early missions offer simple cards and the heaviest strikes come last; every card you do not start with can be won. They are not on the mission files because the map generators rewrite those.
+- **Screens:** `RewardChooser` appears in the result panel after the win and in mission select for a reward you have not answered yet (`[reward waiting]`). A profile from before rewards gets its offers for missions already won when it is loaded.
+- **Tests:** 19 new (957 in all, 0 failed).
+
+## 5.2 Campaign chain, locks and progress records (2026-10-17; Milestone 5)
+- **Campaign:** `CampaignDefinition` + `data/campaigns/main.tres` (m1, m2, m3, x1 to x11 in that order). Only the first mission is open at the start; a win opens the next. Test missions are never locked.
+- **Mission select:** follows the campaign order, greys locked missions (`[locked]`, Start disabled, "Locked: win X first."), marks won ones (`[won]`, best core and level), and pre-selects the next mission to play. Test missions are hidden unless the new Settings switch "List test missions in mission select" is on.
+- **Progress:** a battle started from the menu records a win in the profile and saves it (`ProgressRecorder`); the result panel says what it unlocked. A mission started from the command line records nothing and ignores all locks.
+- **Settings:** the test-missions switch, and "Reset progress" (asks twice; hidden in the pause menu). The main menu says so when the progress file was damaged, restored from its backup or comes from a newer game.
+- **Tests:** 18 new (938 in all, 0 failed).
+
+## 5.1 Player profile and safe save (2026-10-17; Milestone 5, branch m5-progression)
+- **Spec and decision:** `docs/specs/progression.md`, ADR-017 (hybrid decks, pick 1 of 3 rewards, linear campaign, one profile).
+- **New:** `PlayerProfile` (collection, deck, doctrines, finished missions, reward offers; tolerant dictionary round trip; `sanitize` drops content the game no longer has and repairs an illegal deck), `ProfileStore` (`user://profile.json`: temporary file then swap, last good file kept as `.bak`, a damaged file is set aside as `.corrupt-<time>.json` and never deleted, a file from a newer game is read-only), `ProfileMigration` (version steps, a file without a version counts as 0), `GameSession.profile()`.
+- **Nothing in the game reads it yet:** menus, unlocks, rewards and the deck editor are 5.2 to 5.4.
+- **Tests:** 24 new (920 in all, 0 failed).
+
 ## 3.11 Flow-field movement, part 3 of 3: separation (2026-10-17)
 - New pure `Separation` (`scripts/combat/separation.gd`, ADR-012): a 1-tile spatial hash (linked lists in packed arrays) over a snapshot of enemy positions and radii; a push looks at the first 8 other bodies in the 3x3 cells around a position and sums the unit vectors away from each overlapping one, weighted by overlap depth and clamped to 1. Enemies only.
 - `MissionDefinition.separation` (default on, flow missions only). The controller rebuilds the snapshot every 4th tick and each enemy asks for its push every 4th tick (staggered by uid); `BattleEnemy.push` (tiles per second, 1.5 x its speed at full overlap) is added to its walk. Waypoint missions have none.

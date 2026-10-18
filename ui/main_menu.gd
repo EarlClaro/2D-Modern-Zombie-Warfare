@@ -6,6 +6,7 @@ extends Control
 var _db: ContentDb
 var _home: Control
 var _select: MissionSelect
+var _deck_screen: DeckScreen
 var _settings: SettingsScreen
 
 
@@ -22,6 +23,9 @@ func _ready() -> void:
 	_build_home()
 	if not _db.is_valid():
 		_show_content_errors()
+	else:
+		GameSession.profile(_db)
+		_show_profile_note()
 
 
 func _build_home() -> void:
@@ -41,6 +45,11 @@ func _build_home() -> void:
 	play.pressed.connect(_open_select)
 	play.disabled = _db == null or not _db.is_valid()
 	box.add_child(play)
+	var deck := UiKit.button("Deck", 34, Vector2(420, 72))
+	deck.name = "Deck"
+	deck.pressed.connect(_open_deck)
+	deck.disabled = play.disabled
+	box.add_child(deck)
 	var settings := UiKit.button("Settings", 34, Vector2(420, 72))
 	settings.pressed.connect(_open_settings)
 	box.add_child(settings)
@@ -74,6 +83,22 @@ func _close_select() -> void:
 	_focus_first_button()
 
 
+func _open_deck() -> void:
+	_home.visible = false
+	_deck_screen = DeckScreen.new()
+	_deck_screen.bind(_db, GameSession.profile(_db))
+	_deck_screen.closed.connect(_close_deck)
+	add_child(_deck_screen)
+
+
+func _close_deck() -> void:
+	if _deck_screen != null:
+		_deck_screen.queue_free()
+		_deck_screen = null
+	_home.visible = true
+	_focus_first_button()
+
+
 func _open_settings() -> void:
 	_home.visible = false
 	_settings = SettingsScreen.new()
@@ -94,6 +119,21 @@ func _focus_first_button() -> void:
 		if not (b as Button).disabled:
 			(b as Button).grab_focus()
 			return
+
+
+## Says so on the start screen when the progress file was damaged, restored from its backup or comes from a newer game.
+func _show_profile_note() -> void:
+	var load_result := GameSession.profile_load
+	var text := ProfileStore.note_for(load_result) if load_result != null else ""
+	if text.is_empty():
+		return
+	var l := UiKit.label(text, 20, Color(1.0, 0.8, 0.45))
+	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	l.custom_minimum_size = Vector2(1100, 0)
+	l.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
+	l.position.y -= 60
+	add_child(l)
 
 
 func _show_content_errors() -> void:

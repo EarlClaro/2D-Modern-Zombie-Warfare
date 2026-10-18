@@ -5,12 +5,18 @@ extends Control
 
 signal closed
 
+## The pause menu hides the progress reset: starting over in the middle of a battle makes no sense.
+var allow_progress_reset: bool = true
+
 var _s: GameSettings
 var _volume: HSlider
 var _volume_label: Label
 var _fullscreen: CheckButton
 var _cutaways: CheckButton
 var _fps: CheckButton
+var _tests: CheckButton
+var _reset_progress: Button
+var _confirming_reset: bool = false
 var _syncing: bool = false
 
 
@@ -43,6 +49,7 @@ func _ready() -> void:
 	_fullscreen = _toggle(box, "Fullscreen", _on_fullscreen)
 	_cutaways = _toggle(box, "Strike cutaway clips (freeze the game briefly)", _on_cutaways)
 	_fps = _toggle(box, "Show FPS counter", _on_fps)
+	_tests = _toggle(box, "List test missions in mission select", _on_tests)
 	var buttons := HBoxContainer.new()
 	buttons.add_theme_constant_override("separation", 16)
 	box.add_child(buttons)
@@ -52,6 +59,11 @@ func _ready() -> void:
 	var back := UiKit.button("Back", 24, Vector2(260, 56))
 	back.pressed.connect(close)
 	buttons.add_child(back)
+	if allow_progress_reset:
+		_reset_progress = UiKit.button("Reset progress", 24, Vector2(260, 56))
+		_reset_progress.name = "ResetProgress"
+		_reset_progress.pressed.connect(_on_reset_progress)
+		box.add_child(_reset_progress)
 	box.add_child(UiKit.label("Esc: back", 18, UiKit.DIM))
 	_s = GameSession.settings()
 	_refresh()
@@ -76,6 +88,7 @@ func _refresh() -> void:
 	_fullscreen.button_pressed = _s.fullscreen
 	_cutaways.button_pressed = _s.cutaways
 	_fps.button_pressed = _s.show_fps
+	_tests.button_pressed = _s.show_test_missions
 	_syncing = false
 
 
@@ -102,6 +115,22 @@ func _on_cutaways(on: bool) -> void:
 func _on_fps(on: bool) -> void:
 	if not _syncing:
 		_s.show_fps = on
+
+
+func _on_tests(on: bool) -> void:
+	if not _syncing:
+		_s.show_test_missions = on
+
+
+## The first click asks, the second erases the campaign progress (collection, deck, finished missions) for good.
+func _on_reset_progress() -> void:
+	if not _confirming_reset:
+		_confirming_reset = true
+		_reset_progress.text = "Click again to erase"
+		return
+	_confirming_reset = false
+	GameSession.reset_profile()
+	_reset_progress.text = "Progress erased"
 
 
 func _on_reset() -> void:

@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="UpgradeDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/progression/upgrade_patch.gd" id="1_f5j7c"]
+[ext_resource type="Script" path="res://scripts/progression/upgrade_definition.gd" id="2_31nrw"]
+
+[sub_resource type="Resource" id="Resource_0e62x"]
+script = ExtResource("1_f5j7c")
+target = 2
+target_id = "artillery_strike"
+property = "shell_count"
+value = 6.0
+
+[sub_resource type="Resource" id="Resource_wgo2e"]
+script = ExtResource("1_f5j7c")
+target = 2
+target_id = "artillery_strike"
+property = "target_radius"
+value = 2.0
+
+[sub_resource type="Resource" id="Resource_bx5pm"]
+script = ExtResource("1_f5j7c")
+target = 2
+target_id = "artillery_strike"
+property = "shell_damage"
+op = 1
+value = 0.8
+
+[resource]
+script = ExtResource("2_31nrw")
+display_name = "Saturation Barrage"
+description = "Six more shells over a much wider area, each 20 % weaker."
+card_id = "artillery_strike"
+patches = Array[ExtResource("1_f5j7c")]([SubResource("Resource_0e62x"), SubResource("Resource_wgo2e"), SubResource("Resource_bx5pm")])
+id = "artillery_saturation"

@@ -14,6 +14,7 @@ var cutaways: bool = true  # the freezing strike clips
 var show_fps: bool = true
 var last_mission: String = ""  # pre-selected in mission select
 var difficulty: String = "normal"  # the level mission select shows (a DifficultyDefinition id; unknown ids fall back to normal there)
+var show_test_missions: bool = false  # list the test and dev missions in mission select (they are never locked)
 
 
 ## Brings every value into its legal range (a hand-edited file can hold anything).
@@ -33,6 +34,7 @@ func reset() -> void:
 	show_fps = d.show_fps
 	last_mission = d.last_mission
 	difficulty = d.difficulty
+	show_test_missions = d.show_test_missions
 
 
 func to_config() -> ConfigFile:
@@ -43,6 +45,7 @@ func to_config() -> ConfigFile:
 	cfg.set_value(SECTION, "show_fps", show_fps)
 	cfg.set_value(SECTION, "last_mission", last_mission)
 	cfg.set_value(SECTION, "difficulty", difficulty)
+	cfg.set_value(SECTION, "show_test_missions", show_test_missions)
 	return cfg
 
 
@@ -66,6 +69,9 @@ func from_config(cfg: ConfigFile) -> void:
 	v = cfg.get_value(SECTION, "difficulty", difficulty)
 	if v is String:
 		difficulty = v
+	v = cfg.get_value(SECTION, "show_test_missions", show_test_missions)
+	if v is bool:
+		show_test_missions = v
 	clamp_all()
 
 

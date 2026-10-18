@@ -92,6 +92,18 @@ A Sortie card flies one aircraft along a `SortiePlan` (pure: nearest map edge ->
 ## Presentation (as built, M1.5)
 `BattleFeedback` (a child of the battle) is the only presenter: it subscribes to controller signals and spawns transient effects on the controller's Fx layer, plays sounds through `SfxService`, shakes the camera and flashes/kicks entities. Rules never read anything it produces (verified by a test that runs the same battle with and without it). Entities carry only cosmetic helpers (`IsoEntity.flash`, `play_death`, `BattleUnit.kick`). Sound pooling is pure logic (`SfxVoicePool`).
 
+## Progression profile (as built, M5.1)
+`scripts/progression/`: `PlayerProfile` is plain data (collection, deck, doctrines, finished missions, reward offers) with `to_dict` / `from_dict` that never fail and `sanitize(db)` that drops unknown ids and repairs an illegal deck; `ProfileStore` reads and writes `user://profile.json` (every function takes a path; temporary file then swap, `.bak` of the last good file, damaged files set aside, newer files read-only); `ProfileMigration` upgrades old files one version step at a time. `GameSession.profile()` holds the shared profile like it holds the settings (no autoload). Battle, combat and card code never read it. Spec: [progression.md](specs/progression.md).
+Campaign (M5.2): `CampaignDefinition` (`data/campaigns/main.tres`, loaded by `ContentDb`, ids checked against the missions) holds the unlock order and the unlock rules; `MissionListing` orders and tags the missions from it; `MissionSelect` shows locks and results. `ProgressRecorder` is a node the battle gets only when the menu started it; it listens to `battle_ended` and writes a win into the profile and the file, so the battle's own rules never see the profile.
+
+Rewards (M5.3): `RewardPicker` is pure (pool, owned cards, seed, mission id gives up to three card ids); `ProgressRecorder` opens the offer on a first win and `PlayerProfile` keeps it in `offers` until `GameSession.claim_reward` takes a card from it and saves; `RewardChooser` is the one widget used by the result panel and by mission select. Pools live in `CampaignDefinition.reward_pools`.
+
+Deck editor (M5.4): `DeckBuilder` (pure) holds every editing rule over a `PlayerProfile` and the shipped `DeckRules` and builds the `loadout` a battle receives; `DeckScreen` only presents it and saves through `GameSession`. A mission with `deck_source = PLAYER` gets that loadout through `BattleController.deck_override` and `extra_doctrines`, set by the battle scene only when the menu started it; combat and card code never see the profile.
+
+Upgrades (M5.5): `UpgradeDefinition` holds `UpgradePatch`es (number changes on a weapon, unit, operation or card, validated when the content loads). `UpgradeApplier.patched_db` copies the database tables and duplicates only the definitions a patch changes; the battle scene gives that copy to a menu-started player-deck battle. The profile stores `unlocked_upgrades` and `equipped`; the shared definitions, the tools and fixed-deck missions never see an upgrade.
+
+Balancing player-deck missions (M5.6): `SampleDecks` describes three example players (picks from the real reward pools, deck, upgrades, doctrine) and builds their `PlayerProfile`; the balance tool plays missions with their `DeckBuilder.loadout` and the `UpgradeApplier` copy of the content, the same path the battle scene uses for a real player.
+
 ## Key design choices
 - **Pure logic classes** (`RefCounted`, no Node dependency) for IsoProjection, DamageService, DeckState, CommandPoints, objective evaluation → trivially headless-testable.
 - **Definitions vs runtime**: `CardDefinition` (Resource, immutable) vs `CardRuntime`/`DeckState` entries (id + mutable lockout).

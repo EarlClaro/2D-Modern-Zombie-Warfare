@@ -119,6 +119,9 @@ var modifiers: BattleModifiers = BattleModifiers.new()
 var difficulty_id: String = ""
 ## Doctrine card ids added on top of the mission's (the `--doctrine=` option); set before `setup`.
 var extra_doctrines: PackedStringArray = PackedStringArray()
+## A deck to draw from instead of the mission's `deck_id` (the player's own deck on a player-deck mission); set before
+## `setup`. Empty = use the mission's deck.
+var deck_override: PackedStringArray = PackedStringArray()
 ## Which hand slot is selected for placement (state only; the HUD and the world preview read it).
 var targeting: CardTargeting = CardTargeting.new()
 ## Arcing shells in flight (artillery) and the telegraphs of strikes that are still landing.
@@ -226,6 +229,7 @@ func _ready() -> void:
 		return  # already set up by a test or caller
 	var cli := parse_user_args(OS.get_cmdline_user_args())
 	var pending := GameSession.take_pending()
+	var from_menu := not String(pending["mission"]).is_empty() and not cli.has("mission")
 	if not String(pending["mission"]).is_empty():
 		mission_id = pending["mission"]  # picked in the menu; a command-line mission below still wins
 		difficulty_id = pending["difficulty"]  # likewise a command-line difficulty
@@ -241,7 +245,14 @@ func _ready() -> void:
 	if not difficulty_id.is_empty() and loaded.difficulty(difficulty_id) == null:
 		_show_fatal("Unknown difficulty '%s' (%s)" % [difficulty_id, ", ".join(loaded.difficulty_ids())])
 		return
-	setup(loaded, m, rng_seed)
+	var run_db := loaded
+	if from_menu and m.deck_source == MissionDefinition.DeckSource.PLAYER:  # the deck and upgrades the player chose
+		var load_out := DeckBuilder.loadout(GameSession.profile(loaded), loaded)
+		deck_override = load_out["deck"]
+		extra_doctrines.append_array(load_out["doctrines"])
+		run_db = UpgradeApplier.patched_db(loaded, load_out["upgrades"])
+		m = run_db.mission(m.id)
+	setup(run_db, m, rng_seed)
 	var hud := BattleHud.new()
 	add_child(hud)
 	hud.bind(self)
@@ -253,6 +264,13 @@ func _ready() -> void:
 	var panel := ResultPanel.new()
 	add_child(panel)
 	panel.bind(self)
+	if from_menu:  # only a battle the player started from the menu counts towards their progress
+		var recorder := ProgressRecorder.new()
+		recorder.name = "ProgressRecorder"
+		add_child(recorder)
+		recorder.bind(self)
+		recorder.recorded.connect(func(_unlocked: String, note: String) -> void: panel.add_note(note))
+		recorder.offer_ready.connect(func(mid: String, offer: PackedStringArray) -> void: panel.show_offer(db, mid, offer))
 	var pause_menu := PauseMenu.new()
 	pause_menu.name = "PauseMenu"
 	add_child(pause_menu)
@@ -1238,12 +1256,17 @@ func _setup_cards() -> void:
 	points = null
 	targeting = CardTargeting.new()
 	preview = null
-	if mission.deck_id.is_empty() or db.deck_rules == null:
+	if db.deck_rules == null:
 		return
-	var d := db.deck(mission.deck_id)
-	if d == null:
-		return
-	deck = DeckState.new(db.deck_rules, d.ids(), _deck_rng)
+	var ids: Array[String] = []
+	if not deck_override.is_empty():
+		ids.assign(deck_override)
+	else:
+		var d := db.deck(mission.deck_id) if not mission.deck_id.is_empty() else null
+		if d == null:
+			return
+		ids = d.ids()
+	deck = DeckState.new(db.deck_rules, ids, _deck_rng)
 	deck.start()
 	points = CommandPoints.from_rules(db.deck_rules)
 

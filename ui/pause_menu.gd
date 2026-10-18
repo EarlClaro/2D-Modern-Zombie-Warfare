@@ -87,6 +87,7 @@ func _to_menu() -> void:
 func _open_settings() -> void:
 	_box.get_parent().get_parent().visible = false  # hide the pause panel behind the settings screen
 	_settings = SettingsScreen.new()
+	_settings.allow_progress_reset = false
 	_settings.closed.connect(_close_settings)
 	_root.add_child(_settings)
 

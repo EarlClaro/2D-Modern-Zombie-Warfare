@@ -7,6 +7,9 @@ var _root: Control
 var _title: Label
 var _reason: Label
 var _stats: Label
+var _note: Label
+var _box: VBoxContainer
+var _chooser: RewardChooser
 
 
 func bind(battle: BattleController) -> void:
@@ -24,6 +27,7 @@ func _ready() -> void:
 	var panel := PanelContainer.new()
 	_root.add_child(panel)
 	var box := VBoxContainer.new()
+	_box = box
 	box.add_theme_constant_override("separation", 14)
 	box.custom_minimum_size = Vector2(520, 0)
 	panel.add_child(box)
@@ -39,6 +43,12 @@ func _ready() -> void:
 	_stats.add_theme_font_size_override("font_size", 20)
 	_stats.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(_stats)
+	_note = Label.new()
+	_note.add_theme_font_size_override("font_size", 22)
+	_note.add_theme_color_override("font_color", Color(0.75, 0.9, 0.6))
+	_note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_note.visible = false
+	box.add_child(_note)
 	var button := Button.new()
 	button.text = "Restart (R)"
 	button.add_theme_font_size_override("font_size", 26)
@@ -55,6 +65,38 @@ func _ready() -> void:
 func _on_started() -> void:
 	if _root != null:
 		_root.visible = false
+		_note.visible = false
+		_clear_chooser()
+
+
+## Shows the reward a first win earned: pick one of the offered cards.
+func show_offer(db: ContentDb, mission_id: String, offer: PackedStringArray) -> void:
+	_clear_chooser()
+	_chooser = RewardChooser.new()
+	_box.add_child(_chooser)
+	_box.move_child(_chooser, _note.get_index() + 1)
+	_chooser.setup(db, mission_id, offer)
+	_chooser.claimed.connect(func(card_id: String) -> void:
+		var card := db.card(card_id)
+		var up := db.upgrade(card_id)
+		if up != null:
+			add_note("Unlocked the upgrade %s." % up.display_name)
+		else:
+			add_note("Added %s to your collection." % (card.display_name if card != null else card_id))
+		_clear_chooser())
+
+
+func _clear_chooser() -> void:
+	if _chooser != null:
+		_chooser.queue_free()
+		_chooser = null
+
+
+## A line under the stats (what the win unlocked, whether progress was saved).
+func add_note(text: String) -> void:
+	if _note != null:
+		_note.text = text
+		_note.visible = not text.is_empty()
 
 
 func _on_ended(res: MissionRules.Result) -> void:

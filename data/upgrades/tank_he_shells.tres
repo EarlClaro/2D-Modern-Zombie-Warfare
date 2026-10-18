@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="UpgradeDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/progression/upgrade_patch.gd" id="1_bpcnl"]
+[ext_resource type="Script" path="res://scripts/progression/upgrade_definition.gd" id="2_pcakb"]
+
+[sub_resource type="Resource" id="Resource_1lky8"]
+script = ExtResource("1_bpcnl")
+target_id = "tank_cannon"
+property = "blast_radius"
+value = 0.9
+
+[sub_resource type="Resource" id="Resource_2bx2b"]
+script = ExtResource("1_bpcnl")
+target_id = "tank_cannon"
+property = "damage"
+op = 1
+value = 0.9
+
+[resource]
+script = ExtResource("2_pcakb")
+display_name = "High-Explosive Shells"
+description = "The cannon's blast is 0.9 tiles wider, for 10 % less damage."
+card_id = "tank"
+patches = Array[ExtResource("1_bpcnl")]([SubResource("Resource_1lky8"), SubResource("Resource_2bx2b")])
+id = "tank_he_shells"

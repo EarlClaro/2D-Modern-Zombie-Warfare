@@ -48,12 +48,25 @@ static func _sort_key(id: String) -> Array:
 	return [id.substr(0, i), int(id.substr(i, j - i)) if j > i else -1]
 
 
-## Every mission once: Missions first, then Test missions, each in id order (numbers counted as numbers).
-static func entries(db: ContentDb) -> Array[Entry]:
+## Every mission once: Missions first, then Test missions (left out when `include_tests` is false), each in id order
+## (numbers counted as numbers). Missions in the campaign come in the campaign's order.
+static func entries(db: ContentDb, include_tests: bool = true) -> Array[Entry]:
 	var ids: Array = db.missions.keys()
 	ids.sort_custom(id_less)
+	var camp := db.main_campaign()
+	if camp != null:
+		ids.sort_custom(func(a: String, b: String) -> bool:
+			var ia := camp.index_of(a)
+			var ib := camp.index_of(b)
+			if ia >= 0 and ib >= 0:
+				return ia < ib
+			if (ia >= 0) != (ib >= 0):
+				return ia >= 0
+			return id_less(a, b))
 	var out: Array[Entry] = []
 	for group in [GROUP_MISSIONS, GROUP_TESTS]:
+		if group == GROUP_TESTS and not include_tests:
+			continue
 		for id: String in ids:
 			if group_of(id) == group:
 				out.append(Entry.new(id, (db.missions[id] as MissionDefinition).display_name, group))
@@ -61,7 +74,7 @@ static func entries(db: ContentDb) -> Array[Entry]:
 
 
 ## The lines of the details panel, all taken from data.
-static func facts(db: ContentDb, mission: MissionDefinition, difficulty_id: String = "") -> PackedStringArray:
+static func facts(db: ContentDb, mission: MissionDefinition, difficulty_id: String = "", profile: PlayerProfile = null) -> PackedStringArray:
 	var lines := PackedStringArray()
 	if mission == null:
 		return lines
@@ -70,11 +83,41 @@ static func facts(db: ContentDb, mission: MissionDefinition, difficulty_id: Stri
 	var level := db.difficulty(difficulty_id) if not difficulty_id.is_empty() else null
 	lines.append("Enemies: %d (%s)" % [mission.total_enemies_at(level), ", ".join(enemy_names(db, mission))])
 	var deck := db.deck(mission.deck_id) if not mission.deck_id.is_empty() else null
-	if deck != null:
+	if mission.deck_source == MissionDefinition.DeckSource.PLAYER and profile != null:
+		lines.append("Deck: yours (%d cards, change it under Deck in the main menu)" % DeckBuilder.loadout(profile, db)["deck"].size())
+	elif deck != null:
 		lines.append("Deck: %s (%d cards)" % [deck.display_name, deck.card_ids.size()])
 	else:
 		lines.append("No cards: the units you start with defend the core.")
 	lines.append("Time: %s, weather: %s" % [time_name(mission.time_of_day), mission.weather])
+	return lines
+
+
+## What mission select shows after a mission's name: "" (nothing to say), "locked", "reward waiting" or "won".
+static func tag_for(db: ContentDb, profile: PlayerProfile, mission_id: String) -> String:
+	var camp := db.main_campaign()
+	if camp != null and not camp.is_unlocked(profile, mission_id):
+		return "locked"
+	if profile.has_pending_reward(mission_id):
+		return "reward waiting"
+	if profile.is_won(mission_id):
+		return "won"
+	return ""
+
+
+## The progress lines of the details panel: why a mission is locked, or how often it was won and how well.
+static func progress_lines(db: ContentDb, profile: PlayerProfile, mission_id: String) -> PackedStringArray:
+	var lines := PackedStringArray()
+	var camp := db.main_campaign()
+	if camp != null and not camp.is_unlocked(profile, mission_id):
+		var prev := db.mission(camp.previous_of(mission_id))
+		lines.append("Locked: win %s first." % (prev.display_name if prev != null else camp.previous_of(mission_id)))
+	elif profile.is_won(mission_id):
+		var m: Dictionary = profile.missions[mission_id]
+		var level := db.difficulty(String(m.get("best_difficulty", "")))
+		lines.append("Won %d time%s. Best: core at %d%%%s." % [
+			profile.wins_of(mission_id), "" if profile.wins_of(mission_id) == 1 else "s",
+			roundi(float(m.get("best_core", 0.0)) * 100.0), (" on " + level.display_name) if level != null else ""])
 	return lines
 
 

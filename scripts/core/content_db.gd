@@ -16,12 +16,16 @@ var effects: Dictionary = {}  # id -> StateEffectDefinition (battle effects of O
 var cutaways: Dictionary = {}  # id -> CutawayDefinition (full-screen clips of big supports)
 var entities: Dictionary = {}  # id -> FieldEntityDefinition (mines and lures of Trap / Intel cards)
 var difficulties: Dictionary = {}  # id -> DifficultyDefinition (enemy-count multipliers)
+var campaigns: Dictionary = {}  # id -> CampaignDefinition (the order missions unlock in)
+var upgrades: Dictionary = {}  # id -> UpgradeDefinition (card upgrades, earned as rewards)
 var scenery_defs: Dictionary = {}  # id -> SceneryDefinition (decorations placed by maps)
 var deck_rules: DeckRules  # data/config/deck_rules.tres; null if missing/invalid (reported in errors)
 var errors: PackedStringArray = PackedStringArray()
 
 ## The level a mission uses when nothing else is chosen; it must exist and must not change any count.
 const NORMAL_DIFFICULTY: String = "normal"
+## The id of the campaign the menus use.
+const MAIN_CAMPAIGN: String = "main"
 
 
 ## Loads data/{weapons,units,enemies,maps,missions,cards,decks,operations,effects,entities,difficulties} and data/config/deck_rules.tres under `root`, then verifies cross-references.
@@ -38,6 +42,8 @@ static func load_from(root: String = "res://data") -> ContentDb:
 	db._load_dir(root + "/effects", "effect")
 	db._load_dir(root + "/entities", "entity")
 	db._load_dir(root + "/difficulties", "difficulty")
+	db._load_dir(root + "/campaigns", "campaign", false)
+	db._load_dir(root + "/upgrades", "upgrade", false)
 	db._load_dir(root + "/cutaways", "cutaway")
 	db._load_dir(root + "/scenery", "scenery", false)
 	db._load_deck_rules(root + "/config/deck_rules.tres")
@@ -91,6 +97,29 @@ func entity(id: String) -> FieldEntityDefinition:
 
 func difficulty(id: String) -> DifficultyDefinition:
 	return difficulties.get(id)
+
+
+func campaign(id: String) -> CampaignDefinition:
+	return campaigns.get(id)
+
+
+func upgrade(id: String) -> UpgradeDefinition:
+	return upgrades.get(id)
+
+
+## The ids of the upgrades of one card, in id order.
+func upgrades_of(card_id: String) -> Array[String]:
+	var out: Array[String] = []
+	for id: String in upgrades:
+		if (upgrades[id] as UpgradeDefinition).card_id == card_id:
+			out.append(id)
+	out.sort()
+	return out
+
+
+## The campaign mission select follows (null in a database without one: nothing is locked then).
+func main_campaign() -> CampaignDefinition:
+	return campaigns.get(MAIN_CAMPAIGN)
 
 
 ## The level ids in menu order (easiest first).
@@ -147,6 +176,14 @@ func add_difficulty(def: DifficultyDefinition) -> bool:
 	return _register(difficulties, def)
 
 
+func add_campaign(def: CampaignDefinition) -> bool:
+	return _register(campaigns, def)
+
+
+func add_upgrade(def: UpgradeDefinition) -> bool:
+	return _register(upgrades, def)
+
+
 func add_card(def: CardDefinition) -> bool:
 	return _register(cards, def)
 
@@ -189,6 +226,24 @@ func validate_references() -> void:
 				errors.append("unit '%s': unknown spawns_unit_id '%s'" % [id, u.spawns_unit_id])
 			elif made.is_air() or made.is_fixed() or made.structure:
 				errors.append("unit '%s': spawns_unit_id '%s' must be a mobile ground unit" % [id, u.spawns_unit_id])
+	for id in campaigns:
+		var camp: CampaignDefinition = campaigns[id]
+		for mid in camp.mission_ids:
+			if not missions.has(mid):
+				errors.append("campaign '%s': unknown mission '%s'" % [id, mid])
+		for mid in camp.mission_ids:
+			for cid in camp.pool_of(mid):
+				if not cards.has(cid) and not upgrades.has(cid):
+					errors.append("campaign '%s': the reward pool of '%s' has unknown card '%s'" % [id, mid, cid])
+	for id in upgrades:
+		var up: UpgradeDefinition = upgrades[id]
+		if not cards.has(up.card_id):
+			errors.append("upgrade '%s': unknown card '%s'" % [id, up.card_id])
+		if cards.has(id):
+			errors.append("upgrade '%s': the id is also a card id" % id)
+		for patch in up.patches:
+			for e in patch.validate(self):
+				errors.append("upgrade '%s': %s" % [id, e])
 	for id in missions:
 		var m: MissionDefinition = missions[id]
 		for su in m.start_units:
@@ -447,6 +502,16 @@ func _load_dir(path: String, kind: String, required: bool = true) -> void:
 					add_difficulty(res)
 				else:
 					errors.append("%s is not a DifficultyDefinition" % full)
+			"campaign":
+				if res is CampaignDefinition:
+					add_campaign(res)
+				else:
+					errors.append("%s is not a CampaignDefinition" % full)
+			"upgrade":
+				if res is UpgradeDefinition:
+					add_upgrade(res)
+				else:
+					errors.append("%s is not an UpgradeDefinition" % full)
 			"entity":
 				if res is FieldEntityDefinition:
 					add_entity(res)

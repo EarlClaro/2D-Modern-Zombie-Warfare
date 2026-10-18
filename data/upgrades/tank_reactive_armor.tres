@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="UpgradeDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/progression/upgrade_patch.gd" id="1_r1i35"]
+[ext_resource type="Script" path="res://scripts/progression/upgrade_definition.gd" id="2_1pu5k"]
+
+[sub_resource type="Resource" id="Resource_r6qmg"]
+script = ExtResource("1_r1i35")
+target = 1
+target_id = "tank"
+property = "armor"
+value = 3.0
+
+[sub_resource type="Resource" id="Resource_5d6hr"]
+script = ExtResource("1_r1i35")
+target = 1
+target_id = "tank"
+property = "max_health"
+op = 1
+value = 1.6
+
+[resource]
+script = ExtResource("2_1pu5k")
+display_name = "Reactive Armour"
+description = "The tank has 3 more armour and 60 % more health."
+card_id = "tank"
+patches = Array[ExtResource("1_r1i35")]([SubResource("Resource_r6qmg"), SubResource("Resource_5d6hr")])
+id = "tank_reactive_armor"

@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="UpgradeDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/progression/upgrade_patch.gd" id="1_c2sa0"]
+[ext_resource type="Script" path="res://scripts/progression/upgrade_definition.gd" id="2_324eh"]
+
+[sub_resource type="Resource" id="Resource_ugdbq"]
+script = ExtResource("1_c2sa0")
+target_id = "gatling"
+property = "damage"
+op = 1
+value = 3.2
+
+[sub_resource type="Resource" id="Resource_ecqhh"]
+script = ExtResource("1_c2sa0")
+target_id = "gatling"
+property = "shots_per_second"
+op = 1
+value = 0.6
+
+[sub_resource type="Resource" id="Resource_rfvkb"]
+script = ExtResource("1_c2sa0")
+target_id = "gatling"
+property = "anti_armor"
+op = 2
+value = 1.0
+
+[resource]
+script = ExtResource("2_324eh")
+display_name = "Armour-Piercing Belt"
+description = "Rounds hit more than three times as hard and go for armoured targets first, but the gun fires 40 % slower."
+card_id = "gatling_gun"
+patches = Array[ExtResource("1_c2sa0")]([SubResource("Resource_ugdbq"), SubResource("Resource_ecqhh"), SubResource("Resource_rfvkb")])
+id = "gatling_ap_belt"
