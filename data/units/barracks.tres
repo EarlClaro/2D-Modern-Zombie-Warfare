@@ -10,15 +10,18 @@
 [sub_resource type="Resource" id="Resource_sheet"]
 script = ExtResource("2_sheet")
 textures = {"SE": ExtResource("3_se"), "SW": ExtResource("4_sw"), "NW": ExtResource("5_nw"), "NE": ExtResource("6_ne")}
-frame_size = Vector2i(104, 69)
+frame_size = Vector2i(104, 74)
 columns = 2
-origin = Vector2(52, 40)
+origin = Vector2(52, 45)
 chest_px = 18.0
 height_px = 40.0
-walk_count = 1
-death_first = 1
-death_count = 3
-death_fps = 6.0
+walk_first = 0
+walk_count = 4
+walk_fps = 3.0
+always_animate = true
+death_first = 4
+death_count = 4
+death_fps = 5.0
 death_hold_s = 4.0
 death_fade_s = 1.0
 explosion_px = 0.0

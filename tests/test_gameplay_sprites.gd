@@ -29,11 +29,35 @@ func test_combat_drone_animates_its_rotors_without_moving() -> void:
 	assert_true(seen.size() >= 2, "the rotor frames alternate")
 
 
+func test_barracks_flutters_while_alive_and_burns_when_destroyed() -> void:
+	var s: SpriteSheet = _get_db().unit("barracks").sprite
+	assert_true(s.always_animate, "the flag and the smoke move without the barracks moving")
+	var seen := {}
+	for i in 12:
+		seen[s.walk_frame(float(i) / s.walk_fps)] = true
+	assert_eq(seen.size(), 4, "four alive frames in the loop")
+	assert_true(s.has_death())
+	assert_true(s.death_first >= s.walk_first + s.walk_count, "the death frames are not the alive frames")
+	assert_true(s.death_first + s.death_count <= 8, "the death frames are inside the sheet")
+	assert_true(s.death_count >= 4, "damaged, two burning poses, rubble")
+
+
+func test_combat_drone_light_blinks() -> void:
+	var s: SpriteSheet = _get_db().unit("combat_drone").sprite
+	assert_eq(s.walk_count, 8)
+	var img: Image = (s.textures["SE"] as Texture2D).get_image()
+	var on := Image.create(s.frame_size.x, s.frame_size.y, false, Image.FORMAT_RGBA8)
+	var off := on.duplicate() as Image
+	on.blit_rect(img, Rect2i(s.frame_region(0)), Vector2i.ZERO)
+	off.blit_rect(img, Rect2i(s.frame_region(4)), Vector2i.ZERO)
+	assert_true(on.get_data() != off.get_data(), "the status light differs between frame 0 and 4")
+
+
 func test_every_sheet_frame_fits_its_image() -> void:
 	for id in ["barracks", "combat_drone"]:
 		var s: SpriteSheet = _get_db().unit(id).sprite
 		var tex: Texture2D = s.textures["SE"]
-		var frames := 4 if id == "barracks" else 2
+		var frames := 8
 		var rows := int(ceil(float(frames) / s.columns))
 		assert_eq(tex.get_size(), Vector2(s.frame_size.x * s.columns, s.frame_size.y * rows), "%s sheet size" % id)
 

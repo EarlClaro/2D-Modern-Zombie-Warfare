@@ -1,5 +1,11 @@
 # Changelog
 
+## P.4 More animation frames for the Barracks and the Combat Drone (2026-10-18; docs/specs/art-polish.md)
+- Barracks: 8 frames instead of 4. Four alive frames loop at 3 fps (the flag tip swings, smoke rises from a new chimney), then damaged, two burning poses that flicker, and the rubble. A destroyed Barracks plays damaged, burn, burn, rubble.
+- Combat Drone: 8 frames instead of 2. The rotors alternate every frame and the red status light blinks (on for four frames, off for four, 2 blinks a second at 16 fps).
+- Regenerated with `tools/gen_sprites.gd --units=unit_barracks,combat_drone` (`tools/sprite_packs/pack_gameplay.gd`); the Barracks card picture was remade from the new first frame.
+- **Tests:** 2 new, 1 changed (the sheet sizes). Not watched in motion in a real session.
+
 ## P.3 Mission thumbnails as isometric scenes (2026-10-18; docs/specs/art-polish.md)
 - The mission list picture is now the map in the game's own 2:1 view: 8 x 4 px diamonds with light and grain, rock standing up as blocks, glinting water, the map's trees, walls and buildings as small blocks and blobs in the colour of their art, a blue-roofed bunker with a flag for the core and a red post on a red tile for each spawn, drawn back to front and outlined. Shown at 2x where it fits (the pane allows 260 px of height now).
 - `MissionThumbnail.render` / `texture` take the content database to find the scenery; without it the terrain still draws. `PixelCanvas` moved from `tools/` to `ui/` because the game now uses it.

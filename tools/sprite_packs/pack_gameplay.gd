@@ -23,10 +23,11 @@ const SE_ONLY: Array = ["se"]
 
 static func specs() -> Array:
 	return [
-		# the Barracks: frame 0 intact, 1 damaged, 2 burning, 3 ruin (the same 2 x 2 layout the other structures use)
-		{"dir": "unit_barracks", "name": "Barracks", "cat": "unit", "auto": true, "k": 1.25, "frames": 4, "columns": 2, "ss": 2, "facings": FOUR, "foot": Vector2i(1, 1)},
-		# the Combat Drone: two frames, the rotor blades turned
-		{"dir": "combat_drone", "name": "Combat Drone", "cat": "unit", "auto": true, "k": 1.5, "frames": 2, "columns": 2, "ss": 2, "facings": ALL, "foot": Vector2i(1, 1)},
+		# the Barracks: frames 0-3 alive (the flag flutters, smoke drifts from the chimney), 4 damaged, 5-6 burning (two flicker
+		# poses), 7 ruin
+		{"dir": "unit_barracks", "name": "Barracks", "cat": "unit", "auto": true, "k": 1.25, "frames": 8, "columns": 2, "ss": 2, "facings": FOUR, "foot": Vector2i(1, 1)},
+		# the Combat Drone: eight frames, the rotor blades turned between odd and even ones, the status light on for the first four
+		{"dir": "combat_drone", "name": "Combat Drone", "cat": "unit", "auto": true, "k": 1.5, "frames": 8, "columns": 2, "ss": 2, "facings": ALL, "foot": Vector2i(1, 1)},
 		{"dir": "field_mine", "name": "Mine", "cat": "unit", "auto": true, "k": 1.6, "frames": 1, "columns": 1, "ss": 2, "facings": SE_ONLY, "foot": Vector2i(1, 1)},
 		{"dir": "field_beacon", "name": "Noise Lure Beacon", "cat": "unit", "auto": true, "k": 1.6, "frames": 1, "columns": 1, "ss": 2, "facings": SE_ONLY, "foot": Vector2i(1, 1)},
 	]
@@ -58,12 +59,16 @@ static func _slab(list: Array[Prim], side: float, mat: String, drop: float = 0.0
 
 
 static func _barracks(m: Array[Prim], frame: int) -> void:
+	# state: 0 alive (frames 0-3, `phase` is the animation step), 1 damaged, 2 burning (`flick` 0 or 1), 3 ruin
+	var state := 0 if frame <= 3 else (1 if frame == 4 else (2 if frame <= 6 else 3))
+	var phase := frame if frame <= 3 else 0
+	var flick := 1 if frame == 6 else 0
 	var ground: Array[Prim] = []
 	var list: Array[Prim] = []
 	var fx: Array[Prim] = []
 	_disc(ground, Vector3(0, 0, 0), 0.6, "dirt")
 	Base._bx(ground, Vector3(0, 0, 0.012), Vector3(0.5, 0.36, 0.012), "base")  # concrete pad
-	if frame <= 2:
+	if state <= 2:
 		var wall := "g_wall"
 		Base._bx(list, Vector3(0, 0, 0.17), Vector3(0.42, 0.28, 0.15), wall)  # the hut
 		Base._bx(list, Vector3(0, 0, 0.045), Vector3(0.435, 0.295, 0.03), "base")  # foundation course
@@ -75,9 +80,19 @@ static func _barracks(m: Array[Prim], frame: int) -> void:
 			Base._bx(list, Vector3(0.12, 0.285 * s, 0.2), Vector3(0.05, 0.007, 0.045), "glass")
 			Base._bx(list, Vector3(0.5, 0.17 * s, 0.045), Vector3(0.05, 0.06, 0.04), "sand", 0.2 * s)  # sandbags by the door
 		Base._cy(list, Vector3(-0.34, -0.22, 0.34), 0.012, 0.28, "steel")  # flag pole
-		Base._bx(list, Vector3(-0.34, -0.15, 0.58), Vector3(0.005, 0.07, 0.045), "g_flag")
+		if state == 0:  # the flag: a stiff part at the pole and a tip that swings with the breeze
+			var sway: float = [0.0, 0.5, 0.0, -0.5][phase]
+			Base._bx(list, Vector3(-0.34, -0.12, 0.58), Vector3(0.005, 0.04, 0.045), "g_flag")
+			Base._bx(list, Vector3(-0.34 - 0.03 * sway, -0.2, 0.575 - 0.01 * absf(sway)), Vector3(0.005, 0.04, 0.04), "g_flag", sway * 0.6)
+		else:
+			Base._bx(list, Vector3(-0.34, -0.15, 0.58), Vector3(0.005, 0.07, 0.045), "g_flag")
 		Base._cy(list, Vector3(-0.2, 0.2, 0.55), 0.008, 0.07, "steel")  # radio mast
-	match frame:
+	if state <= 1:  # the chimney, and smoke rising from it while the hut stands
+		Base._bx(list, Vector3(0.16, -0.1, 0.43), Vector3(0.035, 0.035, 0.07), "base")
+		for k in 3:
+			var t := fposmod(float(phase) / 4.0 + float(k) / 3.0, 1.0) if state == 0 else float(k) / 3.0
+			Base._blob(fx, Vector3(0.16 - 0.05 * t, -0.1 - 0.04 * t, 0.52 + 0.3 * t), 0.022 + 0.035 * t, "smoke")
+	match state:
 		0:
 			list.append(Prim.new(Base.BOX, Vector3(-0.2, 0.0, 0.385), Vector3(0.27, 0.31, 0.015), "g_roof", 0.0, 0.0, 0.46))
 			list.append(Prim.new(Base.BOX, Vector3(0.2, 0.0, 0.385), Vector3(0.27, 0.31, 0.015), "g_roof", 0.0, 0.0, -0.46))
@@ -90,12 +105,13 @@ static func _barracks(m: Array[Prim], frame: int) -> void:
 			Base._blob(fx, Vector3(0.1, 0.05, 0.42), 0.06, "smoke")
 		2:  # the roof gone, burning inside
 			Base._bx(list, Vector3(-0.15, -0.08, 0.34), Vector3(0.22, 0.2, 0.012), "g_roof", 0.5)
-			Base._blob(fx, Vector3(0.0, 0.0, 0.4), 0.15, "fire")
-			Base._blob(fx, Vector3(-0.15, 0.1, 0.36), 0.1, "fire")
-			Base._blob(fx, Vector3(0.12, -0.12, 0.38), 0.09, "flash")
-			Base._blob(fx, Vector3(0.02, 0.02, 0.58), 0.08, "smoke")
+			var f2 := float(flick)
+			Base._blob(fx, Vector3(0.0, 0.0, 0.4 + 0.03 * f2), 0.15 - 0.03 * f2, "fire")
+			Base._blob(fx, Vector3(-0.15 + 0.06 * f2, 0.1 - 0.05 * f2, 0.36), 0.1 + 0.03 * f2, "fire")
+			Base._blob(fx, Vector3(0.12 - 0.08 * f2, -0.12 + 0.04 * f2, 0.38 + 0.08 * f2), 0.09 - 0.02 * f2, "flash")
+			Base._blob(fx, Vector3(0.02, 0.02 + 0.03 * f2, 0.58 + 0.06 * f2), 0.08 + 0.02 * f2, "smoke")
 			Base._scorch(list)
-		3:  # a heap of rubble
+		_:  # a heap of rubble
 			Base._bx(list, Vector3(-0.1, 0.06, 0.07), Vector3(0.3, 0.22, 0.07), "g_wall", 0.2)
 			Base._bx(list, Vector3(0.18, -0.12, 0.05), Vector3(0.14, 0.16, 0.05), "g_wall", -0.4)
 			Base._bx(list, Vector3(-0.2, -0.18, 0.1), Vector3(0.22, 0.015, 0.1), "g_roof", 0.3)
@@ -116,14 +132,14 @@ static func _drone(m: Array[Prim], frame: int) -> void:
 	Base._sp(m, Vector3(0, 0, 0.15), Vector3(0.085, 0.07, 0.03), "g_shell")  # body
 	Base._sp(m, Vector3(0.03, 0, 0.17), Vector3(0.04, 0.04, 0.018), "heli")
 	Base._sp(m, Vector3(0.07, 0, 0.12), Vector3(0.02, 0.02, 0.02), "glass")  # camera eye under the nose
-	Base._sp(m, Vector3(-0.05, 0, 0.18), Vector3(0.012, 0.012, 0.012), "g_led")  # status light
+	Base._sp(m, Vector3(-0.05, 0, 0.18), Vector3(0.012, 0.012, 0.012), "g_led" if frame < 4 else "g_shell")  # status light, blinking
 	for sx: float in [1.0, -1.0]:
 		for sy: float in [1.0, -1.0]:
 			var yaw := atan2(sy, sx)
 			Base._bx(m, Vector3(0.07 * sx, 0.07 * sy, 0.15), Vector3(0.075, 0.009, 0.007), "steel", yaw)  # arm
 			var tip := Vector3(0.135 * sx, 0.135 * sy, 0.165)
 			Base._cy(m, tip + Vector3(0, 0, -0.02), 0.014, 0.02, "steel")  # motor
-			var blade := float(frame) * 0.8 + (0.0 if sx * sy > 0.0 else 0.4)  # blades turned between the two frames
+			var blade := float(frame % 2) * 0.8 + (0.0 if sx * sy > 0.0 else 0.4)  # blades turned between odd and even frames
 			Base._bx(m, tip + Vector3(0, 0, 0.012), Vector3(0.075, 0.007, 0.003), "rotor", blade)
 			Base._bx(m, tip + Vector3(0, 0, 0.012), Vector3(0.075, 0.007, 0.003), "rotor", blade + 1.5708)
 

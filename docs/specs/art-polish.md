@@ -1,6 +1,6 @@
 # Art polish: logo, card pictures, thumbnails, animation frames
 
-Status: **v0.1, started 2026-10-18** (the user asked for the game logo, more animation frames, better mission thumbnails, pictures for the cards that had only emblems, and a clean-up of pictures that looked off). P.1 to P.3 are built; P.4 is planned below. Nothing here has been seen in a real play session.
+Status: **v0.1, started 2026-10-18** (the user asked for the game logo, more animation frames, better mission thumbnails, pictures for the cards that had only emblems, and a clean-up of pictures that looked off). P.1 to P.4 are built. Nothing here has been seen in a real play session.
 
 ## Increments
 
@@ -11,7 +11,7 @@ Status: **v0.1, started 2026-10-18** (the user asked for the game logo, more ani
    - The emblem code in `ui/card_art.gd` is removed; `CardArt` only draws the file.
 2. **P.2 Game logo (built).** `tools/gen_logo.gd` paints a pixel logo (`assets/ui/logo.png`, 160 x 56) for the placeholder name from the UI font's glyph bitmaps scaled by whole numbers: a banded gradient, a lit top-left edge, a 2 px extrusion, chipped corners, two sparkles and hazard tape. The name is the `LINES` constant. The main menu shows it at 4x in place of the text title.
 3. **P.3 Mission thumbnails (built).** `MissionThumbnail` draws the map in the game's 2:1 view, one 8 x 4 px diamond per cell, back to front: terrain tiles with a light edge and a little grain, rock as 3 px blocks, glints on water, scenery placements as blocks (footprint, height from the art's shadow height at 4 px per tile) or blobs on a trunk (swaying pieces), coloured by the average colour of the piece's art; the core is a bunker block with a blue roof and flag, each spawn a red post on a red tile; then a 1 px outline. Drawn when asked (30 to 550 ms) and cached. The mission list shows it at 2x where it fits.
-4. **P.4 Animation frames (planned).** More frames for the Barracks (a smoke or fire loop, a flag) and the Combat Drone (a blinking light, a bob), within the existing `SpriteSheet` fields.
+4. **P.4 Animation frames (built).** No new engine fields: the existing `SpriteSheet` loop (`walk_first`, `walk_count`, `walk_fps`, `always_animate`) and death frames are used. Barracks, 8 frames (`unit_barracks`): 0-3 alive loop at 3 fps (flag tip swings, chimney smoke rises), 4 damaged, 5-6 burning (two flicker poses), 7 rubble; the death animation plays frames 4 to 7 at 5 fps. Combat Drone, 8 frames: the rotor blades turn between odd and even frames and the status light is on in frames 0-3 and off in 4-7, at 16 fps. Mines and the lure beacon keep their code-drawn blink and ring.
 
 ## Acceptance
 
