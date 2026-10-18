@@ -1,5 +1,10 @@
 # Changelog
 
+## G.1 Sprites for the code-drawn placeholders (2026-10-18; docs/specs/art-gaps.md)
+- **Core:** the 12 missions that drew a blue cube as the core now show the command bunker (`core_scenery_id = "hq_bunker"`). Art only.
+- **Barracks and Combat Drone** have sprite sheets (new pack `tools/sprite_packs/pack_gameplay.gd`); the **mine** and the **noise-lure beacon** are sprites in `FieldEntityView`.
+- **Tests:** 5 new (1094 in all, 0 failed).
+
 ## U.3 Pixel battle HUD and cards (2026-10-18)
 - The hand draws with the pixel font and a hard 2 px drop shadow; cards, the cost badge and the selection ring have stepped pixel corners instead of rounded ones; the long kind label "DOCTRINE" became "DOCT.". The HUD labels, result panel and reward chooser use the theme font and pixel panels.
 - `docs/specs/pixel-ui.md` corrected (font scale mapping, how the font is stored).

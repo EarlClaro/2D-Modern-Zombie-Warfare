@@ -53,6 +53,8 @@ Folders: `assets/{sprites,tiles,animations,audio,fonts}` (created when first ass
 | UI pixel font (`assets/fonts/pixel_font.tres`, `.png`) | `tools/gen_pixel_font.gd`: original 5x7 glyph bitmaps written in the script, packed into a bitmap font. No third-party font | Original; project-owned | ASCII plus the em dash |
 | UI kit (`assets/ui/*.png`, `assets/ui/theme.tres`) | `tools/gen_ui_kit.gd`: panels, buttons, checkboxes and slider grabbers drawn pixel by pixel in code | Original; project-owned | One project theme |
 
+| Gameplay sprites (`assets/sprites/{unit_barracks,combat_drone,field_mine,field_beacon}/`) | Rendered by `tools/gen_sprites.gd` from the models in `tools/sprite_packs/pack_gameplay.gd` (box, cylinder and ellipsoid parts, like every other sprite set) | Original; project-owned | Barracks 4 facings x 4 frames, drone 8 facings x 2 frames, mine and beacon one facing |
+
 Facings: every sprite now has all 8 (the 5-mirrored ADR-008 fallback in `SpriteSheet` remains for sheets that lack some) (`SpriteSheet.art_direction`/`faces_left`). Mirroring flips the light direction (top-left becomes top-right) on the three left-hand facings; accepted for placeholders. A direction without a texture falls back to SE. Sheet layout lives in `SpriteSheet` (`scripts/iso/sprite_sheet.gd`) on each unit/enemy definition.
 
 Missing: real (non-placeholder) art. Sprites are ~24 px tall against 64 px tiles: judge the on-screen size manually.

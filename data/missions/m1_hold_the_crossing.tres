@@ -42,6 +42,7 @@ display_name = "Hold the Crossing"
 map = ExtResource("1_jodeb")
 core_cell = Vector2i(3, 20)
 core_health = 500.0
+core_scenery_id = "hq_bunker"
 duration_s = 90.0
 spawn_cells = Array[Vector2i]([Vector2i(20, 3)])
 path_cells = Array[Vector2i]([Vector2i(3, 20)])

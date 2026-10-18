@@ -19,7 +19,8 @@ func _all_specs() -> Array:
 			if f.begins_with("pack_") and f.ends_with(".gd"):
 				var pk: GDScript = load("res://tools/sprite_packs/%s" % f)
 				for spec in pk.specs():
-					_specs.append(spec)
+					if spec.get("cat", "") != "unit":  # unit sets (pack_gameplay.gd) are not scenery
+						_specs.append(spec)
 	return _specs
 
 

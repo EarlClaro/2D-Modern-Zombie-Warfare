@@ -1,6 +1,27 @@
-[gd_resource type="Resource" script_class="UnitDefinition" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="UnitDefinition" load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://scripts/combat/unit_definition.gd" id="1_unit"]
+[ext_resource type="Script" path="res://scripts/iso/sprite_sheet.gd" id="2_sheet"]
+[ext_resource type="Texture2D" path="res://assets/sprites/unit_barracks/se.png" id="3_se"]
+[ext_resource type="Texture2D" path="res://assets/sprites/unit_barracks/sw.png" id="4_sw"]
+[ext_resource type="Texture2D" path="res://assets/sprites/unit_barracks/nw.png" id="5_nw"]
+[ext_resource type="Texture2D" path="res://assets/sprites/unit_barracks/ne.png" id="6_ne"]
+
+[sub_resource type="Resource" id="Resource_sheet"]
+script = ExtResource("2_sheet")
+textures = {"SE": ExtResource("3_se"), "SW": ExtResource("4_sw"), "NW": ExtResource("5_nw"), "NE": ExtResource("6_ne")}
+frame_size = Vector2i(104, 69)
+columns = 2
+origin = Vector2(52, 40)
+chest_px = 18.0
+height_px = 40.0
+walk_count = 1
+death_first = 1
+death_count = 3
+death_fps = 6.0
+death_hold_s = 4.0
+death_fade_s = 1.0
+explosion_px = 0.0
 
 [resource]
 script = ExtResource("1_unit")
@@ -15,3 +36,4 @@ spawns_unit_id = "rifle_soldier"
 spawn_interval_s = 12.0
 spawn_cap = 3
 placeholder_color = Color(0.36, 0.42, 0.3, 1)
+sprite = SubResource("Resource_sheet")
