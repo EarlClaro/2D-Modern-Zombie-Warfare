@@ -60,6 +60,8 @@ Folders: `assets/{sprites,tiles,animations,audio,fonts}` (created when first ass
 | Title picture (`assets/ui/title.png`) | `tools/gen_title_art.gd`: painted in code (dithered sky gradient, noise-free skyline silhouettes, hand-placed lit windows) | Original; project-owned | 480 x 270, shown 4x |
 | Mission map thumbnails | Drawn at run time by `ui/mission_thumbnail.gd` from the map data | Original; project-owned | No files |
 
+| Music (menu loop, battle loop, win and lose stings) | Written as notes in `scripts/core/music_factory.gd` and synthesised at run time (square, triangle and noise voices); no audio files | Original; project-owned | Not heard by the agent |
+
 Facings: every sprite now has all 8 (the 5-mirrored ADR-008 fallback in `SpriteSheet` remains for sheets that lack some) (`SpriteSheet.art_direction`/`faces_left`). Mirroring flips the light direction (top-left becomes top-right) on the three left-hand facings; accepted for placeholders. A direction without a texture falls back to SE. Sheet layout lives in `SpriteSheet` (`scripts/iso/sprite_sheet.gd`) on each unit/enemy definition.
 
 Missing: real (non-placeholder) art. Sprites are ~24 px tall against 64 px tiles: judge the on-screen size manually.

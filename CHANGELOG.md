@@ -1,5 +1,10 @@
 # Changelog
 
+## G.4 Music (2026-10-18; docs/specs/art-gaps.md)
+- Music written in code: a menu loop, a battle loop, a victory sting and a defeat sting (`scripts/core/music_factory.gd`), played by `MusicService` on a "Music" bus. The menu plays its loop; a battle plays its loop and ends with a sting.
+- New setting: Music volume (default 50 %), in Settings.
+- **Tests:** 9 new (1111 in all, 0 failed). The music itself has not been listened to by the agent.
+
 ## G.3 Title picture and mission map thumbnails (2026-10-18; docs/specs/art-gaps.md)
 - The main menu has a painted pixel night-skyline picture behind it (`assets/ui/title.png`, `tools/gen_title_art.gd`); the footer no longer says "and art".
 - Mission select shows a small isometric map picture for the chosen mission, with the core (blue) and spawns (red) marked.

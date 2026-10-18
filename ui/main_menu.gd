@@ -21,6 +21,10 @@ func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(UiKit.title_background())
 	_build_home()
+	var music := MusicService.new()
+	music.name = "Music"
+	add_child(music)
+	music.play("menu")
 	if not _db.is_valid():
 		_show_content_errors()
 	else:

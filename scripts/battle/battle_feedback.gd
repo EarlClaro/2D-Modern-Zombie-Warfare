@@ -20,6 +20,7 @@ const SPARK_UNIT: Color = Color(1.0, 0.55, 0.3)
 const SPARK_CORE: Color = Color(0.9, 0.95, 1.0)
 
 var sfx: SfxService
+var music: MusicService
 var shake: CameraShake
 
 var _battle: BattleController
@@ -33,6 +34,11 @@ func bind(battle: BattleController) -> void:
 	sfx = SfxService.new()
 	sfx.name = "Sfx"
 	add_child(sfx)
+	music = MusicService.new()
+	music.name = "Music"
+	add_child(music)
+	music.play("battle")
+	battle.battle_ended.connect(func(res: MissionRules.Result) -> void: music.sting("victory" if res.status == MissionRules.Status.WON else "defeat"))
 	shake = CameraShake.new()
 	shake.name = "Shake"
 	shake.camera = battle.camera_node()

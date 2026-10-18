@@ -9,6 +9,7 @@ const SECTION: String = "game"
 const MIN_DB: float = -40.0  # below this the master bus is muted instead
 
 var master_volume: float = 0.8  # 0..1
+var music_volume: float = 0.5  # 0..1, on top of the master volume
 var fullscreen: bool = false
 var cutaways: bool = true  # the freezing strike clips
 var show_fps: bool = true
@@ -20,6 +21,7 @@ var show_test_missions: bool = false  # list the test and dev missions in missio
 ## Brings every value into its legal range (a hand-edited file can hold anything).
 func clamp_all() -> void:
 	master_volume = clampf(master_volume, 0.0, 1.0) if is_finite(master_volume) else 0.8
+	music_volume = clampf(music_volume, 0.0, 1.0) if is_finite(music_volume) else 0.5
 	last_mission = last_mission.strip_edges()
 	difficulty = difficulty.strip_edges().to_lower()
 	if difficulty.is_empty():
@@ -29,6 +31,7 @@ func clamp_all() -> void:
 func reset() -> void:
 	var d := GameSettings.new()
 	master_volume = d.master_volume
+	music_volume = d.music_volume
 	fullscreen = d.fullscreen
 	cutaways = d.cutaways
 	show_fps = d.show_fps
@@ -40,6 +43,7 @@ func reset() -> void:
 func to_config() -> ConfigFile:
 	var cfg := ConfigFile.new()
 	cfg.set_value(SECTION, "master_volume", master_volume)
+	cfg.set_value(SECTION, "music_volume", music_volume)
 	cfg.set_value(SECTION, "fullscreen", fullscreen)
 	cfg.set_value(SECTION, "cutaways", cutaways)
 	cfg.set_value(SECTION, "show_fps", show_fps)
@@ -54,6 +58,9 @@ func from_config(cfg: ConfigFile) -> void:
 	var v: Variant = cfg.get_value(SECTION, "master_volume", master_volume)
 	if v is float or v is int:
 		master_volume = float(v)
+	v = cfg.get_value(SECTION, "music_volume", music_volume)
+	if v is float or v is int:
+		music_volume = float(v)
 	v = cfg.get_value(SECTION, "fullscreen", fullscreen)
 	if v is bool:
 		fullscreen = v
@@ -109,6 +116,17 @@ static func looks_like_config(text: String) -> bool:
 	return true
 
 
+## The "Music" bus (made on first use, sends to Master); its index, or -1 if it cannot be made.
+static func ensure_music_bus() -> int:
+	var i := AudioServer.get_bus_index("Music")
+	if i < 0:
+		AudioServer.add_bus()
+		i = AudioServer.bus_count - 1
+		AudioServer.set_bus_name(i, "Music")
+		AudioServer.set_bus_send(i, "Master")
+	return i
+
+
 ## The master bus level for a 0..1 volume: a gentle curve (volume squared) in dB, muted at 0.
 static func volume_to_db(volume: float) -> float:
 	var v := clampf(volume, 0.0, 1.0)
@@ -123,6 +141,10 @@ func apply() -> void:
 	if bus >= 0:
 		AudioServer.set_bus_volume_db(bus, volume_to_db(master_volume))
 		AudioServer.set_bus_mute(bus, master_volume <= 0.001)
+	var music_bus := ensure_music_bus()
+	if music_bus >= 0:
+		AudioServer.set_bus_volume_db(music_bus, volume_to_db(music_volume) - 6.0)
+		AudioServer.set_bus_mute(music_bus, music_volume <= 0.001)
 	if DisplayServer.get_name() != "headless":
 		var mode := DisplayServer.WINDOW_MODE_FULLSCREEN if fullscreen else DisplayServer.WINDOW_MODE_WINDOWED
 		if DisplayServer.window_get_mode() != mode:
