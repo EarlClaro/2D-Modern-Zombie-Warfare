@@ -48,6 +48,14 @@ func pool_of(mission_id: String) -> PackedStringArray:
 	return pool if pool is PackedStringArray else PackedStringArray()
 
 
+## The first mission of the chain whose reward pool holds `card_id` ("" when no pool does): where the card can be won.
+func mission_offering(card_id: String) -> String:
+	for mid in mission_ids:
+		if pool_of(mid).has(card_id):
+			return mid
+	return ""
+
+
 func contains(mission_id: String) -> bool:
 	return mission_ids.has(mission_id)
 

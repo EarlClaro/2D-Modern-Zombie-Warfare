@@ -327,12 +327,7 @@ func test_fixed_deck_missions_and_command_line_runs_ignore_upgrades() -> void:
 # --- the deck screen ---------------------------------------------------------------------------------------------
 
 func _select(s: DeckScreen, card_id: String) -> void:
-	var owned: ItemList = s.find_child("Owned", true, false)
-	for i in owned.item_count:
-		if owned.get_item_text(i).begins_with(_get_db().card(card_id).display_name):
-			owned.select(i)
-			owned.item_selected.emit(i)
-			return
+	(s.find_child("Owned", true, false) as CardGrid).select(card_id)
 
 
 func test_the_deck_screen_switches_upgrades_on_and_off() -> void:

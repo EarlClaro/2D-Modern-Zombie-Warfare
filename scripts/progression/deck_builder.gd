@@ -18,6 +18,26 @@ static func deckable_cards(profile: PlayerProfile, db: ContentDb) -> Array[Strin
 	return _owned_where(profile, db, false)
 
 
+## Every card of the game, owned or not, in the order the deck screen shows them: the cards the player owns first, then the locked
+## ones; in each group the deckable cards cheapest first then by name, then the doctrines.
+static func catalog(profile: PlayerProfile, db: ContentDb) -> Array[String]:
+	var out: Array[String] = []
+	for owned in [true, false]:
+		for doctrine in [false, true]:
+			var part: Array[String] = []
+			for cid: String in db.cards:
+				if profile.owns(cid) == owned and (db.card(cid).card_kind == CardDefinition.CardKind.DOCTRINE) == doctrine:
+					part.append(cid)
+			part.sort_custom(func(a: String, b: String) -> bool:
+				var ca := db.card(a)
+				var cb := db.card(b)
+				if ca.cost != cb.cost:
+					return ca.cost < cb.cost
+				return ca.display_name < cb.display_name)
+			out.append_array(part)
+	return out
+
+
 ## The owned doctrine cards.
 static func doctrine_cards(profile: PlayerProfile, db: ContentDb) -> Array[String]:
 	return _owned_where(profile, db, true)

@@ -253,38 +253,183 @@ func _screen(p: PlayerProfile) -> DeckScreen:
 	return s
 
 
-func _row_of(list: ItemList, ids: Array[String], card_id: String) -> int:
-	return ids.find(card_id)
+func _pick(grid: CardGrid, card_id: String) -> void:
+	grid.select(card_id)
 
 
-func test_the_screen_lists_owned_cards_and_the_deck() -> void:
+func test_the_screen_shows_every_card_and_greys_out_the_ones_not_owned() -> void:
+	var db := _get_db()
 	var p := _rich()
 	var s := _screen(p)
-	var owned: ItemList = s.find_child("Owned", true, false)
-	var deck: ItemList = s.find_child("Deck", true, false)
-	assert_eq(owned.item_count, DeckBuilder.deckable_cards(p, _get_db()).size() + 1, "owned cards plus the one doctrine")
-	assert_eq(deck.item_count, DeckBuilder.counts(p.deck).size())
-	var texts := PackedStringArray()
-	for i in owned.item_count:
-		texts.append(owned.get_item_text(i))
-	assert_true("|".join(texts).contains("doctrine"))
+	var owned: CardGrid = s.find_child("Owned", true, false)
+	var deck: CardGrid = s.find_child("Deck", true, false)
+	assert_eq(owned.face_count(), db.cards.size(), "one card for every card of the game")
+	assert_eq(deck.face_count(), DeckBuilder.counts(p.deck).size())
+	var locked := 0
+	for f in owned.faces():
+		assert_eq(f.locked, not p.owns(f.card_id), "%s: locked exactly when not owned" % f.card_id)
+		assert_eq(f.material != null, f.locked, "%s: grey when locked" % f.card_id)
+		locked += 1 if f.locked else 0
+	assert_eq(locked, db.cards.size() - p.collection.size())
+	assert_true(locked > 0, "a new game still has cards to win")
+	assert_true(owned.face("nuclear_bomb").locked and not owned.face("tank").locked)
+	for f in deck.faces():
+		assert_true(not f.locked, "the deck holds owned cards only")
 	s.free()
 	_release_temp()
+
+
+func test_the_cards_show_the_copies_in_the_deck_and_the_chosen_doctrine() -> void:
+	var p := _rich()
+	var s := _screen(p)
+	var owned: CardGrid = s.find_child("Owned", true, false)
+	var deck: CardGrid = s.find_child("Deck", true, false)
+	var tank_copies := DeckBuilder.counts(p.deck)["tank"] as int
+	assert_eq(owned.face("tank").badge, "%d/%d" % [tank_copies, _get_db().card("tank").max_copies])
+	assert_eq(deck.face("tank").badge, "x%d" % tank_copies)
+	assert_eq(owned.face("nuclear_bomb").badge, "", "a locked card has no count")
+	assert_eq(owned.face("hollow_points").badge, "")
+	_pick(owned, "hollow_points")
+	(s.find_child("Add", true, false) as Button).pressed.emit()
+	assert_eq(owned.face("hollow_points").badge, "ON")
+	s.free()
+	_release_temp()
+
+
+func test_the_left_grid_is_in_card_order_and_the_title_counts_the_unlocked() -> void:
+	var db := _get_db()
+	var p := _rich()
+	var s := _screen(p)
+	var ids: Array[String] = DeckBuilder.catalog(p, db)
+	assert_eq(ids.size(), db.cards.size())
+	assert_eq(s._owned_ids, ids)
+	var owned_count := p.collection.size()
+	for i in ids.size():
+		assert_eq(p.owns(ids[i]), i < owned_count, "owned cards first, then the locked ones")
+	for group in [ids.slice(0, owned_count), ids.slice(owned_count)]:
+		var first_doctrine := -1
+		for i in group.size():
+			var is_doc := db.card(group[i]).card_kind == CardDefinition.CardKind.DOCTRINE
+			if is_doc and first_doctrine < 0:
+				first_doctrine = i
+			if first_doctrine >= 0:
+				assert_true(is_doc, "doctrines come last in a group")
+			elif i > 0:
+				assert_true(db.card(group[i - 1]).cost <= db.card(group[i]).cost, "cheapest first")
+	assert_eq(s.selected_owned(), ids[0], "a new screen starts on a card the player owns")
+	assert_true(not (s.find_child("Add", true, false) as Button).disabled)
+	assert_true(s._owned_title.text.contains("%d / %d" % [p.collection.size(), db.cards.size()]), s._owned_title.text)
+	s.free()
+	_release_temp()
+
+
+func test_a_locked_card_says_where_it_can_be_won_and_cannot_be_added() -> void:
+	var db := _get_db()
+	var p := _rich()
+	var s := _screen(p)
+	var owned: CardGrid = s.find_child("Owned", true, false)
+	var locked_id := ""
+	for cid: String in s._owned_ids:
+		if not p.owns(cid) and not db.main_campaign().mission_offering(cid).is_empty():
+			locked_id = cid
+			break
+	assert_true(not locked_id.is_empty(), "some locked card is in a reward pool")
+	_pick(owned, locked_id)
+	var add := s.find_child("Add", true, false) as Button
+	assert_true(add.disabled and add.text == "Locked")
+	var mission := db.mission(db.main_campaign().mission_offering(locked_id))
+	assert_true(s._details.text.contains("Locked. Win %s" % mission.display_name), s._details.text)
+	assert_true(s._details.text.contains(db.card(locked_id).description), "the card can be read before it is won")
+	var size := p.deck.size()
+	s._on_add()
+	assert_eq(p.deck.size(), size, "nothing was added")
+	assert_true(s._status.text.contains("Locked"))
+	assert_eq(s.find_children("Upgrade_*", "Button", true, false).size(), 0, "no upgrades for a card not owned")
+	var preview: TextureRect = s.find_child("CardPreview", true, false)
+	assert_true(preview.material != null, "the big picture is grey too")
+	_pick(owned, "tank")
+	assert_true(not add.disabled and add.text == "Add" and preview.material == null)
+	s.free()
+	_release_temp()
+
+
+func test_the_campaign_knows_which_mission_can_offer_a_card() -> void:
+	var camp := _get_db().main_campaign()
+	assert_eq(camp.mission_offering("no_such_card"), "")
+	var any_offered := false
+	for cid: String in _get_db().cards:
+		var mid := camp.mission_offering(cid)
+		if not mid.is_empty():
+			any_offered = true
+			assert_true(camp.pool_of(mid).has(cid))
+	assert_true(any_offered)
 
 
 func test_the_screen_shows_a_card_back_until_a_card_is_picked_then_its_picture() -> void:
 	var p := _rich()
 	var s := _screen(p)
 	var preview: TextureRect = s.find_child("CardPreview", true, false)
-	var owned: ItemList = s.find_child("Owned", true, false)
-	owned.deselect_all()
+	var owned: CardGrid = s.find_child("Owned", true, false)
+	owned.deselect()
 	s._show_selected_details()
 	assert_true(preview != null and preview.texture == CardArt.back(), "nothing picked: a card back")
-	owned.select(0)
-	owned.item_selected.emit(0)
 	var id: String = s._owned_ids[0]
+	owned.select(id)
 	assert_true(preview.texture == CardArt.texture(id), "the picture of %s" % id)
 	assert_eq(preview.custom_minimum_size, CardArt.texture(id).get_size() * 2.0, "shown at 2x")
+	s.free()
+	_release_temp()
+
+
+func test_clicking_and_the_arrow_keys_select_cards_in_the_grid() -> void:
+	var p := _rich()
+	var s := _screen(p)
+	var owned: CardGrid = s.find_child("Owned", true, false)
+	var first: String = s._owned_ids[0]
+	assert_eq(owned.selected_id(), first, "the first card starts selected")
+	var click := InputEventMouseButton.new()
+	click.button_index = MOUSE_BUTTON_LEFT
+	click.pressed = true
+	owned.face(s._owned_ids[3])._gui_input(click)
+	assert_eq(s.selected_owned(), s._owned_ids[3])
+	var right := InputEventAction.new()
+	right.action = "ui_right"
+	right.pressed = true
+	owned._gui_input(right)
+	assert_eq(s.selected_owned(), s._owned_ids[4])
+	var down := InputEventAction.new()
+	down.action = "ui_down"
+	down.pressed = true
+	owned._gui_input(down)
+	assert_eq(s.selected_owned(), s._owned_ids[4 + owned.columns])
+	var up := InputEventAction.new()
+	up.action = "ui_up"
+	up.pressed = true
+	for i in 10:
+		owned._gui_input(up)
+	assert_eq(s.selected_owned(), s._owned_ids[(4 + owned.columns) % owned.columns], "stops at the top row")
+	s.free()
+	_release_temp()
+
+
+func test_enter_and_double_click_add_and_remove() -> void:
+	var p := _rich()
+	var s := _screen(p)
+	var owned: CardGrid = s.find_child("Owned", true, false)
+	var deck: CardGrid = s.find_child("Deck", true, false)
+	owned.select("ifv")
+	var size := p.deck.size()
+	var enter := InputEventAction.new()
+	enter.action = "ui_accept"
+	enter.pressed = true
+	owned._gui_input(enter)
+	assert_eq(p.deck.size(), size + 1, "Enter adds")
+	var dbl := InputEventMouseButton.new()
+	dbl.button_index = MOUSE_BUTTON_LEFT
+	dbl.pressed = true
+	dbl.double_click = true
+	deck.face("ifv")._gui_input(dbl)
+	assert_eq(p.deck.size(), size, "double-click on a deck card removes a copy")
 	s.free()
 	_release_temp()
 
@@ -293,44 +438,29 @@ func test_adding_and_removing_in_the_screen_changes_the_deck_and_saves() -> void
 	var db := _get_db()
 	var p := _rich()
 	var s := _screen(p)
-	var owned: ItemList = s.find_child("Owned", true, false)
-	var ifv_row := -1
-	for i in owned.item_count:
-		if owned.get_item_text(i).begins_with(db.card("ifv").display_name):
-			ifv_row = i
-	assert_true(ifv_row >= 0)
-	owned.select(ifv_row)
-	owned.item_selected.emit(ifv_row)
+	var owned: CardGrid = s.find_child("Owned", true, false)
+	_pick(owned, "ifv")
 	var size := p.deck.size()
 	(s.find_child("Add", true, false) as Button).pressed.emit()
 	assert_eq(p.deck.size(), size + 1)
 	assert_true(FileAccess.file_exists(PATH), "saved at once")
 	assert_true(ProfileStore.load_from(db, PATH).profile.deck.has("ifv"))
-	var deck: ItemList = s.find_child("Deck", true, false)
+	var deck: CardGrid = s.find_child("Deck", true, false)
 	assert_eq(s.selected_owned(), "ifv", "the card stays selected")
-	var drow := -1
-	for i in deck.item_count:
-		if deck.get_item_text(i).contains(db.card("ifv").display_name):
-			drow = i
-	deck.select(drow)
-	deck.item_selected.emit(drow)
+	assert_true(deck.face("ifv") != null, "and shows in the deck")
+	_pick(deck, "ifv")
 	(s.find_child("Remove", true, false) as Button).pressed.emit()
 	assert_eq(p.deck.size(), size)
+	assert_true(deck.face("ifv") == null)
 	s.free()
 	_release_temp()
 
 
 func test_a_refused_change_is_explained_and_not_saved() -> void:
-	var db := _get_db()
 	var p := _rich()
 	var s := _screen(p)
-	var owned: ItemList = s.find_child("Owned", true, false)
-	var row := -1
-	for i in owned.item_count:
-		if owned.get_item_text(i).begins_with(db.card("tank").display_name):
-			row = i
-	owned.select(row)
-	owned.item_selected.emit(row)
+	var owned: CardGrid = s.find_child("Owned", true, false)
+	_pick(owned, "tank")
 	var size := p.deck.size()
 	(s.find_child("Add", true, false) as Button).pressed.emit()  # the starter deck already holds three tanks
 	assert_eq(p.deck.size(), size)
@@ -347,10 +477,8 @@ func test_the_doctrine_is_chosen_in_the_screen() -> void:
 	var db := _get_db()
 	var p := _rich()
 	var s := _screen(p)
-	var owned: ItemList = s.find_child("Owned", true, false)
-	var row := owned.item_count - 1  # doctrine cards come after the deck cards
-	owned.select(row)
-	owned.item_selected.emit(row)
+	var owned: CardGrid = s.find_child("Owned", true, false)
+	_pick(owned, "hollow_points")
 	assert_eq(s.selected_owned(), "hollow_points")
 	assert_eq((s.find_child("Add", true, false) as Button).text, "Use doctrine")
 	(s.find_child("Add", true, false) as Button).pressed.emit()

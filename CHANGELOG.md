@@ -1,5 +1,12 @@
 # Changelog
 
+## D.1 Deck screen with picture cards and locked cards (2026-10-18; docs/specs/deck-screen.md)
+- The deck screen shows cards, not text: every card is a small portrait card (kind colour, cost, picture, name) in a scrolling grid, like the cards in the hand. The left grid holds **all 31 cards of the game**: the ones you own first (cheapest first, doctrines last), then the locked ones in grey with a padlock. The heading counts them ("Cards 9 / 31 unlocked"). Owned cards show copies in the deck over copies allowed ("2/3"), the chosen doctrine shows "ON". The right grid shows the deck, one card per distinct card with its count ("x3").
+- Selecting a locked card shows it big and in grey with its text, and says where it can be won ("Locked. Win Hold the Crossing to have it offered as a reward."); its Add button reads "Locked" and does nothing. Upgrades show for owned cards only.
+- Click a card to select it, double-click or Enter to add (left) or remove (right), arrow keys to move, Tab to switch grid. Add / Remove / Starter deck / doctrine / upgrades work as before and still save at once.
+- New: `ui/card_face.gd` (`CardFace`, with a shared grey shader for locked cards), `ui/card_grid.gd` (`CardGrid`), `DeckBuilder.catalog(profile, db)`, `CampaignDefinition.mission_offering(card_id)`. The item lists of the old screen are gone (tests changed to the grids).
+- **Tests:** 7 new and 5 changed in `tests/test_deck_editor.gd`, 1 helper changed in `tests/test_upgrades.gd`. Seen in a real window at 1920 x 1080 (new game plus four extra cards); not clicked through by hand, and the arrow-key and scroll feel is unchecked.
+
 ## N.8 Window icon, Steam capsule art and a loading screen (2026-10-18; docs/specs/art-more.md)
 - A window and project icon (`assets/icon/icon.png` 256 x 256, `icon.ico` with 16 to 256 px; set as `application/config/icon`): a navy badge with a green shield and "LD".
 - Steam capsule art made from the logo and the title picture by `tools/gen_store_art.gd` into `store_art/` (not imported, not committed: run the tool): header 920 x 430, small 462 x 174, main 1232 x 706, vertical 748 x 896, library capsule 600 x 900, library hero 3840 x 1240 (no text) and library logo 1280 x 720 (clear background). The sizes are from the Steamworks "Graphical assets" page as seen on 2026-10-18 (Steam stopped accepting the older, smaller sizes in August 2024); the library hero and library capsule sizes came from third-party guides, so check them on the official page before uploading.
