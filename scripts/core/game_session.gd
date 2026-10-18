@@ -106,7 +106,10 @@ static func prepare_battle(mission_id: String, persist: bool = true) -> void:
 static func start_battle(tree: SceneTree, mission_id: String) -> void:
 	prepare_battle(mission_id)
 	tree.paused = false
-	tree.change_scene_to_file(BATTLE_SCENE)
+	if ResourceLoader.exists("res://assets/ui/logo.png"):
+		LoadingScreen.begin(tree, BATTLE_SCENE)  # the loading picture, then the battle (ui/loading_screen.gd)
+	else:
+		tree.change_scene_to_file(BATTLE_SCENE)
 
 
 static func go_to_menu(tree: SceneTree) -> void:

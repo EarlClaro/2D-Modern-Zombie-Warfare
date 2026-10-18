@@ -64,6 +64,7 @@ Folders: `assets/{sprites,tiles,animations,audio,fonts}` (created when first ass
 | Supply drop pictures (`assets/fx/chute.png`, `chute_down.png`, `crate.png`) | `tools/gen_supply_fx.gd` + `ui/pixel_canvas.gd`: canopy, crumpled canopy and crate drawn in code | Original; project-owned | None |
 | Result pictures (`assets/ui/result_victory.png`, `result_defeat.png`, 128x40) | `tools/gen_result_art.gd` + `ui/pixel_canvas.gd`: dawn and dusk scenes painted in code (gradient dither, skyline, bunker, silhouettes) | Original; project-owned | None |
 | Crow (`assets/fx/crow.png`, 2 frames of 14x10) | `tools/gen_crows.gd` + `ui/pixel_canvas.gd`: a black bird drawn in code | Original; project-owned | None |
+| Window icon (`assets/icon/icon.png`, `icon.ico`) and Steam capsule art (`store_art/`, generated, not committed) | `tools/gen_store_art.gd` + `ui/pixel_canvas.gd`: the badge is drawn in code with the project's pixel font; the capsules are the project's own logo and title picture scaled by whole numbers | Original; project-owned | The title is a placeholder |
 | Mission map thumbnails | Drawn at run time by `ui/mission_thumbnail.gd` from the map data | Original; project-owned | No files |
 
 | Music (menu loop, battle loop, win and lose stings) | Written as notes in `scripts/core/music_factory.gd` and synthesised at run time (square, triangle and noise voices); no audio files | Original; project-owned | Not heard by the agent |

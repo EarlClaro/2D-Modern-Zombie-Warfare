@@ -1,5 +1,11 @@
 # Changelog
 
+## N.8 Window icon, Steam capsule art and a loading screen (2026-10-18; docs/specs/art-more.md)
+- A window and project icon (`assets/icon/icon.png` 256 x 256, `icon.ico` with 16 to 256 px; set as `application/config/icon`): a navy badge with a green shield and "LD".
+- Steam capsule art made from the logo and the title picture by `tools/gen_store_art.gd` into `store_art/` (not imported, not committed: run the tool): header 920 x 430, small 462 x 174, main 1232 x 706, vertical 748 x 896, library capsule 600 x 900, library hero 3840 x 1240 (no text) and library logo 1280 x 720 (clear background). The sizes are from the Steamworks "Graphical assets" page as seen on 2026-10-18 (Steam stopped accepting the older, smaller sizes in August 2024); the library hero and library capsule sizes came from third-party guides, so check them on the official page before uploading.
+- A loading screen: starting a mission now shows the title picture, the logo and a "Loading" bar while the battle scene loads on a thread (at least 0.7 s, so it never flashes), then fades out over the first moments of the battle (`ui/loading_screen.gd`, used by `GameSession.start_battle`).
+- **Tests:** 5 new (`tests/test_store_art.gd`). The loading flow was run in a real window (the screen appeared, the battle loaded, the screen removed itself). There is no export preset yet, so the `.ico` is not wired to a Windows build.
+
 ## N.7 Crows by day and a searchlight at night (2026-10-18; docs/specs/art-more.md)
 - In daylight and clear (or dusty or snowy) weather a flock of three to six crows now and then crosses the view (first after about 7 s, then every 16 to 36 s, same every run). At night the command bunker's lamp throws a soft searchlight beam that sweeps across the sky every 10 seconds.
 - New: `scripts/battle/sky_life.gd` (added by `Atmosphere`), `tools/gen_crows.gd` (writes `assets/fx/crow.png`, two wing frames). Cloud shadows and flickering fires already existed, so they were left as they are.
