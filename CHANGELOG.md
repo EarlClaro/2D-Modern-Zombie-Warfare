@@ -1,5 +1,9 @@
 # Changelog
 
+## U.1 Pixel font (2026-10-18; pixel-art UI, docs/specs/pixel-ui.md)
+- An original 5 x 7 pixel font (`tools/gen_pixel_font.gd` holds the glyphs, writes `assets/fonts/pixel_font.tres` and `.png`): ASCII plus the em dash, proportional widths, shown at whole-number multiples of size 8. `PixelFont.font()` loads it. Not used by any screen yet.
+- **Tests:** 6 new (1084 in all, 0 failed).
+
 ## Cards as cards: portrait faces with pictures (2026-10-18)
 - The hand shows tall portrait cards (132 x 188) instead of wide slots: rounded frame in the kind colour, cost badge, framed picture, name banner. The hand sits 64 px higher.
 - Pictures come from art the game already has (`tools/gen_card_pictures.gd` writes `assets/cards/*.png`: unit sprites and cutaway images, 23 cards); the other 8 cards draw an emblem in code (`ui/card_art.gd`).
