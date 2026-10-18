@@ -30,6 +30,7 @@ func _init() -> void:
 	_check("check_on", true)
 	_grabber("slider_grabber", Color("8fb496"), Color("c8e6cd"), Color("5d7e63"))
 	_grabber("slider_grabber_hover", Color("b4dcb9"), Color("eaf8ec"), Color("7fa886"))
+	_cursor()
 	_save_theme()
 	print("wrote the UI kit and assets/ui/theme.tres")
 	quit()
@@ -110,6 +111,40 @@ func _grabber(name: String, fill: Color, light: Color, dark: Color) -> void:
 	for p in [Vector2i(0, 0), Vector2i(w - 1, 0), Vector2i(0, h - 1), Vector2i(w - 1, h - 1)]:
 		img.set_pixel(p.x, p.y, Color(0, 0, 0, 0))
 	_store(name, img)
+
+
+## The mouse arrow: 12 x 18 art pixels, white with a dark outline, drawn at 2 screen px per art pixel; the tip is the hotspot.
+func _cursor() -> void:
+	var rows := PackedStringArray([
+		"X...........",
+		"XX..........",
+		"XwX.........",
+		"XwwX........",
+		"XwwwX.......",
+		"XwwwwX......",
+		"XwwwwwX.....",
+		"XwwwwwwX....",
+		"XwwwwwwwX...",
+		"XwwwwwwwwX..",
+		"XwwwwwXXXXX.",
+		"XwwXwwX.....",
+		"XwX.XwwX....",
+		"XX..XwwX....",
+		"X....XwwX...",
+		".....XwwX...",
+		"......XX....",
+		"............",
+	])
+	var img := Image.create(12, rows.size(), false, Image.FORMAT_RGBA8)
+	img.fill(Color(0, 0, 0, 0))
+	for y in rows.size():
+		for x in 12:
+			match rows[y][x]:
+				"X":
+					img.set_pixel(x, y, OUTLINE)
+				"w":
+					img.set_pixel(x, y, Color("eaf5ea"))
+	_store("cursor", img)
 
 
 func _nine(name: String, margins: Vector4i, content: Vector4) -> StyleBoxTexture:

@@ -141,6 +141,7 @@ func apply() -> void:
 	if bus >= 0:
 		AudioServer.set_bus_volume_db(bus, volume_to_db(master_volume))
 		AudioServer.set_bus_mute(bus, master_volume <= 0.001)
+	UiCursor.apply()
 	var music_bus := ensure_music_bus()
 	if music_bus >= 0:
 		AudioServer.set_bus_volume_db(music_bus, volume_to_db(music_volume) - 6.0)

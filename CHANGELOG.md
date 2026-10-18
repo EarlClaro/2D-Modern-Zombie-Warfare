@@ -1,5 +1,9 @@
 # Changelog
 
+## G.5 Pixel cursor and health bars (2026-10-18; docs/specs/art-gaps.md)
+- The mouse arrow is a pixel arrow (`assets/ui/cursor.png`); health bars are pixel bars with an outline, a trough, a colour that follows the health and quarter notches.
+- **Tests:** 3 new (1114 in all).
+
 ## G.4 Music (2026-10-18; docs/specs/art-gaps.md)
 - Music written in code: a menu loop, a battle loop, a victory sting and a defeat sting (`scripts/core/music_factory.gd`), played by `MusicService` on a "Music" bus. The menu plays its loop; a battle plays its loop and ends with a sting.
 - New setting: Music volume (default 50 %), in Settings.
