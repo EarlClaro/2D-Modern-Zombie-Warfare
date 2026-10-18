@@ -296,6 +296,7 @@ func _ready() -> void:
 	atmosphere.name = "Atmosphere"
 	add_child(atmosphere)
 	atmosphere.bind(self)
+	atmosphere.thunder.connect(feedback.on_thunder)
 
 
 ## Builds (or rebuilds) the whole battle from validated data. Safe to call again to restart.

@@ -1,6 +1,6 @@
 class_name WeatherView
 extends Control
-## Rain, fog banks or dust drifting over the screen (screen space, so it does not move with the camera, apart from a
+## Rain (with now and then a flash of lightning and a bolt), snow, fog banks or dust drifting over the screen (screen space, so it does not move with the camera, apart from a
 ## little parallax). Rain has two layers: far drops are short, slow and faint, near drops long, fast and brighter;
 ## drops that pass through a light's pool or the cone under its bulb are drawn brighter. Presentation only.
 
@@ -11,8 +11,23 @@ const LIT_COLOR: Color = Color(1.0, 0.93, 0.78)
 const CONE_TOP_HALF_PX: float = 5.0  # half width of the light cone at the bulb
 const CONE_BOTTOM_SHARE: float = 0.45  # half width at the ground, as a share of the pool radius
 
+## A lightning bolt has struck: `thunder_delay_s` is how long until the thunder should be heard (the sound is not made here).
+signal lightning_struck(thunder_delay_s: float)
+
+const FIRST_STRIKE_S: float = 6.0
+const STRIKE_GAP_MIN_S: float = 9.0
+const STRIKE_GAP_VAR_S: float = 11.0
+const FLASH_S: float = 0.55  # a strike's whole flash, with two flickers in the first 0.17 s
+const BOLT_S: float = 0.17  # how long the bolt itself is drawn
+const SNOW_FAR: Dictionary = {"count": 260, "size": 2.0, "speed": 38.0, "sway": 10.0, "parallax": 0.05, "alpha": 0.6, "seed": 21}
+const SNOW_NEAR: Dictionary = {"count": 100, "size": 4.0, "speed": 92.0, "sway": 24.0, "parallax": 0.2, "alpha": 0.9, "seed": 29}
+
 var weather: String = "clear"
 var _t: float = 0.0
+var _strike_n: int = 0
+var _next_strike_t: float = FIRST_STRIKE_S
+var _strike_age: float = 99.0  # seconds since the last strike
+var _bolt_x: float = 0.0  # 0..1 across the screen
 var _lights: Array[Dictionary] = []
 var _cam: Vector2 = Vector2.ZERO
 var _bounds: Rect2 = Rect2()  # where any light reaches: drops outside it skip the per-light tests
@@ -48,7 +63,34 @@ func _process(delta: float) -> void:
 	if weather == "clear":
 		return
 	_t += delta
+	if weather == "rain":
+		_strike_age += delta
+		if _t >= _next_strike_t:
+			_strike()
 	queue_redraw()
+
+
+## The next strike of the storm: where the bolt falls, when the following one comes, and the thunder after its delay.
+func _strike() -> void:
+	_strike_age = 0.0
+	_bolt_x = 0.1 + 0.8 * _hash(_strike_n, 33)
+	var thunder_delay := 0.35 + 1.9 * _hash(_strike_n, 34)
+	_strike_n += 1
+	_next_strike_t = _t + STRIKE_GAP_MIN_S + STRIKE_GAP_VAR_S * _hash(_strike_n, 31)
+	lightning_struck.emit(thunder_delay)
+
+
+## How bright the sky flash is `age` seconds after a strike (0..1): a hard first flash, a dip, a second flash, then a fade.
+static func flash_level(age: float) -> float:
+	if age < 0.0 or age >= FLASH_S:
+		return 0.0
+	if age < 0.05:
+		return 0.9
+	if age < 0.09:
+		return 0.15
+	if age < 0.17:
+		return 0.6
+	return 0.3 * (1.0 - (age - 0.17) / (FLASH_S - 0.17))
 
 
 ## How strongly a drop at screen position `p` is lit (0 none, 1 in the heart of a lamp's pool): the soft pool on the
@@ -83,6 +125,11 @@ func _draw() -> void:
 			draw_rect(Rect2(Vector2.ZERO, size), Color(0.1, 0.14, 0.2, 0.05))
 			_rain_layer(size, FAR, LightingConfig.RAIN_FAR_STREAKS, LightingConfig.RAIN_FAR_ALPHA)
 			_rain_layer(size, NEAR, LightingConfig.RAIN_NEAR_STREAKS, LightingConfig.RAIN_NEAR_ALPHA)
+			_lightning(size)
+		"snow":
+			draw_rect(Rect2(Vector2.ZERO, size), Color(0.85, 0.92, 1.0, 0.07))
+			_snow_layer(size, SNOW_FAR)
+			_snow_layer(size, SNOW_NEAR)
 		"fog":
 			draw_rect(Rect2(Vector2.ZERO, size), Color(0.78, 0.82, 0.86, 0.3))
 			for i in 9:
@@ -133,3 +180,51 @@ func _rain_layer(size: Vector2, layer: Dictionary, count: int, alpha: float) -> 
 		draw_multiline(soft, Color(LIT_COLOR, minf(alpha * (1.0 + (LightingConfig.RAIN_LIT_BOOST - 1.0) * 0.5), 1.0)), 1.0)
 	if not bright.is_empty():
 		draw_multiline(bright, Color(LIT_COLOR, minf(alpha * LightingConfig.RAIN_LIT_BOOST, 1.0)), 1.0)
+
+
+## Flakes as whole-pixel squares (snapped to the 2 px UI grid) that fall and sway; two layers, far small and slow, near big.
+func _snow_layer(size: Vector2, layer: Dictionary) -> void:
+	var sd: int = layer["seed"]
+	var par: float = layer["parallax"]
+	var px: float = layer["size"]
+	var col := Color(0.93, 0.97, 1.0, float(layer["alpha"]))
+	for i in int(layer["count"]):
+		var speed: float = float(layer["speed"]) * (0.8 + 0.4 * _hash(i, 1 + sd))
+		var sway: float = float(layer["sway"]) * sin(_t * (0.6 + 0.5 * _hash(i, 2 + sd)) + float(i))
+		var x := fposmod(_hash(i, 3 + sd) * (size.x + 80.0) + sway - _cam.x * par, size.x + 80.0) - 40.0
+		var y := fposmod(_hash(i, 4 + sd) * (size.y + 60.0) + _t * speed - _cam.y * par, size.y + 60.0) - 30.0
+		draw_rect(Rect2(Vector2(floorf(x * 0.5) * 2.0, floorf(y * 0.5) * 2.0), Vector2(px, px)), col)
+
+
+## The flash over the whole screen and, for a moment, the bolt: a jagged line from the top, a fork, drawn on whole pixels.
+func _lightning(size: Vector2) -> void:
+	var f := flash_level(_strike_age)
+	if f <= 0.0:
+		return
+	draw_rect(Rect2(Vector2.ZERO, size), Color(0.82, 0.88, 1.0, f * 0.45))
+	if _strike_age >= BOLT_S:
+		return
+	var pts := PackedVector2Array()
+	var x := _bolt_x * size.x
+	var y := 0.0
+	var steps := 9
+	var length := size.y * (0.5 + 0.2 * _hash(_strike_n, 35))
+	var fork_from := Vector2.ZERO
+	for i in steps + 1:
+		pts.append(Vector2(floorf(x / 2.0) * 2.0, floorf(y / 2.0) * 2.0))
+		if i == 4:
+			fork_from = pts[pts.size() - 1]
+		x += (_hash(_strike_n * 17 + i, 36) - 0.5) * 70.0
+		y += length / float(steps)
+	var bright := Color(0.97, 0.98, 1.0)
+	draw_polyline(pts, Color(0.7, 0.8, 1.0, 0.35), 9.0)
+	draw_polyline(pts, bright, 3.0)
+	var fork := PackedVector2Array([fork_from])
+	var fx := fork_from.x
+	var fy := fork_from.y
+	for i in 4:
+		fx += 22.0 * (1.0 if _hash(_strike_n, 37) > 0.5 else -1.0) * (0.6 + _hash(_strike_n * 5 + i, 38))
+		fy += length * 0.07
+		fork.append(Vector2(floorf(fx / 2.0) * 2.0, floorf(fy / 2.0) * 2.0))
+	draw_polyline(fork, Color(0.7, 0.8, 1.0, 0.3), 6.0)
+	draw_polyline(fork, bright, 2.0)

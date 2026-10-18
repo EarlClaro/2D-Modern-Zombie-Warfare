@@ -1,5 +1,11 @@
 # Changelog
 
+## N.2 Weather: lightning and snow (2026-10-18; docs/specs/art-more.md)
+- Rain now has lightning: every 9 to 20 seconds (first at 6 s, same schedule every run) the screen flashes (a hard flash, a dark gap, a second flicker, a fade), a forked pixel bolt shows for a moment, and a low thunder rumble follows after 0.35 to 2.25 s. Night Storm is the only mission with rain, so it is the only one that gets it.
+- New weather value `snow`: two layers of whole-pixel flakes that fall and sway (with the camera parallax) and a cold tint. No mission uses it yet; a mission sets `weather = "snow"` to get it.
+- New sound `thunder` in `SfxFactory`; `WeatherView.lightning_struck` -> `Atmosphere.thunder` -> `BattleFeedback.on_thunder`. Presentation only.
+- **Tests:** 5 new (`tests/test_weather_art.gd`: snow is valid weather, the storm schedule, only rain strikes, the flash shape, the thunder sound). Flash and snow seen in a real window; the thunder and the feel of the timing have not been listened to.
+
 ## N.1 Ground marks: craters and blood stains (2026-10-18; docs/specs/art-more.md)
 - Blasts at least 1.7 tiles wide (howitzer, rocket salvo, missiles, mortar, strikes) burn the ground and leave a crater (small, medium or large by blast radius) that stays for the battle. About two thirds of dead zombies leave a blood stain that fades slowly to a faint mark. Stains and craters are capped (140 and 60 per battle, oldest first) and cleared on restart.
 - New: `scripts/effects/ground_mark.gd`, `tools/gen_ground_marks.gd` (writes `assets/fx/marks/crater_0..2.png`, `blood_0..2.png`). Hooked into `BattleFeedback`; the simulation is untouched (the existing test that compares runs with and without feedback still passes).

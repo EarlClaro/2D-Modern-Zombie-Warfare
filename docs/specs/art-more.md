@@ -1,6 +1,6 @@
 # More art: ground marks, weather, icons, in-world cards, core states, result screens, ambient life, store art
 
-Status: **v0.1, started 2026-10-18** (the user asked to start on the nine art suggestions made after docs/specs/art-polish.md). N.1 is built; N.2 to N.8 are not. All of it is presentation only: no rule, number or enemy stat changes.
+Status: **v0.1, started 2026-10-18** (the user asked to start on the nine art suggestions made after docs/specs/art-polish.md). N.1 and N.2 are built; N.3 to N.8 are not. All of it is presentation only: no rule, number or enemy stat changes.
 
 ## What already exists (checked in the code before planning)
 
@@ -13,7 +13,7 @@ Status: **v0.1, started 2026-10-18** (the user asked to start on the nine art su
 ## Increments (each: spec line, generator or code, tests, changelog, one commit)
 
 1. **N.1 Ground marks (built).** Crater decals (a dark pit with a lit rim, three sizes) under big blasts (artillery, missile, nuke, vehicle wrecks), and blood stains (two or three splat shapes, dark red-brown, fading slowly) where zombies die, drawn on the ground plane under units like `ScorchMark`. Capped in number so the stress mission keeps its frame time (140 stains, 60 craters, oldest first). Craters come from blasts of radius 1.7 tiles and up, with a scorch mark under them; the size is picked by radius (under 2.2 small, under 4 medium, else large). A stain follows a death when a hash of the position is under 0.65, so the same place always decides the same way. Art: `assets/fx/marks/*.png` from `tools/gen_ground_marks.gd`; code: `scripts/effects/ground_mark.gd`.
-2. **N.2 Weather: snow and lightning.** A `snow` weather value (soft slow flakes in two layers, a white-blue grade, snow-tinted dither) and lightning for storm rain (a rare full-screen flash, a forked bolt drawn in pixels, the thunder sound from `SfxFactory`). Night Storm gets the lightning; no mission gets snow until one asks for it.
+2. **N.2 Weather: snow and lightning (built).** A `snow` weather value (soft slow flakes in two layers, a white-blue grade, snow-tinted dither) and lightning for storm rain (a rare full-screen flash, a forked bolt drawn in pixels, the thunder sound from `SfxFactory`). Night Storm gets the lightning; no mission gets snow until one asks for it.
 3. **N.3 Card back and status icons.** A card back (`assets/cards/_back.png`, for the deck screen and the draw pile), and 16 x 16 pixel icons for Fortify, Noise Lure, Hollow Points and the other doctrines and orders, shown on the HUD where a state card is active. Made by a new `tools/gen_icons.gd`.
 4. **N.4 In-world cards.** The Supply Drop parachute falling onto the field and settling (a small sprite and an animation, no rule change), and a pixel smoke trail behind missiles and rockets.
 5. **N.5 Core damage states.** `hq_bunker` in three looks (intact, damaged, ruined) chosen by the core's health share (above 66 %, above 33 %, below), swapped in the existing scenery view.

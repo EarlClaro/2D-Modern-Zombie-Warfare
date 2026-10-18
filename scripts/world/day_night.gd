@@ -3,7 +3,7 @@ extends RefCounted
 ## Pure functions for the look of the time of day and the weather. `t` is the time of day in 0..1 (0 = midnight,
 ## 0.25 = sunrise, 0.5 = noon, 0.75 = sunset). Nothing here touches the simulation.
 
-const WEATHER: Array[String] = ["clear", "rain", "fog", "dust"]
+const WEATHER: Array[String] = ["clear", "rain", "fog", "dust", "snow"]
 
 ## Colour the whole scene is multiplied by (white = full daylight), as [t, colour] keyframes; the last wraps to the first.
 ## Night is a clear moonlit blue that still shows the colours of the ground (the lamps then light pools into it);
@@ -99,6 +99,8 @@ static func weather_tint(weather: String) -> Color:
 			return Color(0.88, 0.9, 0.92)
 		"dust":
 			return Color(1.0, 0.9, 0.74)
+		"snow":
+			return Color(0.92, 0.95, 1.0)
 	return Color.WHITE
 
 

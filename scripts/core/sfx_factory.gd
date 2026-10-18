@@ -7,7 +7,7 @@ const MIX_RATE: int = 22050
 const PEAK: float = 0.9
 const SHOT_SOUNDS: Array[String] = ["shot_rifle", "shot_mg", "missile"]
 const STRIKE_SOUNDS: Array[String] = ["strike_artillery", "strike_naval", "strike_air", "strike_missile", "strike_hypersonic", "strike_nuclear", "strike_laser"]
-const ALL_SOUNDS: Array[String] = ["shot_rifle", "shot_mg", "missile", "impact", "death", "alert", "blast", "explosion", "strike_artillery", "strike_naval", "strike_air", "strike_missile", "strike_hypersonic", "strike_nuclear", "strike_laser"]
+const ALL_SOUNDS: Array[String] = ["shot_rifle", "shot_mg", "missile", "impact", "death", "alert", "blast", "explosion", "strike_artillery", "strike_naval", "strike_air", "strike_missile", "strike_hypersonic", "strike_nuclear", "strike_laser", "thunder"]
 
 ## Per sound: mixer category (see SfxVoicePool) and base volume in dB.
 const SETTINGS: Dictionary = {
@@ -26,6 +26,7 @@ const SETTINGS: Dictionary = {
 	"strike_hypersonic": {"category": "strike", "volume_db": -5.0},
 	"strike_nuclear": {"category": "strike", "volume_db": -3.0},
 	"strike_laser": {"category": "strike", "volume_db": -7.0},
+	"thunder": {"category": "blast", "volume_db": -7.0},
 }
 
 
@@ -51,6 +52,7 @@ static func build_library() -> Dictionary:
 		"strike_hypersonic": _strike_hypersonic(),
 		"strike_nuclear": _strike_nuclear(),
 		"strike_laser": _strike_laser(),
+		"thunder": _noise_burst(2.6, 1.3, 36.0, 0.8, 0.045, 21),
 	}
 
 

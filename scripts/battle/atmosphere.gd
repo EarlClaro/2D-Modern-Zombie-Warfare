@@ -9,6 +9,9 @@ var _battle: BattleController
 var _tint: CanvasModulate
 var _glow: LightField
 var _screen: CanvasLayer
+## Thunder after a lightning strike: `delay_s` is how long after the flash it should be heard (BattleFeedback plays it).
+signal thunder(delay_s: float)
+
 var _weather_view: WeatherView
 var _post: PostFx
 var _ground_look: GroundLook
@@ -35,6 +38,7 @@ func bind(battle: BattleController) -> void:
 	_weather_view = WeatherView.new()
 	_weather_view.name = "Weather"
 	_screen.add_child(_weather_view)
+	_weather_view.lightning_struck.connect(func(delay_s: float) -> void: thunder.emit(delay_s))
 	_post = PostFx.new()
 	add_child(_post)
 	_post.bind(battle)
@@ -105,7 +109,12 @@ func _refresh(force: bool) -> void:
 
 ## Gives the rain the lights near the screen (in screen px) so drops passing through them are drawn brighter.
 func _feed_weather() -> void:
-	if _weather_view.weather != "rain" or not _battle.is_inside_tree():
+	if not _battle.is_inside_tree():
+		return
+	if _weather_view.weather == "snow":  # snow has no lights to pick up, only the camera for its parallax
+		_weather_view.set_camera(_battle.camera_node().position)
+		return
+	if _weather_view.weather != "rain":
 		return
 	var ct := _battle.get_canvas_transform()
 	var zoom := ct.x.length()

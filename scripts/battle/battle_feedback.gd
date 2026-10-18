@@ -53,6 +53,12 @@ func bind(battle: BattleController) -> void:
 	battle.enemy_attacked.connect(_on_enemy_attacked)
 
 
+## The thunder of a lightning strike, a moment after the flash (the further the strike, the longer the wait).
+func on_thunder(delay_s: float) -> void:
+	if is_inside_tree():
+		get_tree().create_timer(delay_s).timeout.connect(func() -> void: sfx.play("thunder", 0.05))
+
+
 func _on_shot(shooter: BattleUnit, target: BattleEnemy) -> void:
 	var from := shooter.muzzle_world()
 	var to := target.chest_world()
