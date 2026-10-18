@@ -14,7 +14,7 @@ Art is made the v1 way: models rendered by `tools/gen_sprites.gd` (a theme pack,
    - `unit_barracks` (4 facings, 4 frames: intact, damaged, burning, ruin) for `data/units/barracks.tres`; `combat_drone` (8 facings, 2 rotor frames, always animating) for `data/units/combat_drone.tres`; `field_mine` and `field_beacon` drawn by `FieldEntityView` (the red blink and the pulsing ring are still drawn on top).
    - Tests: `tests/test_gameplay_sprites.gd`.
 2. **G.2 Combat effects as sprites (done 2026-10-18).** `tools/gen_fx_sheets.gd` paints three pixel strips into `assets/fx/` (explosion: fireball swelling then cooling, smoke puff, muzzle flash); `FxSheet` draws a frame by progress; `Explosion`, `VehicleExplosion`, `DeathPuff` and `MuzzleFlash` use them, and fall back to their old circles when a strip is missing. The ground shockwave ring and scorch mark are unchanged, so the visible blast still matches the damage radius. Tracers, sparks and acid stay as thin drawn lines (they are lines).
-3. **G.3 Title screen and mission thumbnails.**
+3. **G.3 Title screen and mission thumbnails (done 2026-10-18).** `tools/gen_title_art.gd` paints `assets/ui/title.png` (480 x 270, shown 4x behind the main menu and its sub-screens): night sky, moon, two skylines, a searchlight, sandbags, the bunker and a watchtower. `MissionThumbnail` (`ui/mission_thumbnail.gd`) draws each mission's map as a small isometric picture (terrain colours, the core in blue, the enemy spawns in red) in the mission list's detail pane; made on request and cached, so there are no files to keep in step with the maps.
 4. **G.4 Music and better sound effects.**
 5. **G.5 Cursor, highlights and health bars in pixel style.**
 

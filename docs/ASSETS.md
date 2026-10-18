@@ -57,6 +57,9 @@ Folders: `assets/{sprites,tiles,animations,audio,fonts}` (created when first ass
 
 | Effect strips (`assets/fx/{explosion,smoke,flash}.png`) | `tools/gen_fx_sheets.gd`: painted pixel by pixel from a lumpy radius and a hard colour ramp, deterministic | Original; project-owned | Square frames side by side |
 
+| Title picture (`assets/ui/title.png`) | `tools/gen_title_art.gd`: painted in code (dithered sky gradient, noise-free skyline silhouettes, hand-placed lit windows) | Original; project-owned | 480 x 270, shown 4x |
+| Mission map thumbnails | Drawn at run time by `ui/mission_thumbnail.gd` from the map data | Original; project-owned | No files |
+
 Facings: every sprite now has all 8 (the 5-mirrored ADR-008 fallback in `SpriteSheet` remains for sheets that lack some) (`SpriteSheet.art_direction`/`faces_left`). Mirroring flips the light direction (top-left becomes top-right) on the three left-hand facings; accepted for placeholders. A direction without a texture falls back to SE. Sheet layout lives in `SpriteSheet` (`scripts/iso/sprite_sheet.gd`) on each unit/enemy definition.
 
 Missing: real (non-placeholder) art. Sprites are ~24 px tall against 64 px tiles: judge the on-screen size manually.

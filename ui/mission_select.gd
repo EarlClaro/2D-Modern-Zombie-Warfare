@@ -11,6 +11,7 @@ var _db: ContentDb
 var _profile: PlayerProfile
 var _list: ItemList
 var _title: Label
+var _thumb: TextureRect
 var _facts: Label
 var _chooser: RewardChooser
 var _side: VBoxContainer
@@ -57,6 +58,13 @@ func _ready() -> void:
 	_title = UiKit.label("", 34, UiKit.ACCENT)
 	_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	side.add_child(_title)
+	_thumb = TextureRect.new()
+	_thumb.name = "MapThumbnail"
+	_thumb.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	_thumb.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_thumb.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_thumb.custom_minimum_size = Vector2(0, 120)
+	side.add_child(_thumb)
 	_facts = UiKit.label("", 24)
 	_facts.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	side.add_child(_facts)
@@ -174,9 +182,15 @@ func _on_selected(index: int) -> void:
 	if m == null:
 		_title.text = ""
 		_facts.text = ""
+		_thumb.texture = null
 		_start.disabled = true
 		return
 	_title.text = m.display_name
+	var tex := MissionThumbnail.texture(m)
+	_thumb.texture = tex
+	if tex != null:  # whole-pixel scale that fits the pane, at most 120 px tall
+		var k := maxi(1, mini(600 / tex.get_width(), 120 / tex.get_height()))
+		_thumb.custom_minimum_size = Vector2(0, tex.get_height() * k)
 	var lines := MissionListing.facts(_db, m, _level, _profile)
 	if _profile != null:
 		lines.append_array(MissionListing.progress_lines(_db, _profile, id))

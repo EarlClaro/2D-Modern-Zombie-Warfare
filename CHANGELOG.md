@@ -1,5 +1,10 @@
 # Changelog
 
+## G.3 Title picture and mission map thumbnails (2026-10-18; docs/specs/art-gaps.md)
+- The main menu has a painted pixel night-skyline picture behind it (`assets/ui/title.png`, `tools/gen_title_art.gd`); the footer no longer says "and art".
+- Mission select shows a small isometric map picture for the chosen mission, with the core (blue) and spawns (red) marked.
+- **Tests:** 4 new (1102 in all, 0 failed).
+
 ## G.2 Pixel combat effects (2026-10-18; docs/specs/art-gaps.md)
 - Explosions, vehicle explosions, death dust and muzzle flashes draw pixel-art frames (`assets/fx/*.png`, made by `tools/gen_fx_sheets.gd`) instead of smooth circles; the blast ring and scorch mark still follow the damage radius.
 - **Tests:** 4 new (1098 in all, 0 failed).

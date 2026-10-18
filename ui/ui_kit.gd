@@ -30,6 +30,22 @@ static func panel() -> PanelContainer:
 	return PanelContainer.new()  # the pixel panel comes from the project theme (assets/ui/theme.tres)
 
 
+## The picture behind the main menu (assets/ui/title.png, made by tools/gen_title_art.gd), shown in whole pixels and cropped
+## to fill the screen; a plain dark rectangle if the file is missing.
+static func title_background() -> Control:
+	var path := "res://assets/ui/title.png"
+	if not ResourceLoader.exists(path):
+		return background()
+	var r := TextureRect.new()
+	r.texture = load(path) as Texture2D
+	r.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	r.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	r.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	r.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	r.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	return r
+
+
 static func background() -> ColorRect:
 	var r := ColorRect.new()
 	r.color = BG
