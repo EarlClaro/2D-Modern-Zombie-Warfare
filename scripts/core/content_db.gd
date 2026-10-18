@@ -258,6 +258,12 @@ func validate_references() -> void:
 			errors.append("mission '%s': unknown deck_id '%s'" % [id, m.deck_id])
 		if not m.difficulty_id.is_empty() and not difficulties.has(m.difficulty_id):
 			errors.append("mission '%s': unknown difficulty_id '%s'" % [id, m.difficulty_id])
+		for o in m.objectives:
+			if o != null and o.role == ObjectiveDefinition.Role.PRIMARY and o.kind == ObjectiveDefinition.Kind.KILL_COUNT:
+				for did_level in difficulties:  # a level that sends fewer enemies must still be able to reach the target
+					var sent := m.total_enemies_at(difficulties[did_level])
+					if o.count > sent:
+						errors.append("mission '%s': primary objective '%s' needs %d kills but difficulty '%s' sends only %d enemies" % [id, o.id, o.count, did_level, sent])
 		for did in m.doctrines:
 			var dc: CardDefinition = cards.get(did)
 			if dc == null:

@@ -88,7 +88,8 @@ func test_waypoints_are_the_default_and_no_shipped_mission_uses_flow_by_accident
 	for id: String in _get_db().missions.keys():
 		if _get_db().mission(id).routing == MissionDefinition.Routing.FLOW:
 			flow_missions.append(id)
-	assert_eq(flow_missions, ["dev_flow_outskirts"], "only the flow demo mission opts in so far")
+	flow_missions.sort()
+	assert_eq(flow_missions, ["dev_flow_outskirts", "dev_objectives"], "only the two dev missions (flow demo, objectives demo) opt in so far")
 
 
 func test_a_flow_mission_needs_no_waypoints_but_a_waypoint_mission_still_does() -> void:

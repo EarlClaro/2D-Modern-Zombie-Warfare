@@ -61,6 +61,7 @@ func _process(_delta: float) -> void:
 	_core_bar.value = hp.fraction() * 100.0
 	var t := ceili(_battle.time_left())
 	_time_label.text = "HOLD:  %d:%02d" % [t / 60, t % 60]
+	_time_label.visible = _battle.mission == null or _battle.mission.objectives.is_empty()  # an objective list shows the clock itself
 	_info_label.text = "Enemies %d    Kills %d    Units %d" % [_battle.enemy_count(), _battle.stats["kills"], _battle.units.size()]
 	var level := _battle.difficulty()
 	if level != null and level.id != ContentDb.NORMAL_DIFFICULTY:
