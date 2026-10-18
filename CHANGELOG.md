@@ -1,5 +1,10 @@
 # Changelog
 
+## P.1 Pixel card pictures for all 31 cards (2026-10-18; docs/specs/art-polish.md)
+- Every card now has a picture file. Unit pictures are scaled up by whole numbers (so the pixels match the 2 px UI grid); strike cards are small scenes (target ring, mushroom cloud, water, laser beam); the 8 cards that had a code-drawn emblem are now pixel art: Barracks and Combat Drones (their sprites), Minefield, Noise Lure, Supply Drop, Fortify, Quick Draw, Hollow Points.
+- `tools/pixel_canvas.gd` (new dev helper: hard-edged shapes, banded shading, dither, outline) and a rewritten `tools/gen_card_pictures.gd`. The emblem drawing code in `ui/card_art.gd` is gone.
+- **Tests:** card art tests rewritten (every card has a 96 x 72 picture with hard pixel edges). Not seen in a real play session.
+
 ## G.5 Pixel cursor and health bars (2026-10-18; docs/specs/art-gaps.md)
 - The mouse arrow is a pixel arrow (`assets/ui/cursor.png`); health bars are pixel bars with an outline, a trough, a colour that follows the health and quarter notches.
 - **Tests:** 3 new (1114 in all).
