@@ -5,13 +5,14 @@ extends Node
 ## grade and vignette (PostFx). Presentation only: it reads `battle.elapsed` and the mission's settings and never
 ## touches the simulation. Every tunable is in LightingConfig (docs/specs/lighting-pass-2.md).
 
+## Thunder after a lightning strike: `delay_s` is how long after the flash it should be heard (BattleFeedback plays it).
+signal thunder(delay_s: float)
+
 var _battle: BattleController
 var _tint: CanvasModulate
 var _glow: LightField
 var _screen: CanvasLayer
-## Thunder after a lightning strike: `delay_s` is how long after the flash it should be heard (BattleFeedback plays it).
-signal thunder(delay_s: float)
-
+var _sky: SkyLife
 var _weather_view: WeatherView
 var _post: PostFx
 var _ground_look: GroundLook
@@ -58,6 +59,10 @@ func bind(battle: BattleController) -> void:
 	_ambient.name = "Ambient"
 	battle.add_child(_ambient)
 	_ambient.bind(battle, battle.mission.weather if battle.mission != null else "clear")
+	_sky = SkyLife.new()
+	_sky.name = "Sky"
+	battle.add_child(_sky)
+	_sky.bind(battle, battle.mission.weather if battle.mission != null else "clear")
 	battle.shot_fired.connect(_on_shot)
 	battle.blast_landed.connect(_on_blast)
 	battle.projectile_launched.connect(_on_launch)
@@ -88,6 +93,7 @@ func _refresh(force: bool) -> void:
 	fx.modulate = Color(1.0 / maxf(tint.r, 0.2), 1.0 / maxf(tint.g, 0.2), 1.0 / maxf(tint.b, 0.2), 1.0)
 	_glow.modulate = fx.modulate  # lamp light is not tinted blue by the night either
 	var dark := DayNight.darkness_at(t)
+	_sky.set_darkness(dark)
 	if force or absf(t - _last_t) > 0.0005 or m.weather != _last_weather:
 		_last_t = t
 		var sky := DayNight.sky_at(t)

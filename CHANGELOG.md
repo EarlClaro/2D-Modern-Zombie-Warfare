@@ -1,5 +1,10 @@
 # Changelog
 
+## N.7 Crows by day and a searchlight at night (2026-10-18; docs/specs/art-more.md)
+- In daylight and clear (or dusty or snowy) weather a flock of three to six crows now and then crosses the view (first after about 7 s, then every 16 to 36 s, same every run). At night the command bunker's lamp throws a soft searchlight beam that sweeps across the sky every 10 seconds.
+- New: `scripts/battle/sky_life.gd` (added by `Atmosphere`), `tools/gen_crows.gd` (writes `assets/fx/crow.png`, two wing frames). Cloud shadows and flickering fires already existed, so they were left as they are.
+- **Tests:** 6 new (`tests/test_sky_life.gd`). Seen in a real window; the beam's strength and the crows' pace need your eye.
+
 ## N.6 Victory and defeat pictures and the reward reveal (2026-10-18; docs/specs/art-more.md)
 - The result panel shows a pixel picture above the outcome: a victory at dawn (sun behind the command bunker, flag flying, soldiers with rifles raised) or a defeat at dusk (the bunker in ruins and burning, smoke, zombies on the skyline). `tools/gen_result_art.gd` makes `assets/ui/result_victory.png` and `result_defeat.png` (128 x 40, shown 4x).
 - The reward chooser offers its cards face-down (the new card back) and turns them over one after another (about a second in all); each row shows the card's picture next to its button. A card can be taken at any moment.

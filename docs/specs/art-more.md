@@ -1,6 +1,6 @@
 # More art: ground marks, weather, icons, in-world cards, core states, result screens, ambient life, store art
 
-Status: **v0.1, started 2026-10-18** (the user asked to start on the nine art suggestions made after docs/specs/art-polish.md). N.1 to N.4 and N.6 are built; N.5 turned out to exist already; N.7 and N.8 are not built. All of it is presentation only: no rule, number or enemy stat changes.
+Status: **v0.1, started 2026-10-18** (the user asked to start on the nine art suggestions made after docs/specs/art-polish.md). N.1 to N.4, N.6 and N.7 are built; N.5 turned out to exist already; N.8 is not built. All of it is presentation only: no rule, number or enemy stat changes.
 
 ## What already exists (checked in the code before planning)
 
@@ -18,7 +18,7 @@ Status: **v0.1, started 2026-10-18** (the user asked to start on the nine art su
 4. **N.4 In-world cards (built).** The Supply Drop crate on a parachute floating down near the core (`SupplyDropFx`, pictures from `tools/gen_supply_fx.gd`; no rule change), and the missile smoke trail redrawn from the pixel `smoke` strip (there was already a smooth trail).
 5. **N.5 Core damage states (already existed, nothing to do).** `BattleCore.frame_for` already swaps four looks of the `hq_bunker` sprite (intact, damaged, burning, ruin) by the core's health share. It was missed when this pass was planned. A later pass could animate the smoke and fire the way the Barracks now does.
 6. **N.6 Result screens (built).** `tools/gen_result_art.gd` paints a victory (dawn, bunker with flag, soldiers) and a defeat (ruined burning bunker, smoke, zombies on the skyline), 128 x 40 art px each, shown at 4x above the outcome on the result panel; the reward chooser deals its cards face-down (the card back) and turns them over one by one with a quick squash tween (`RewardChooser.finish_reveal()` ends it at once), each row showing the card's picture.
-7. **N.7 Ambient life.** Crows that cross the sky now and then (day only), a sweeping searchlight at the core at night, slow cloud shadows over the ground in clear weather, and flickering light on fire pits (the glow already exists; this adds the flicker and a flame sprite).
+7. **N.7 Ambient life (built; two of the four parts already existed).** Cloud shadows (the shader's `cloud_strength`) and flickering fire light (`LightField.flicker_at`) were already there. New: crows that cross the view now and then by day in clear, dusty or snowy weather, and a searchlight on the bunker at night (`SkyLife`, three additive wedges sweeping with a 10 s period). Art: `assets/fx/crow.png` from `tools/gen_crows.gd`.
 8. **N.8 Store and window art.** A window icon (`.ico` and project icon set from the logo), a Steam capsule set at the standard sizes (header 460 x 215, capsule 616 x 353, hero 3840 x 1240, library 600 x 900), and a loading screen shown while a mission loads. All from the logo and the title picture generators.
 
 ## Order and limits
