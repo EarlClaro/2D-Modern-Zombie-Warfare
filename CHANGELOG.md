@@ -1,5 +1,10 @@
 # Changelog
 
+## N.1 Ground marks: craters and blood stains (2026-10-18; docs/specs/art-more.md)
+- Blasts at least 1.7 tiles wide (howitzer, rocket salvo, missiles, mortar, strikes) burn the ground and leave a crater (small, medium or large by blast radius) that stays for the battle. About two thirds of dead zombies leave a blood stain that fades slowly to a faint mark. Stains and craters are capped (140 and 60 per battle, oldest first) and cleared on restart.
+- New: `scripts/effects/ground_mark.gd`, `tools/gen_ground_marks.gd` (writes `assets/fx/marks/crater_0..2.png`, `blood_0..2.png`). Hooked into `BattleFeedback`; the simulation is untouched (the existing test that compares runs with and without feedback still passes).
+- **Tests:** 8 new. Not yet seen in a real battle.
+
 ## P.4 More animation frames for the Barracks and the Combat Drone (2026-10-18; docs/specs/art-polish.md)
 - Barracks: 8 frames instead of 4. Four alive frames loop at 3 fps (the flag tip swings, smoke rises from a new chimney), then damaged, two burning poses that flicker, and the rubble. A destroyed Barracks plays damaged, burn, burn, rubble.
 - Combat Drone: 8 frames instead of 2. The rotors alternate every frame and the red status light blinks (on for four frames, off for four, 2 blinks a second at 16 fps).

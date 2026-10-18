@@ -1330,9 +1330,10 @@ func _clear_dynamic() -> void:
 			layer.remove_child(child)
 			child.free()
 	for child in _decals.get_children():  # the Decals layer also holds the persistent highlight/preview nodes
-		if child is ScorchMark:
+		if child is ScorchMark or child is GroundMark:
 			_decals.remove_child(child)
 			child.free()
+	GroundMark.forget(_decals)
 	for child in _air.get_children():  # the Air layer also holds the persistent shell view; only aircraft go
 		if child is BattleAircraft:
 			_air.remove_child(child)

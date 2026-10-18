@@ -12,6 +12,7 @@ const BLAST_SHAKE_S: float = 0.18
 const SPARK_BLAST := Color(1.0, 0.7, 0.3)
 const CORE_SHAKE_S: float = 0.15
 const ALERT_MIN_INTERVAL_S: float = 1.0
+const CRATER_MIN_RADIUS: float = 1.7  # blasts at least this wide (tiles) leave a crater
 
 const HIT_FLASH: Color = Color(2.6, 2.6, 2.6)  # >1 brightens toward white
 const CORE_FLASH: Color = Color(1.9, 0.45, 0.4)
@@ -85,6 +86,9 @@ func _on_hit(target: Node, _amount: float) -> void:
 
 
 func _on_enemy_died(enemy: BattleEnemy) -> void:
+	if GroundMark.leaves_blood(enemy.ground_pos):
+		var variant := int(GroundMark.unit_hash(enemy.ground_pos * 3.1) * float(GroundMark.VARIANTS)) % GroundMark.VARIANTS
+		GroundMark.spawn(_battle.decal_layer(), enemy.ground_pos, GroundMark.BLOOD, variant)
 	DeathPuff.spawn(_fx, enemy.position)
 	sfx.play("death")
 
@@ -113,6 +117,9 @@ func _explosion_bang() -> void:
 
 func _on_blast(center: Vector2, radius: float) -> void:
 	Explosion.spawn(_fx, center, radius)
+	if radius >= CRATER_MIN_RADIUS:  # a big blast burns the ground and leaves a crater
+		ScorchMark.spawn(_battle.decal_layer(), center, radius * 0.5)
+		GroundMark.spawn(_battle.decal_layer(), center, GroundMark.CRATER, GroundMark.crater_variant(radius))
 	var pos := IsoProjection.ground_to_screen(center)
 	for k in 8:
 		ImpactSpark.spawn(_fx, pos, SPARK_BLAST)  # flying debris

@@ -239,6 +239,35 @@ func test_infantry_leave_no_scorch_mark() -> void:
 	_release()
 
 
+func test_dead_zombies_leave_a_stain_where_they_fell_and_restart_removes_them() -> void:
+	var b := _battle(_variant([_su("mg_nest", Vector2i(8, 14))]))
+	var stains: Array[int] = [0, 0]  # [deaths that should leave a stain, deaths]
+	b.enemy_died.connect(func(en: BattleEnemy) -> void:
+		stains[1] += 1
+		if GroundMark.leaves_blood(en.ground_pos):
+			stains[0] += 1)
+	for i in 12:
+		var e := _inject_enemy(b, Vector2(11.5 + float(i) * 0.37, 13.5 + float(i % 3)))
+		e.health.hp = 0.0
+	b.step(DT)
+	assert_eq(stains[1], 12, "all twelve died")
+	assert_true(stains[0] > 0 and stains[0] < 12, "the sample has stains and clean deaths (%d of 12)" % stains[0])
+	assert_eq(_count_of(b.decal_layer(), "GroundMark"), stains[0], "a stain exactly where the position says so")
+	b.restart()
+	assert_eq(_count_of(b.decal_layer(), "GroundMark"), 0, "restart clears them")
+	_release()
+
+
+func test_a_big_blast_leaves_a_crater_and_a_small_one_does_not() -> void:
+	var b := _battle(_variant([]))
+	b.blast_landed.emit(Vector2(12, 12), 1.0)
+	assert_eq(_count_of(b.decal_layer(), "GroundMark"), 0, "a grenade-sized blast leaves no crater")
+	b.blast_landed.emit(Vector2(12, 12), 2.5)
+	assert_eq(_count_of(b.decal_layer(), "GroundMark"), 1, "a howitzer-sized blast does")
+	assert_eq(_count_of(b.decal_layer(), "ScorchMark"), 1, "and burns the ground round it")
+	_release()
+
+
 func test_being_shot_staggers_the_enemy_without_moving_it() -> void:
 	var b := _battle(_variant([_su("mg_nest", Vector2i(8, 14))]))
 	var e := _inject_enemy(b, Vector2(11.5, 13.5))

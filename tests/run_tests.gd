@@ -2,6 +2,7 @@ extends SceneTree
 ## Headless test runner. Usage:
 ##   godot --headless --path . --script tests/run_tests.gd
 ## Discovers res://tests/test_*.gd (not test_case.gd), runs every `test_*` method, exits non-zero on failure.
+## `TEST_FILTER=<text>` in the environment runs only the test files whose name contains the text (a quick local run).
 ##
 ## Safety nets (a test must never "pass" while something is broken):
 ##  - a test script that fails to compile is reported as a failure;
@@ -89,8 +90,9 @@ func _discover() -> Array[String]:
 	var dir := DirAccess.open(TESTS_DIR)
 	if dir == null:
 		return out
+	var only := OS.get_environment("TEST_FILTER")  # optional: only test files whose name contains this (a quick local run)
 	for f in dir.get_files():
-		if f.begins_with("test_") and f.ends_with(".gd") and f != "test_case.gd":
+		if f.begins_with("test_") and f.ends_with(".gd") and f != "test_case.gd" and (only.is_empty() or f.contains(only)):
 			out.append("%s/%s" % [TESTS_DIR, f])
 	out.sort()
 	return out
