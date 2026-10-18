@@ -1,5 +1,11 @@
 # Changelog
 
+## Cards as cards: portrait faces with pictures (2026-10-18)
+- The hand shows tall portrait cards (132 x 188) instead of wide slots: rounded frame in the kind colour, cost badge, framed picture, name banner. The hand sits 64 px higher.
+- Pictures come from art the game already has (`tools/gen_card_pictures.gd` writes `assets/cards/*.png`: unit sprites and cutaway images, 23 cards); the other 8 cards draw an emblem in code (`ui/card_art.gd`).
+- `tools/card_shots.gd` (windowed) writes screenshots of any hands of five cards.
+- **Tests:** 3 new.
+
 ## 5.6 First player-deck mission and the upgrade numbers (2026-10-18; Milestone 5 hand-over)
 - **New mission `x12_open_orders`** ("Open Orders", Dead Highway map, 1337 enemies): the first mission that runs on your own deck, upgrades and doctrine. It sits after `x6_high_tech` in the campaign and has its own first-win reward pool.
 - **Balance** (details in BALANCE.md "5.6"): three example players (`SampleDecks`: weak, balanced, strong) win 0/8, 2/8 and 4/8 on Normal; the weak one wins 8/8 on Easy, the strong one 1/8 on Hard. Upgrade numbers re-tuned in three bench rounds (Crowd Spray and Rocket Pods were far too strong, Extended Station and Saturation too weak); the area and duration branches (A) still beat the armour branches (B) on the missions tried, noted as open.

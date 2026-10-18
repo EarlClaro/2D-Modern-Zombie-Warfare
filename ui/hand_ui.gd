@@ -5,9 +5,9 @@ extends CanvasLayer
 ## BattleController state and sends clicks back through select_slot() / cancel_selection().
 
 const SLOT_COUNT: int = 5
-const SLOT_SIZE := Vector2(168, 118)
+const SLOT_SIZE := Vector2(132, 188)  # a tall, portrait card
 const SLOT_GAP: float = 10.0
-const HAND_TOP: float = 898.0
+const HAND_TOP: float = 834.0
 const SELECT_RAISE: float = 14.0
 const BASE_SIZE := Vector2(1920, 1080)  # matches project.godot's base resolution
 const TOAST_S: float = 1.6
@@ -51,9 +51,11 @@ var _shake_t: float = 0.0
 
 ## Top-left of slot `i` in UI (base-resolution) coordinates, before selection raise.
 static func slot_rect(i: int) -> Rect2:
-	var total := SLOT_COUNT * SLOT_SIZE.x + (SLOT_COUNT - 1) * SLOT_GAP
+	var size := SLOT_SIZE
+	var total := SLOT_COUNT * size.x + (SLOT_COUNT - 1) * SLOT_GAP
 	var x0 := (BASE_SIZE.x - total) * 0.5
-	return Rect2(Vector2(x0 + i * (SLOT_SIZE.x + SLOT_GAP), HAND_TOP), SLOT_SIZE)
+	return Rect2(Vector2(x0 + i * (size.x + SLOT_GAP), HAND_TOP), size)
+
 
 
 ## Which slot (0..SLOT_COUNT-1) is under `pos`, or -1.
@@ -193,31 +195,58 @@ func _draw_slot(i: int, o: Vector2) -> void:
 	var kind_col: Color = KIND_COLOR.get(def.card_kind if def != null else 0, Color.GRAY)
 	var locked := _battle.deck.is_locked(cid)
 	var affordable := def != null and _battle.points.can_afford(def.cost)
-	_surface.draw_rect(rect, Color(0.11, 0.12, 0.14, 0.94))
-	_surface.draw_rect(Rect2(rect.position, Vector2(rect.size.x, 10.0)), kind_col)
 	var flash := (_shake_t / SHAKE_S) if i == _shake_slot and _shake_t > 0.0 else 0.0
-	if flash > 0.0:
-		_surface.draw_rect(rect, Color(1.0, 0.2, 0.2, 0.35 * flash))
-	_text("[%d]" % (i + 1), rect.position + Vector2(8, 32), 16, Color(1, 1, 1, 0.6), HORIZONTAL_ALIGNMENT_LEFT)
-	# cost badge
-	var badge := rect.position + Vector2(rect.size.x - 24.0, 34.0)
-	_surface.draw_circle(badge, 17.0, kind_col.darkened(0.2) if affordable else Color(0.55, 0.12, 0.12))
-	_surface.draw_arc(badge, 17.0, 0.0, TAU, 24, Color(0, 0, 0, 0.7), 2.0)
-	_text("%d" % (def.cost if def != null else 0), badge + Vector2(0, 8), 22, Color.WHITE, HORIZONTAL_ALIGNMENT_CENTER)
-	# name on up to two lines
+	_draw_card_face(rect, def, cid, i, kind_col, affordable, flash, locked, selected)
+
+
+## A portrait card with a rounded frame, the cost in a badge, a framed picture and the name on a banner.
+func _draw_card_face(rect: Rect2, def: CardDefinition, cid: String, index: int, kind_col: Color, affordable: bool, flash: float, locked: bool, selected: bool) -> void:
+	var pos := rect.position
+	var w := rect.size.x
+	_card_box(rect, Color(0.09, 0.10, 0.12, 0.97), kind_col.darkened(0.25), 2)
+	# header band: kind on the right, hotkey next to the cost badge
+	var head := Rect2(pos + Vector2(3, 3), Vector2(w - 6, 28))
+	_surface.draw_rect(head, kind_col.darkened(0.45))
+	_surface.draw_rect(Rect2(head.position, Vector2(head.size.x, 3)), kind_col)
+	_text(KIND_LABEL.get(def.card_kind if def != null else 0, ""), pos + Vector2(w - 14, 24), 14, Color(1, 1, 1, 0.8), HORIZONTAL_ALIGNMENT_RIGHT)
+	var badge := pos + Vector2(25, 26)
+	_surface.draw_circle(badge, 18.0, kind_col.darkened(0.2) if affordable else Color(0.55, 0.12, 0.12))
+	_surface.draw_arc(badge, 18.0, 0.0, TAU, 28, Color(0, 0, 0, 0.8), 2.0)
+	_text("%d" % (def.cost if def != null else 0), badge + Vector2(0, 8), 24, Color.WHITE, HORIZONTAL_ALIGNMENT_CENTER)
+	# the picture
+	var art := Rect2(pos + Vector2(10, 44), Vector2(w - 20, 84))
+	_surface.draw_rect(art, kind_col.darkened(0.75))
+	_surface.draw_rect(Rect2(art.position, Vector2(art.size.x, art.size.y * 0.5)), Color(1, 1, 1, 0.04))
+	CardArt.draw_in(_surface, cid, art.grow(-2.0), kind_col)
+	_surface.draw_rect(art, kind_col.darkened(0.3), false, 2.0)
+	_text("[%d]" % (index + 1), art.position + Vector2(6, art.size.y - 6), 14, Color(1, 1, 1, 0.55), HORIZONTAL_ALIGNMENT_LEFT)
+	# the name on a banner, up to two lines
+	var banner := Rect2(pos + Vector2(8, 136), Vector2(w - 16, 44))
+	_surface.draw_rect(banner, Color(0, 0, 0, 0.4))
 	var lines := _wrap(def.display_name if def != null else "?")
-	var two_lines := lines.size() > 1
-	var ny := rect.position.y + (62.0 if two_lines else 68.0)
+	var ny := banner.position.y + (19.0 if lines.size() > 1 else 29.0)
 	for line in lines:
-		_text(line, Vector2(rect.position.x + rect.size.x * 0.5, ny), 18 if two_lines else 20, Color.WHITE, HORIZONTAL_ALIGNMENT_CENTER)
-		ny += 20.0
-	_text(KIND_LABEL.get(def.card_kind if def != null else 0, ""), Vector2(rect.position.x + rect.size.x * 0.5, rect.end.y - 8.0), 14, Color(1, 1, 1, 0.5), HORIZONTAL_ALIGNMENT_CENTER)
+		_text(line, Vector2(pos.x + w * 0.5, ny), 17 if lines.size() > 1 else 19, Color.WHITE, HORIZONTAL_ALIGNMENT_CENTER)
+		ny += 18.0
+	if flash > 0.0:
+		_card_box(rect, Color(1.0, 0.2, 0.2, 0.35 * flash), Color(0, 0, 0, 0), 0)
 	if locked:
-		_surface.draw_rect(rect, Color(0, 0, 0, 0.62))
+		_card_box(rect, Color(0, 0, 0, 0.62), Color(0, 0, 0, 0), 0)
 		_text("%ds" % ceili(_battle.deck.lockout_remaining(cid)), rect.get_center() + Vector2(0, 12), 36, Color(1, 0.85, 0.4), HORIZONTAL_ALIGNMENT_CENTER)
 	elif not affordable:
-		_surface.draw_rect(rect, Color(0, 0, 0, 0.38))
-	_surface.draw_rect(rect, Color(1.0, 0.9, 0.3) if selected else Color(0, 0, 0, 0.85), false, 3.0 if selected else 1.5)
+		_card_box(rect, Color(0, 0, 0, 0.38), Color(0, 0, 0, 0), 0)
+	if selected:
+		_card_box(rect, Color(0, 0, 0, 0), Color(1.0, 0.9, 0.3), 3)
+
+
+## A rounded rectangle with a border, drawn on the hand surface.
+func _card_box(rect: Rect2, fill: Color, border: Color, border_w: int) -> void:
+	var box := StyleBoxFlat.new()
+	box.bg_color = fill
+	box.border_color = border
+	box.set_border_width_all(border_w)
+	box.set_corner_radius_all(9)
+	_surface.draw_style_box(box, rect)
 
 
 func _draw_draw_timer(o: Vector2) -> void:
