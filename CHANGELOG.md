@@ -1,5 +1,14 @@
 # Changelog
 
+## 3.13 Objective list, result breakdown and spawn cues (2026-10-18)
+- **HUD list** (`ui/objective_list.gd`, top right, on a dark panel): for a mission that declares objectives, the primary ones under OBJECTIVES, the secondary under BONUS and the fail ones under LOSE IF, each with live progress and a mark: `[ ]` pending, `[=]` holding (a core threshold not yet broken), `[x]` met, `[!]` failed; colours follow. Examples: `Hold 1:23 left`, `Core >= 50%: 78%`, `Kills 120 / 300`, `Destroy every wave: 20 / 50`. The list hides when the battle ends. A mission without objectives is unchanged (the plain HOLD clock); with objectives the HOLD clock gives way to the list.
+- **Result panel:** lists every objective with its final state and marks the one that decided the mission ("<- decided it"); nothing added for a mission without objectives.
+- **Spawn cues** (`ui/spawn_cue_overlay.gd`): a ring on the ground at each spawn point from 6 s before a wave starts there until 2 s after its last enemy came out (amber with a countdown, red while it is coming out), and an arrow with the seconds to go on the edge of the screen when that spawn is off-screen. Every mission gets them.
+- **Pure parts, tested:** `ObjectiveText` (words, marks, order), `SpawnCue` (when), `EdgeArrow` (where on the edge).
+- New dev mission `dev_objectives` (the flow outskirts map with all four objective kinds: hold 100 s and destroy every wave as primary, 100 kills and the core at 60 % as bonus, lose below 15 %): `-- --mission=dev_objectives`.
+- Merged `origin/main` (Milestone 5) first; the 3.12 merge was clean apart from the changelog. Windowed screenshots of the list, rings, arrows and the defeat panel were looked at (1600x900); real play feel is still for you.
+- 42 new tests (1183 in all); mutation check 51 of 51 killed after closing 1 gap (the overlay always asked about the first spawn point).
+
 ## 3.12 Objective model (2026-10-18)
 - New data `ObjectiveDefinition` (`scripts/missions/objective_definition.gd`): an id, a kind (`SURVIVE` seconds, `CORE_HEALTH_AT_LEAST` fraction, `KILL_COUNT` count, `CLEAR_WAVES`) and a role (`PRIMARY`, `SECONDARY`, `FAIL`), with validation and the short phrases the result line uses. `MissionDefinition.objectives` holds them; empty (every shipped mission) means the old rule.
 - New pure `ObjectiveTracker` (`scripts/missions/objective_tracker.gd`): each objective is PENDING, MET or FAILED (MET and FAILED are final), judged from a `Facts` snapshot (clock, core health and maximum, kills, enemies alive, enemies spawned and planned) once per tick after damage and deaths. `CORE_HEALTH_AT_LEAST` is a standing objective: pending while it holds, failed for good the moment the core drops below it, met only when the mission is won with it intact. It reports value, target and progress per objective for the HUD (3.13).

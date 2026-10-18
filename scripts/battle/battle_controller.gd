@@ -256,6 +256,14 @@ func _ready() -> void:
 	var hud := BattleHud.new()
 	add_child(hud)
 	hud.bind(self)
+	var objective_list := ObjectiveList.new()
+	objective_list.name = "ObjectiveList"
+	add_child(objective_list)
+	objective_list.bind(self)
+	var spawn_cues := SpawnCueOverlay.new()
+	spawn_cues.name = "SpawnCues"
+	add_child(spawn_cues)
+	spawn_cues.bind(self)
 	if has_cards():
 		var hand_ui := HandUi.new()
 		hand_ui.name = "HandUi"
