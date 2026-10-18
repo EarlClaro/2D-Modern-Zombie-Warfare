@@ -142,6 +142,7 @@ var _fade_lookup: Dictionary = {}  # cell -> Array[BattleScenery]: pieces that c
 var _fade_clock: float = 0.0
 
 var _rules: MissionRules
+var _facts: ObjectiveTracker.Facts = ObjectiveTracker.Facts.new()  # what the objectives are judged on; refreshed each tick
 var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
 var _deck_rng: RandomNumberGenerator = RandomNumberGenerator.new()  # separate so playing cards never shifts spawn jitter
 var _ops_rng: RandomNumberGenerator = RandomNumberGenerator.new()  # shell scatter; also separate from spawn jitter
@@ -297,10 +298,12 @@ func setup(p_db: ContentDb, p_mission: MissionDefinition, p_seed: int) -> void:
 	_wave_count.clear()
 	_wave_gap.clear()
 	var base_total := mission.total_enemies()
+	_facts = ObjectiveTracker.Facts.new()
 	for i in mission.waves.size():
 		_wave_spawned.append(0)
 		var w := mission.waves[i]
 		_wave_count.append(_difficulty.scaled_count(w.count, base_total) if _difficulty != null else w.count)
+		_facts.planned += _wave_count[i]
 		_wave_gap.append(_difficulty.scaled_interval(w.count, w.interval_s, base_total) if _difficulty != null else w.interval_s)
 	_waypoints.clear()
 	for c in mission.path_cells:
@@ -323,7 +326,7 @@ func setup(p_db: ContentDb, p_mission: MissionDefinition, p_seed: int) -> void:
 				pts.append(wp)
 		_routes.append(Route.from_points(pts))
 		_spawn_points.append(IsoProjection.cell_center(sc))
-	_rules = MissionRules.new(mission.duration_s)
+	_rules = MissionRules.new(mission.duration_s, mission.objectives)
 	_rules.ended.connect(_on_rules_ended)
 	_build_map()
 	_spawn_scenery()
@@ -363,6 +366,11 @@ func is_ended() -> bool:
 
 func result() -> MissionRules.Result:
 	return _rules.result() if _rules != null else null
+
+
+## Where each objective stands (null before setup). Read by the HUD and the result panel.
+func objectives() -> ObjectiveTracker:
+	return _rules.tracker() if _rules != null else null
 
 
 ## Layer for transient effects (tracers, flashes, sparks); cleared on restart.
@@ -418,7 +426,11 @@ func step(delta: float) -> void:
 	# 4. apply all damage, then remove the dead
 	_apply_damage()
 	# 5. mission rules, after all damage and deaths of this tick
-	_rules.evaluate(core.health.hp, elapsed)
+	_facts.core_max = core.health.max_hp
+	_facts.kills = stats["kills"]
+	_facts.spawned = stats["spawned"]
+	_facts.alive = enemies.size()
+	_rules.evaluate(core.health.hp, elapsed, _facts)
 
 
 func _spawn_due_enemies() -> void:

@@ -9,6 +9,10 @@ extends ContentDefinition
 @export var core_cell: Vector2i = Vector2i.ZERO
 @export var core_health: float = 0.0
 @export var duration_s: float = 0.0
+## Win/fail conditions (M3.12). Empty = the implicit pair of the Milestone 1 defence: primary SURVIVE `duration_s`, and the core
+## being destroyed loses. Otherwise at least one PRIMARY objective that can be completed is required; the core being destroyed
+## always loses as well.
+@export var objectives: Array[ObjectiveDefinition] = []
 @export var spawn_cells: Array[Vector2i] = []
 @export var path_cells: Array[Vector2i] = []
 ## How enemies find their way (ADR-012). WAYPOINTS: straight segments through `path_cells`, which must be clear of scenery
@@ -98,6 +102,7 @@ func validate() -> PackedStringArray:
 		errs.append(_err("weather '%s' is unknown (%s)" % [weather, ", ".join(DayNight.WEATHER)]))
 	_validate_start_units(errs, map_ok)
 	_validate_waves(errs)
+	_validate_objectives(errs)
 	return errs
 
 
@@ -149,6 +154,30 @@ func _validate_start_units(errs: PackedStringArray, map_ok: bool) -> void:
 			errs.append(_err("start unit '%s' is placed on the core cell" % su.unit_id))
 		if map_ok and not map.is_walkable(su.cell):
 			errs.append(_err("start unit '%s' at %s is out of bounds or blocked" % [su.unit_id, _cell_name(su.cell)]))
+
+
+func _validate_objectives(errs: PackedStringArray) -> void:
+	var seen: Dictionary = {}
+	var completable := false
+	var sent := total_enemies()
+	for i in objectives.size():
+		var o := objectives[i]
+		if o == null:
+			errs.append(_err("objectives[%d] is null" % i))
+			continue
+		for e in o.validate():
+			errs.append(_err(e))
+		if not o.id.is_empty() and seen.has(o.id):
+			errs.append(_err("two objectives share the id '%s'" % o.id))
+		seen[o.id] = true
+		if o.role != ObjectiveDefinition.Role.PRIMARY:
+			continue
+		if not o.is_standing():
+			completable = true
+		if o.kind == ObjectiveDefinition.Kind.KILL_COUNT and o.count > sent:
+			errs.append(_err("primary objective '%s' needs %d kills but the mission sends only %d enemies" % [o.id, o.count, sent]))
+	if not objectives.is_empty() and not completable:
+		errs.append(_err("objectives need a PRIMARY one that can be completed (SURVIVE, KILL_COUNT or CLEAR_WAVES), or the mission can never be won"))
 
 
 func _validate_waves(errs: PackedStringArray) -> void:
